@@ -10,8 +10,17 @@
 .ft__inner {
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 16px;
 }
 .ft__copy {
     font-size: .75rem;
     color: var(--text-muted);
 }
+.ft__link {
+    font-size: .75rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color .15s;
+}
+.ft__link:hover { color: var(--accent); }

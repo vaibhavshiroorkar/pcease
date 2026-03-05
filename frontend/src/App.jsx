@@ -19,6 +19,9 @@ const Forum = lazy(() => import('./pages/Forum'))
 const Auth = lazy(() => import('./pages/Auth'))
 const Compare = lazy(() => import('./pages/Compare'))
 const Guide = lazy(() => import('./pages/Guide'))
+const Profile = lazy(() => import('./pages/Profile'))
+const Contact = lazy(() => import('./pages/Contact'))
+const Admin = lazy(() => import('./pages/Admin'))
 
 // Loading fallback
 const PageLoader = () => (
@@ -44,6 +47,9 @@ export default function App() {
                     <Route path="/compare" element={<Compare />} />
                     <Route path="/login" element={<Auth />} />
                     <Route path="/register" element={<Auth isRegister />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/admin" element={<Admin />} />
                 </Routes>
             </Suspense>
             <Footer />

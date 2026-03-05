@@ -90,9 +90,9 @@ export function invalidateCache(pattern = '') {
 // ========== API Methods ==========
 export const API = {
     // --- Auth ---
-    login: (email, password) => {
+    login: (username, password) => {
         const form = new URLSearchParams()
-        form.append('username', email)
+        form.append('username', username)
         form.append('password', password)
         return request('/auth/login', {
             method: 'POST',
@@ -109,6 +109,30 @@ export const API = {
 
     getMe: (token) =>
         request('/auth/me', { headers: { Authorization: `Bearer ${token}` } }),
+
+    updateProfile: (data) =>
+        request('/auth/profile', { method: 'PUT', body: JSON.stringify(data) }),
+
+    changePassword: (currentPassword, newPassword) =>
+        request('/auth/password', {
+            method: 'PUT',
+            body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+        }),
+
+    resetPassword: (username, email, newPassword) =>
+        request('/auth/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ username, email, new_password: newPassword }),
+        }),
+
+    deleteAccount: () =>
+        request('/auth/account', { method: 'DELETE' }),
+
+    // Admin
+    adminGetUsers: () => request('/auth/admin/users'),
+    adminGetStats: () => request('/auth/admin/stats'),
+    adminDeleteUser: (id) => request(`/auth/admin/users/${id}`, { method: 'DELETE' }),
+    adminDeleteThread: (id) => request(`/auth/admin/threads/${id}`, { method: 'DELETE' }),
 
     // --- Stats ---
     getStats: () => request('/stats'),

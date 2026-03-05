@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { FiMenu, FiX, FiLogOut } from 'react-icons/fi'
+import { FiMenu, FiX, FiLogOut, FiUser, FiSettings, FiShield } from 'react-icons/fi'
 import { useAuth } from '../context/AuthContext'
 import './Navbar.css'
 
@@ -15,14 +15,23 @@ const navItems = [
 export default function Navbar() {
     const [open, setOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
+    const [dropdown, setDropdown] = useState(false)
     const { user, logout } = useAuth()
     const location = useLocation()
+    const dropdownRef = useRef(null)
 
-    useEffect(() => { setOpen(false) }, [location])
+    useEffect(() => { setOpen(false); setDropdown(false) }, [location])
     useEffect(() => {
         const fn = () => setScrolled(window.scrollY > 10)
         window.addEventListener('scroll', fn)
         return () => window.removeEventListener('scroll', fn)
+    }, [])
+    useEffect(() => {
+        const handler = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdown(false)
+        }
+        document.addEventListener('mousedown', handler)
+        return () => document.removeEventListener('mousedown', handler)
     }, [])
 
     return (
@@ -46,10 +55,30 @@ export default function Navbar() {
 
                 <div className="nav__right">
                     {user ? (
-                        <div className="nav__user">
-                            <span className="nav__avatar">{user.username?.charAt(0).toUpperCase()}</span>
-                            <span className="nav__username">{user.username}</span>
-                            <button className="nav__logout" onClick={logout} title="Logout"><FiLogOut size={14} /></button>
+                        <div className="nav__user" ref={dropdownRef}>
+                            <button className="nav__avatar-btn" onClick={() => setDropdown(!dropdown)}>
+                                <span className="nav__avatar">{user.username?.charAt(0).toUpperCase()}</span>
+                                <span className="nav__username">{user.username}</span>
+                            </button>
+                            {dropdown && (
+                                <div className="nav__dropdown">
+                                    <Link to="/profile" className="nav__dropdown-item">
+                                        <FiUser size={14} /> Profile
+                                    </Link>
+                                    <Link to="/profile" className="nav__dropdown-item">
+                                        <FiSettings size={14} /> Settings
+                                    </Link>
+                                    {user.is_admin && (
+                                        <Link to="/admin" className="nav__dropdown-item">
+                                            <FiShield size={14} /> Admin Panel
+                                        </Link>
+                                    )}
+                                    <div className="nav__dropdown-divider" />
+                                    <button className="nav__dropdown-item nav__dropdown-item--danger" onClick={logout}>
+                                        <FiLogOut size={14} /> Logout
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <NavLink to="/login" className="btn btn-primary btn-sm nav__signin">Sign In</NavLink>
