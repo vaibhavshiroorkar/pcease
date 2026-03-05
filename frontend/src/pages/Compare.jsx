@@ -142,6 +142,7 @@ export default function Compare() {
     const [selectedCategory, setSelectedCategory] = useState('')
     const [view, setView] = useState('cards') // 'cards' or 'table'
     const [expandedSpecs, setExpandedSpecs] = useState({})
+    const [sortOrder, setSortOrder] = useState('price-low')
     const searchRef = useRef(null)
     const inputRef = useRef(null)
 
@@ -174,6 +175,7 @@ export default function Compare() {
             const params = { limit: 50 }
             if (query.trim()) params.search = query
             if (selectedCategory) params.category = selectedCategory
+            if (sortOrder) params.sort = sortOrder
             API.getComponents(params)
                 .then(data => {
                     const list = data.components || data || []
@@ -184,7 +186,7 @@ export default function Compare() {
                 .finally(() => setSearching(false))
         }, 300)
         return () => clearTimeout(t)
-    }, [query, selectedCategory, slots])
+    }, [query, selectedCategory, sortOrder, slots])
 
     useEffect(() => {
         const handler = (e) => {
@@ -198,6 +200,7 @@ export default function Compare() {
         setActiveSlot(slotIdx)
         setQuery('')
         setSelectedCategory('')
+        setSortOrder('price-low')
         setSearchResults([])
         setTimeout(() => inputRef.current?.focus(), 50)
     }
@@ -206,6 +209,7 @@ export default function Compare() {
         setActiveSlot(null)
         setQuery('')
         setSelectedCategory('')
+        setSortOrder('price-low')
         setSearchResults([])
     }
 
@@ -276,7 +280,7 @@ export default function Compare() {
                 {/* ===== Header ===== */}
                 <header className="cp-header">
                     <div className="cp-header__left">
-                        <h1><FiColumns style={{ verticalAlign: 'middle' }} /> Compare</h1>
+                        <h1>Compare</h1>
                         <p className="cp-header__sub">
                             Compare prices across Indian retailers — up to {MAX_SLOTS} components side by side
                         </p>
@@ -586,6 +590,13 @@ export default function Compare() {
                                         onClick={() => setSelectedCategory(cat.slug)}
                                     >{cat.name}</button>
                                 ))}
+                            </div>
+                            <div className="cp-search-panel__sort">
+                                <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}>
+                                    <option value="price-low">Price: Low to High</option>
+                                    <option value="price-high">Price: High to Low</option>
+                                    <option value="name">Name: A-Z</option>
+                                </select>
                             </div>
                             <div className="cp-search-panel__results">
                                 {!query.trim() && !selectedCategory && (

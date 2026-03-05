@@ -238,19 +238,21 @@ export default function Browse() {
                         ))}
                     </div>
                     <div className="br-meta">
-                        <select value={sort} onChange={e => setSort(e.target.value)}>
-                            <option value="price-low">Price: Low to High</option>
-                            <option value="price-high">Price: High to Low</option>
-                            <option value="name">Name: A-Z</option>
-                        </select>
                         <span className="br-meta__count">
                             {loading ? 'Loading...' : filteredComponents.length !== components.length 
                                 ? `${filteredComponents.length} of ${components.length} results` 
                                 : `${components.length} results`}
                         </span>
-                        <div className="br-view-toggle">
-                            <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')} title="Grid view"><FiGrid size={15} /></button>
-                            <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')} title="List view"><FiList size={15} /></button>
+                        <div className="br-meta__right">
+                            <select value={sort} onChange={e => setSort(e.target.value)}>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="name">Name: A-Z</option>
+                            </select>
+                            <div className="br-view-toggle">
+                                <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')} title="Grid view"><FiGrid size={15} /></button>
+                                <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')} title="List view"><FiList size={15} /></button>
+                            </div>
                         </div>
                     </div>
                 </section>

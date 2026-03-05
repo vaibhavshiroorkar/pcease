@@ -107,7 +107,7 @@ export default function Advisor() {
         <main className="page">
             <div className="container">
                 <header className="ad-header">
-                    <h1><FiCpu style={{ verticalAlign: 'middle' }} /> Build Advisor</h1>
+                    <h1>Build Advisor</h1>
                     <p className="ad-header__sub">Find your perfect PC build — manually configure, chat with AI, or pick a preset.</p>
                 </header>
 
