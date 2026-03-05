@@ -179,6 +179,8 @@ export default function Builder() {
     const [bottleneck, setBottleneck] = useState(null)
     const [sharedView, setSharedView] = useState(false)
     const [showGuide, setShowGuide] = useState(false)
+    const [savedBuilds, setSavedBuilds] = useState([])
+    const [loadingBuilds, setLoadingBuilds] = useState(false)
 
     // Memoized: Merge all component IDs for save/share
     const allComponentIds = useMemo(() => ({
@@ -203,6 +205,21 @@ export default function Builder() {
     )
 
     useEffect(() => { if (shareId) loadSharedBuild(shareId) }, [shareId])
+
+    // Load saved builds
+    useEffect(() => {
+        if (!user) { setSavedBuilds([]); return }
+        setLoadingBuilds(true)
+        API.getBuilds().then(setSavedBuilds).catch(() => {}).finally(() => setLoadingBuilds(false))
+    }, [user])
+
+    const handleDeleteBuild = async (id) => {
+        try {
+            await API.deleteBuild(id)
+            setSavedBuilds(prev => prev.filter(b => b.id !== id))
+            toast.success('Build deleted')
+        } catch (e) { toast.error(e.message) }
+    }
 
     // Load recommendation components from Advisor page
     useEffect(() => {
@@ -405,6 +422,7 @@ export default function Builder() {
         try {
             await API.saveBuild({ name: buildName, components: allComponentIds })
             toast.success('Build saved!')
+            API.getBuilds().then(setSavedBuilds).catch(() => {})
         } catch (e) { toast.error('Failed: ' + e.message) }
         finally { setSaving(false) }
     }, [user, buildName, allComponentIds])
@@ -954,6 +972,41 @@ export default function Builder() {
                             </div>
                         </div>
                     </div>
+                )}
+
+                {/* ── Saved Builds ── */}
+                {user && (
+                    <section className="bd-saved">
+                        <h2 className="bd-saved__title">Your Saved Builds</h2>
+                        {loadingBuilds ? (
+                            <div className="bd-saved__loading"><div className="spinner" /></div>
+                        ) : savedBuilds.length === 0 ? (
+                            <p className="bd-saved__empty">No saved builds yet. Build something and hit Save!</p>
+                        ) : (
+                            <div className="bd-saved__list">
+                                {savedBuilds.map(b => (
+                                    <div key={b.id} className="bd-saved-card">
+                                        <div className="bd-saved-card__info">
+                                            <strong>{b.name || 'Untitled Build'}</strong>
+                                            <span className="bd-saved-card__date">
+                                                {new Date(b.created_at).toLocaleDateString()}
+                                            </span>
+                                            <span className="bd-saved-card__parts">
+                                                {Object.keys(b.components || {}).length} component{Object.keys(b.components || {}).length !== 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+                                        <button
+                                            className="bd-saved-card__del"
+                                            onClick={() => handleDeleteBuild(b.id)}
+                                            title="Delete build"
+                                        >
+                                            <FiX size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
                 )}
             </div>
         </main>

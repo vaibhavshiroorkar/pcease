@@ -1,0 +1,113 @@
+/* Contact Page */
+
+.ct { padding-top: 40px; min-height: calc(100vh - 200px); }
+
+.ct-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.ct-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.ct-header p {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+}
+
+.ct-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 32px;
+    max-width: 800px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+/* Info Cards */
+.ct-info {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.ct-info-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    color: var(--accent);
+}
+.ct-info-card h4 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+}
+.ct-info-card p {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Form Card */
+.ct-form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+}
+
+.ct-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.ct-field { display: flex; flex-direction: column; gap: 6px; }
+.ct-field label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    display: flex; align-items: center; gap: 6px;
+}
+.ct-field textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+.ct-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+}
+
+/* Success */
+.ct-success {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--accent);
+}
+.ct-success h3 {
+    font-size: 1.25rem;
+    margin: 16px 0 8px;
+    color: var(--text);
+}
+.ct-success p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ct-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .ct-info { flex-direction: row; overflow-x: auto; }
+    .ct-info-card { min-width: 180px; flex-shrink: 0; }
+}

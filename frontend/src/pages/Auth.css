@@ -168,6 +168,22 @@
     margin-top: 20px;
 }
 
+/* Forgot link */
+.au-forgot-link {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 12px;
+    font-family: inherit;
+    padding: 0;
+}
+.au-forgot-link:hover { text-decoration: underline; }
+
 /* Responsive */
 @media (max-width: 768px) {
     .au-container {
