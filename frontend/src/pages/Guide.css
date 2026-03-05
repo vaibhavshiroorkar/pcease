@@ -1,0 +1,283 @@
+/* ── Guide Page ── */
+.guide-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.guide-back:hover { color: var(--accent); }
+
+/* Header */
+.guide-header {
+    margin-bottom: 40px;
+}
+.guide-header__tag {
+    display: inline-block;
+    background: rgba(6,182,212,0.12);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+}
+.guide-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+.guide-header__sub {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 640px;
+}
+.guide-header__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Table of Contents */
+.guide-toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 48px;
+}
+.guide-toc h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+.guide-toc ol {
+    list-style: decimal;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.guide-toc a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: opacity 0.2s;
+}
+.guide-toc a:hover { opacity: 0.75; }
+
+/* Section */
+.guide-section {
+    margin-bottom: 48px;
+    scroll-margin-top: 100px;
+}
+.guide-section__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.guide-section__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: rgba(6,182,212,0.12);
+    color: var(--accent);
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+.guide-section__head h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--text);
+}
+.guide-section__text {
+    color: var(--text-secondary);
+    line-height: 1.75;
+    white-space: pre-line;
+    font-size: 0.95rem;
+}
+
+/* Component cards */
+.guide-components {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+.guide-comp {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+}
+.guide-comp h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text);
+}
+.guide-comp p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+.guide-comp ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.guide-comp li {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.5;
+}
+.guide-comp li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+}
+
+/* Budget tiers */
+.guide-budgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+.guide-budget {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+}
+.guide-budget__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.guide-budget__range {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+.guide-budget__label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    background: rgba(255,255,255,0.06);
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+.guide-budget p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Build steps */
+.guide-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+.guide-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+}
+.guide-step__num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: rgba(6,182,212,0.12);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.guide-step h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+.guide-step p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Mistakes */
+.guide-mistakes {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+.guide-mistakes li {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding: 12px 16px 12px 40px;
+    position: relative;
+    background: rgba(239,68,68,0.06);
+    border-radius: 8px;
+    border: 1px solid rgba(239,68,68,0.12);
+}
+.guide-mistakes li::before {
+    content: '✕';
+    position: absolute;
+    left: 14px;
+    color: #ef4444;
+    font-weight: 700;
+}
+
+/* CTAs */
+.guide-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .guide-header h1 { font-size: 1.5rem; }
+    .guide-components { grid-template-columns: 1fr; }
+    .guide-budgets { grid-template-columns: 1fr; }
+    .guide-toc { padding: 16px 20px; }
+}

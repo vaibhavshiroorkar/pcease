@@ -14,14 +14,13 @@ export default function Home() {
             <section className="hero">
                 <div className="hero__bg" />
                 <div className="container hero__inner">
-                    <span className="hero__badge">India's PC Build Platform</span>
                     <h1>
                         Build smarter.<br />
                         <span className="text-accent">Pay less.</span>
                     </h1>
                     <p className="hero__sub">
-                        Compare prices across 9+ Indian retailers, get AI-powered build recommendations,
-                        and assemble your dream PC — all in one place.
+                        Stop overpaying for PC parts. See real prices from various stores, get a build
+                        recommendation in seconds, and know exactly where to buy.
                     </p>
                     <div className="hero__cta">
                         <Link to="/builder" className="btn btn-primary btn-lg">
@@ -177,14 +176,14 @@ export default function Home() {
             {/* ===== Final CTA ===== */}
             <section className="home-section home-section--alt">
                 <div className="container home-cta">
-                    <h2>Ready to find the best deal?</h2>
-                    <p>Start building your PC now — completely free, no sign-up needed.</p>
+                    <h2>Your next build starts here.</h2>
+                    <p>No account. No fluff. Just the parts you need at the price you want.</p>
                     <div className="home-cta__actions">
-                        <Link to="/builder" className="btn btn-primary btn-lg">
-                            Launch Builder <FiArrowRight size={15} />
+                        <Link to="/advisor" className="btn btn-primary btn-lg">
+                            What should I build? <FiArrowRight size={15} />
                         </Link>
-                        <Link to="/advisor" className="btn btn-lg">
-                            Get AI Recommendation
+                        <Link to="/forum" className="btn btn-lg">
+                            Need help? Ask the community
                         </Link>
                     </div>
                 </div>

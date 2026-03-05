@@ -641,6 +641,17 @@
 .cp-filter-chip:hover { border-color: rgba(255,255,255,.12); color: var(--text); }
 .cp-filter-chip.active { border-color: var(--accent); background: var(--accent-subtle); color: var(--accent); }
 
+/* Sort dropdown in search panel */
+.cp-search-panel__sort {
+    padding: 8px 24px 12px;
+    border-bottom: 1px solid var(--border);
+}
+.cp-search-panel__sort select {
+    width: 100%;
+    font-size: 0.8125rem;
+    padding: 7px 12px;
+}
+
 /* Search Results */
 .cp-search-panel__results {
     max-height: 360px;

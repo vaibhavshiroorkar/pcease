@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { API, timeAgo } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { Link } from 'react-router-dom'
-import { FiPlus, FiSearch, FiChevronUp, FiChevronDown, FiX, FiMessageCircle, FiUser, FiClock } from 'react-icons/fi'
+import { FiPlus, FiSearch, FiChevronUp, FiChevronDown, FiX, FiMessageCircle, FiUser, FiClock, FiBookOpen, FiArrowRight } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import './Forum.css'
 
@@ -75,6 +75,16 @@ export default function Forum() {
                     <div className="fm-search"><FiSearch className="fm-search__icon" /><input type="text" placeholder="Search threads..." value={search} onChange={e => setSearch(e.target.value)} /></div>
                     <div className="fm-chips">{categories.map(cat => <button key={cat} className={`chip ${category === cat ? 'active' : ''}`} onClick={() => setCategory(cat)}>{cat}</button>)}</div>
                 </div>
+
+                <Link to="/forum/guide" className="fm-pinned">
+                    <div className="fm-pinned__icon"><FiBookOpen size={20} /></div>
+                    <div className="fm-pinned__body">
+                        <span className="fm-pinned__tag">Pinned · Guide</span>
+                        <h3>How to Build a PC — The Complete Beginner's Guide</h3>
+                        <p>Everything you need to know to plan, buy, and assemble your first PC build in India.</p>
+                    </div>
+                    <FiArrowRight size={16} className="fm-pinned__arrow" />
+                </Link>
 
                 <span className="fm-count">{threads.length} threads</span>
 

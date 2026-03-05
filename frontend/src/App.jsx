@@ -1,8 +1,14 @@
-import { lazy, Suspense } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+
+function ScrollToTop() {
+    const { pathname } = useLocation()
+    useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+    return null
+}
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('./pages/Home'))
@@ -12,6 +18,7 @@ const Advisor = lazy(() => import('./pages/Advisor'))
 const Forum = lazy(() => import('./pages/Forum'))
 const Auth = lazy(() => import('./pages/Auth'))
 const Compare = lazy(() => import('./pages/Compare'))
+const Guide = lazy(() => import('./pages/Guide'))
 
 // Loading fallback
 const PageLoader = () => (
@@ -23,6 +30,7 @@ const PageLoader = () => (
 export default function App() {
     return (
         <AuthProvider>
+            <ScrollToTop />
             <Navbar />
             <Suspense fallback={<PageLoader />}>
                 <Routes>
@@ -32,6 +40,7 @@ export default function App() {
                     <Route path="/builder/:shareId" element={<Builder />} />
                     <Route path="/advisor" element={<Advisor />} />
                     <Route path="/forum" element={<Forum />} />
+                    <Route path="/forum/guide" element={<Guide />} />
                     <Route path="/compare" element={<Compare />} />
                     <Route path="/login" element={<Auth />} />
                     <Route path="/register" element={<Auth isRegister />} />
