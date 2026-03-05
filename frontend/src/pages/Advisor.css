@@ -1,25 +1,25 @@
 /* ==================== Advisor Page ==================== */
 
 /* Header */
-.ad-header { text-align: center; margin-bottom: 32px; }
-.ad-header h1 { margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.ad-header__sub { font-size: 1rem; color: var(--text-secondary); max-width: 520px; margin: 0 auto; }
+.ad-header { text-align: left; margin-bottom: 32px; }
+.ad-header h1 { margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+.ad-header__sub { font-size: .9375rem; color: var(--text-secondary); max-width: 520px; }
 
 /* ========== Tabs ========== */
-.ad-tabs { display: flex; justify-content: center; gap: 4px; margin-bottom: 32px; padding: 4px; background: var(--surface); border-radius: 10px; max-width: 440px; margin-left: auto; margin-right: auto; border: 1px solid var(--border); }
+.ad-tabs { display: flex; gap: 4px; margin-bottom: 32px; padding: 4px; background: var(--surface); border-radius: 10px; max-width: 440px; border: 1px solid var(--border); }
 .ad-tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; background: transparent; border: none; border-radius: 8px; color: var(--text-secondary); font-weight: 500; font-size: .875rem; cursor: pointer; transition: all .2s; font-family: inherit; }
 .ad-tab:hover { color: var(--text); background: rgba(255,255,255,.03); }
 .ad-tab.active { background: var(--accent); color: white; font-weight: 600; }
 .ad-tab__label { white-space: nowrap; }
 
 /* ========== Manual Tab ========== */
-.ad-manual__intro { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; background: var(--accent-subtle); border: 1px solid var(--accent-border); border-radius: 10px; margin-bottom: 24px; max-width: 860px; margin-left: auto; margin-right: auto; }
+.ad-manual__intro { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; background: var(--accent-subtle); border: 1px solid var(--accent-border); border-radius: 10px; margin-bottom: 24px; max-width: 860px; }
 .ad-manual__intro svg { flex-shrink: 0; color: var(--accent); margin-top: 2px; }
 .ad-manual__intro h3 { font-size: .9375rem; margin-bottom: 2px; }
 .ad-manual__intro p { font-size: .8125rem; color: var(--text-secondary); margin: 0; }
 
 /* Layout */
-.ad-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; max-width: 860px; margin: 0 auto; }
+.ad-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; max-width: 860px; }
 .ad-layout--single { grid-template-columns: 1fr; max-width: 520px; }
 
 /* Form Card */
