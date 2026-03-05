@@ -142,17 +142,18 @@ label { display: block; font-weight: 500; font-size: .8125rem; margin-bottom: 6p
 }
 .modal-lg { max-width: 720px; }
 .modal-header {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
 }
-.modal-header h2 { font-size: 1rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modal-header h2 { font-size: 1rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: normal; word-break: break-word; line-height: 1.4; }
 .modal-close {
-    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-    background: transparent; border: none; color: var(--text-muted); font-size: 1.25rem;
-    cursor: pointer; border-radius: var(--radius-sm); transition: all var(--transition);
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); font-size: 1.25rem;
+    cursor: pointer; border-radius: var(--radius-md); transition: all var(--transition);
+    flex-shrink: 0;
 }
-.modal-close:hover { background: var(--surface); color: var(--text); }
-.modal-body { padding: 20px; overflow-y: auto; }
+.modal-close:hover { background: var(--surface-hover); color: var(--text); border-color: var(--border-hover); }
+.modal-body { padding: 24px; overflow-y: auto; }
 
 /* ========== Utilities ========== */
 .text-accent { color: var(--accent); }
@@ -166,7 +167,7 @@ label { display: block; font-weight: 500; font-size: .8125rem; margin-bottom: 6p
 
 /* ========== Empty / Loading ========== */
 .empty-state { text-align: center; padding: 64px 24px; color: var(--text-muted); }
-.empty-state h3 { color: var(--text-secondary); margin-bottom: 8px; }
+.empty-state h3 { color: var(--text-secondary); margin-bottom: 6px; }
 .loading { text-align: center; padding: 64px; color: var(--text-muted); }
 
 /* Spinner */

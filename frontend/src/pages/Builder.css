@@ -168,7 +168,7 @@
 .bd-modal-search { position: relative; margin-bottom: 16px; }
 .bd-modal-search__icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 .bd-modal-search input { padding-left: 36px; width: 100%; }
-.bd-modal-loading { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 0; color: var(--text-muted); }
+.bd-modal-loading { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 0; color: var(--text-muted); }
 .bd-spinner {
     width: 28px; height: 28px; border: 3px solid var(--border);
     border-top-color: var(--accent); border-radius: 50%;
