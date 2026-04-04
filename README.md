@@ -1,117 +1,81 @@
-﻿<p align="center">
-  <strong>PCease</strong><br/>
-  <em>India's open-source PC building platform</em>
-</p>
+# PCease
 
-<p align="center">
-  <img src="https://img.shields.io/badge/React-18-61dafb?style=flat&logo=react" alt="React 18" />
-  <img src="https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat&logo=fastapi" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/Supabase-PostgreSQL-3ecf8e?style=flat&logo=supabase" alt="Supabase" />
-  <img src="https://img.shields.io/badge/Vite-5-646cff?style=flat&logo=vite" alt="Vite" />
-  <img src="https://img.shields.io/badge/Python-3.13-3776ab?style=flat&logo=python" alt="Python" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=flat" alt="License" />
-</p>
+A PC building platform built for Indian buyers. Most tools like PCPartPicker are US-centric — prices in USD, stores like Newegg. PCease tracks prices from Indian retailers (Amazon.in, Flipkart, MDComputers, PrimeABGB, and five others), has a compatibility checker, AI build recommendations, and a community forum. Free, no affiliate links.
+
+Live at: [pcease.vercel.app](https://pcease.vercel.app) · Backend on Render · DB on Supabase
 
 ---
 
-Browse 100+ components, compare prices across **9 Indian retailers**, build custom PCs with compatibility checking, get **AI-powered recommendations**, and share builds — all for free.
+## What it does
 
-## Why PCease?
-
-Most PC-building tools target the US market with Newegg/Amazon.com pricing. PCease is built **specifically for Indian buyers** — tracking prices from Amazon.in, Flipkart, MDComputers, PrimeABGB, and more. No affiliate bloat, no paywalls.
-
----
-
-## Features
-
-### Core
-
-- **Browse & Filter** — Search 100+ components across 8 categories (CPU, GPU, Motherboard, RAM, Storage, PSU, Case, Cooler). Grid and list views with inline vendor prices and buy links.
-- **Price Comparison** — Every component shows prices from up to 9 Indian retailers side-by-side. Cheapest vendor highlighted. Direct buy links to each store.
-- **PC Builder** — Slot-based build tool with live budget tracker, wattage estimator, and bottleneck analyzer. Share any build via a unique link.
-- **Compare Tool** — Place up to 4 components side-by-side with a full specs comparison table. Best values auto-highlighted in green.
-
-### Smart
-
-- **AI Advisor** — Enter a budget and use case → get a full build recommendation powered by Google Gemini. Includes an interactive chat mode.
-- **Wattage Calculator** — Sums component TDP values and recommends a PSU wattage with headroom.
-- **Bottleneck Analyzer** — Detects CPU-GPU tier mismatches before you buy.
-
-### Community
-
-- **Forum** — Ask questions, share configs, upvote/downvote threads. Scoped by category (Build Help, Reviews, Deals, etc.).
-- **Sharable Builds** — Generate a short link for any build. No account needed to view.
-- **Auth** — Register/login with JWT. Saves builds to your account.
+- **Browse components** — 100+ parts across CPUs, GPUs, motherboards, RAM, storage, PSUs, cases, and coolers. Grid and list views.
+- **Price comparison** — Up to 9 Indian vendors shown side-by-side per component, cheapest highlighted, direct buy links.
+- **PC Builder** — Slot-based builder with a live budget counter, wattage estimate, and basic bottleneck detection. Builds can be shared via a short link, no account needed.
+- **Compare tool** — Drop up to 4 components into a spec table. Better values turn green automatically.
+- **AI Advisor** — Give it a budget and use case, it returns a full build recommendation. There's also a follow-up chat mode. Powered by Gemini.
+- **Forum** — Threads, replies, upvotes/downvotes. Categories: Build Help, Reviews, Deals, etc.
+- **Auth** — JWT-based register/login. Signed-in users can save builds to their account.
 
 ---
 
-## Tech Stack
+## Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 18, Vite 5, React Router v6, react-hot-toast, Feather Icons |
-| **Backend** | FastAPI (Python 3.13), Pydantic v2, python-jose (JWT) |
-| **Database** | Supabase (hosted PostgreSQL), service-role key for server-side ops |
-| **AI** | Google Gemini API (`google-generativeai`) |
-| **Hosting** | Frontend → Vercel, Backend → Render, DB → Supabase |
-| **Design** | Custom CSS design system — dark theme, CSS variables, responsive |
+**Frontend** — React 18, Vite 5, React Router v6, react-hot-toast, Feather Icons, custom CSS (dark theme, CSS variables)
+
+**Backend** — FastAPI on Python 3.13, Pydantic v2, python-jose for JWT
+
+**Database** — Supabase (hosted PostgreSQL)
+
+**AI** — Google Gemini (`google-generativeai`)
+
+**Hosting** — Vercel (frontend), Render (backend), Supabase (DB)
 
 ---
 
-## Getting Started
+## Running locally
 
-### Prerequisites
+### Requirements
 
-| Tool | Version |
-|------|---------|
-| Node.js | ≥ 18 |
-| Python | ≥ 3.11 |
-| Supabase project | [supabase.com](https://supabase.com) (free tier works) |
+- Node.js 18+
+- Python 3.11+
+- A Supabase project ([free tier works](https://supabase.com))
 
-### 1. Clone
+### Setup
 
 ```bash
 git clone https://github.com/vaibhavshiroorkar/pcease.git
 cd pcease
 ```
 
-### 2. Database
-
-Open the Supabase SQL editor and run `backend/supabase_migration.sql` to create all tables. Then seed component data:
+**Database** — Run `backend/supabase_migration.sql` in your Supabase SQL editor, then seed it:
 
 ```bash
 cd backend
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # macOS / Linux
+source .venv/bin/activate       # macOS/Linux
+# .venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 python seed_supabase.py
 ```
 
-### 3. Backend
+**Backend** — Create `backend/.env`:
 
-Create `backend/.env`:
-
-```env
+```
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-anon-key
 SUPABASE_SERVICE_KEY=your-service-role-key
-SECRET_KEY=any-random-secret-string
-GEMINI_API_KEY=your-google-gemini-api-key
+SECRET_KEY=any-random-string
+GEMINI_API_KEY=your-gemini-key
 FRONTEND_URL=http://localhost:5173
 ```
-
-Start the server:
 
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-### 4. Frontend
+**Frontend** — Create `frontend/.env`:
 
-Create `frontend/.env`:
-
-```env
+```
 VITE_API_URL=http://localhost:8000/api
 ```
 
@@ -121,62 +85,47 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+App runs at `http://localhost:5173`. Swagger docs at `http://localhost:8000/docs`.
 
 ---
 
-## API Reference
+## API
 
-Interactive docs available at `/docs` (Swagger UI) and `/redoc` when the server is running.
+Full interactive docs at `/docs` (Swagger) or `/redoc` when the server is running. Quick overview:
 
-### Components
+**Components**
+- `GET /api/categories` — all categories
+- `GET /api/components` — list with filters (`category`, `brand`, `search`, `sort`, `skip`, `limit`)
+- `GET /api/components/{id}` — single component + vendor prices
+- `POST /api/compare` — compare up to 4 components `{ "ids": [1, 2, 3] }`
+- `GET /api/vendors` — tracked vendors
+- `GET /api/stats` — platform counts
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/api/categories` | — | All component categories |
-| `GET` | `/api/components` | — | List components (query: `category`, `brand`, `search`, `sort`, `skip`, `limit`) |
-| `GET` | `/api/components/{id}` | — | Single component with all vendor prices |
-| `POST` | `/api/compare` | — | Compare up to 4 components `{ "ids": [1,2,3] }` |
-| `GET` | `/api/vendors` | — | All tracked vendors |
-| `GET` | `/api/stats` | — | Platform-wide counts |
+**Builds** *(auth required where noted)*
+- `GET /api/builds` ✓ — user's saved builds
+- `POST /api/builds` ✓ — save a build
+- `DELETE /api/builds/{id}` ✓ — delete a build
+- `POST /api/builds/share` — generate shareable link
+- `GET /api/builds/shared/{share_id}` — load a shared build
 
-### Builds
+**Auth**
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me` ✓
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/api/builds` | ✅ | List user's saved builds |
-| `POST` | `/api/builds` | ✅ | Save a new build |
-| `DELETE` | `/api/builds/{id}` | ✅ | Delete a build |
-| `POST` | `/api/builds/share` | — | Generate shareable link |
-| `GET` | `/api/builds/shared/{share_id}` | — | Load a shared build |
+**Forum** *(auth required for writes)*
+- `GET /api/forum/threads` — list threads (`category`, `search`)
+- `GET /api/forum/threads/{id}` — thread + replies
+- `POST /api/forum/threads` ✓ — create thread
+- `POST /api/forum/threads/{id}/replies` ✓ — reply
+- `POST /api/forum/threads/{id}/vote` ✓ — upvote/downvote
 
-### Auth
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/api/auth/register` | — | Create account |
-| `POST` | `/api/auth/login` | — | Login → JWT token |
-| `GET` | `/api/auth/me` | ✅ | Current user profile |
-
-### Forum
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/api/forum/threads` | — | List threads (query: `category`, `search`) |
-| `GET` | `/api/forum/threads/{id}` | — | Thread detail with replies |
-| `POST` | `/api/forum/threads` | ✅ | Create thread |
-| `POST` | `/api/forum/threads/{id}/replies` | ✅ | Post reply |
-| `POST` | `/api/forum/threads/{id}/vote` | ✅ | Upvote / downvote |
-
-### AI Advisor
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/api/advisor` | — | Get AI build recommendation |
+**AI**
+- `POST /api/advisor` — get a build recommendation
 
 ---
 
-## Database Schema
+## Database schema
 
 ```
 categories        id · slug · name · description · icon
@@ -193,108 +142,76 @@ forum_votes       id · thread_id · user_id · vote_type
 
 ---
 
-## Project Structure
+## Project layout
 
 ```
 pcease/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py            # FastAPI app, CORS, router mounting
+│   │   ├── main.py            # app init, CORS, router mounting
 │   │   ├── config.py          # Pydantic settings from .env
-│   │   ├── database.py        # Supabase client (service role key)
+│   │   ├── database.py        # Supabase client
 │   │   ├── routers/
-│   │   │   ├── auth.py        # Register, login, JWT
-│   │   │   ├── components.py  # Browse, compare, builds, stats
-│   │   │   └── forum.py       # Threads, replies, voting
-│   │   ├── schemas/           # Pydantic request/response models
-│   │   └── utils/
-│   │       └── auth.py        # JWT decode, current_user dependency
-│   ├── seed_supabase.py       # Seeds 100+ components, 9 vendors, 500+ prices
-│   ├── supabase_migration.sql # Full schema DDL
+│   │   │   ├── auth.py
+│   │   │   ├── components.py
+│   │   │   └── forum.py
+│   │   ├── schemas/
+│   │   └── utils/auth.py      # JWT helpers, current_user dep
+│   ├── seed_supabase.py
+│   ├── supabase_migration.sql
 │   └── requirements.txt
 │
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx            # Route definitions
-│   │   ├── main.jsx           # React root
-│   │   ├── pages/
-│   │   │   ├── Home.jsx       # Landing / hero page
-│   │   │   ├── Browse.jsx     # Component browser (grid + list)
-│   │   │   ├── Builder.jsx    # PC build tool
-│   │   │   ├── Compare.jsx    # Side-by-side comparison
-│   │   │   ├── Advisor.jsx    # AI recommendation + chat
-│   │   │   ├── Forum.jsx      # Community threads
-│   │   │   └── Auth.jsx       # Login / register
-│   │   ├── components/
-│   │   │   ├── Navbar.jsx
-│   │   │   └── Footer.jsx
-│   │   ├── context/
-│   │   │   └── AuthContext.jsx # Auth state + JWT management
-│   │   ├── services/
-│   │   │   └── api.js         # API client, price helpers, config
-│   │   └── styles/
-│   │       └── global.css     # Design system (CSS custom properties)
-│   ├── vite.config.js
-│   └── package.json
-│
-└── README.md
+└── frontend/
+    └── src/
+        ├── pages/
+        │   ├── Home.jsx
+        │   ├── Browse.jsx
+        │   ├── Builder.jsx
+        │   ├── Compare.jsx
+        │   ├── Advisor.jsx
+        │   ├── Forum.jsx
+        │   └── Auth.jsx
+        ├── components/
+        │   ├── Navbar.jsx
+        │   └── Footer.jsx
+        ├── context/AuthContext.jsx
+        ├── services/api.js
+        └── styles/global.css
 ```
 
 ---
 
-## Deployment
+## Deploying
 
-### Backend → Render
+**Backend (Render)**
+- Root directory: `backend`
+- Build: `pip install -r requirements.txt`
+- Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- Add all keys from `backend/.env` as environment variables
 
-| Setting | Value |
-|---------|-------|
-| Build command | `pip install -r requirements.txt` |
-| Start command | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
-| Root directory | `backend` |
-| Environment | Add every key from `backend/.env` |
+**Frontend (Vercel)**
+- Root directory: `frontend`
+- Framework: Vite
+- Build: `npm run build` → `dist`
+- Set `VITE_API_URL` to your Render backend URL
 
-### Frontend → Vercel
-
-| Setting | Value |
-|---------|-------|
-| Framework preset | Vite |
-| Root directory | `frontend` |
-| Build command | `npm run build` |
-| Output directory | `dist` |
-| Environment | `VITE_API_URL` = your Render backend URL (e.g. `https://pcease-api.onrender.com/api`) |
-
-### Database → Supabase
-
-Free tier is sufficient. Enable **Row Level Security** only if you add public-facing write operations beyond what the service key already handles.
+**Database (Supabase)**
+- Free tier is fine. Row Level Security is optional — the service key handles server-side writes already.
 
 ---
 
-## Vendors Tracked
+## Vendors tracked
 
-| Vendor | URL |
-|--------|-----|
-| Amazon India | amazon.in |
-| Flipkart | flipkart.com |
-| MDComputers | mdcomputers.in |
-| PrimeABGB | primeabgb.com |
-| PC Studio | pcstudio.in |
-| Vedant Computers | vedantcomputers.com |
-| IT Depot | itdepot.com |
-| Compify | compify.in |
-| EliteHubs | elitehubs.com |
+Amazon.in · Flipkart · MDComputers · PrimeABGB · PC Studio · Vedant Computers · IT Depot · Compify · EliteHubs
 
 ---
 
 ## Contributing
 
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Commit your changes (`git commit -m "Add my feature"`)
-4. Push to the branch (`git push origin feature/my-feature`)
-5. Open a Pull Request
+Fork, branch off `main`, make your changes, open a PR. No formal process — just keep commits clean and describe what changed.
 
 ---
 
 ## License
 
-[MIT](LICENSE)
+MIT
