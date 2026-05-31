@@ -184,3 +184,25 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: v
     .ad-manual__intro, .ad-presets__intro { flex-direction: column; gap: 8px; }
     .ad-presets__filters { justify-content: center; }
 }
+
+/* ===== Agentic chat additions ===== */
+.ad-steps { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.ad-step {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; padding: 3px 8px; border-radius: 999px;
+    background: var(--surface-2, #1b1f27); border: 1px solid var(--border, #2a2f3a);
+    color: var(--text-muted, #9aa4b2);
+}
+.ad-step.running { color: var(--accent, #5b9dff); }
+.ad-step.done { color: var(--success, #4ade80); }
+.ad-msg__text { white-space: normal; line-height: 1.55; }
+.ad-bullet { padding-left: 4px; }
+.ad-buildcard {
+    margin-top: 10px; border: 1px solid var(--border, #2a2f3a);
+    border-radius: 10px; padding: 12px; background: var(--surface-2, #161a21);
+}
+.ad-buildcard__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.ad-buildcard ul { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 4px; }
+.ad-buildcard li { display: grid; grid-template-columns: 64px 1fr auto; gap: 8px; font-size: 13px; align-items: center; }
+.ad-bc-cat { color: var(--text-muted, #9aa4b2); font-size: 11px; text-transform: uppercase; }
+.ad-bc-price { font-variant-numeric: tabular-nums; }

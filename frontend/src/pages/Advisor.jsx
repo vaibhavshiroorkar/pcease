@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API, formatPrice } from '../services/api'
-import { FiCpu, FiSend, FiArrowRight, FiSliders, FiMessageSquare, FiPackage, FiZap, FiMonitor, FiCode, FiRadio } from 'react-icons/fi'
+import { FiCpu, FiSend, FiArrowRight, FiSliders, FiMessageSquare, FiPackage, FiZap, FiMonitor, FiCode, FiRadio, FiSearch, FiCheck } from 'react-icons/fi'
 import toast from 'react-hot-toast'
+import { useAgentChat } from '../hooks/useAgentChat'
+import { formatText } from '../utils/formatText'
 import './Advisor.css'
 
 const useCases = [
@@ -40,17 +42,16 @@ export default function Advisor() {
     const [loading, setLoading] = useState(false)
     const [recommendation, setRecommendation] = useState(null)
 
-    // AI tab state
+    // AI tab — agentic chat
     const [question, setQuestion] = useState('')
-    const [chatHistory, setChatHistory] = useState([])
-    const [asking, setAsking] = useState(false)
+    const { messages, isStreaming, send } = useAgentChat()
 
     // Presets tab state
     const [presets, setPresets] = useState(null)
     const [presetFilter, setPresetFilter] = useState('all')
 
     useEffect(() => { API.getTemplates().then(setPresets).catch(() => {}) }, [])
-    useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatHistory, asking])
+    useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isStreaming])
 
     // Build preferences string from manual selections
     const buildPreferencesString = () => {
@@ -80,19 +81,10 @@ export default function Advisor() {
 
     const askQuestion = async (e) => {
         e.preventDefault()
-        if (!question.trim()) return
-        setAsking(true)
+        if (!question.trim() || isStreaming) return
         const q = question
-        setChatHistory(p => [...p, { role: 'user', content: q }])
         setQuestion('')
-        try {
-            const d = await API.askAI(q)
-            setChatHistory(p => [...p, { role: 'ai', content: d.answer, source: d.source }])
-        } catch {
-            setChatHistory(p => [...p, { role: 'ai', content: 'Sorry, could not process your question. Please try again.', source: 'error' }])
-        } finally {
-            setAsking(false)
-        }
+        await send(q)
     }
 
     const totalPrice = recommendation?.components?.reduce((s, c) => s + (c.price || c.est_price || 0), 0) || 0
@@ -285,60 +277,81 @@ export default function Advisor() {
                     </div>
                 )}
 
-                {/* ==================== AI TAB ==================== */}
+                {/* ==================== AI TAB (Agentic) ==================== */}
                 {tab === 'ai' && (
                     <div className="ad-ai">
                         <div className="ad-chat">
                             <div className="ad-chat__msgs">
-                                {chatHistory.length === 0 ? (
+                                {messages.length === 0 ? (
                                     <div className="ad-chat__empty">
                                         <div className="ad-chat__icon"><FiMessageSquare size={36} /></div>
-                                        <h3>PCease AI Assistant</h3>
-                                        <p>Ask any PC building question — component advice, comparisons, build help, and more.</p>
+                                        <h3>PCease AI Agent</h3>
+                                        <p>Ask for a build or any PC advice — I search the real catalog, check compatibility, and assemble a grounded build.</p>
                                         <div className="ad-chat__sugg">
                                             {[
+                                                'Build me a ₹60,000 gaming PC',
                                                 'Best GPU under ₹30,000?',
-                                                'Is DDR5 worth it in 2026?',
-                                                'Ryzen 5 vs i5-14400F?',
-                                                'Best ₹60K gaming PC?',
-                                                'Should I go 1440p or 4K?',
-                                                'How much PSU wattage do I need?',
+                                                'Is the Ryzen 5 7600 a good pick?',
+                                                'Build a ₹1.2L streaming rig',
+                                                'What PSU do I need for an RTX 4060 build?',
                                             ].map((s, i) => (
                                                 <button key={i} className="ad-sugg-chip" onClick={() => setQuestion(s)}>{s}</button>
                                             ))}
                                         </div>
                                     </div>
                                 ) : (
-                                    chatHistory.map((msg, i) => (
+                                    messages.map((msg, i) => (
                                         <div key={i} className={`ad-msg ad-msg--${msg.role}`}>
-                                            <div className="ad-msg__avatar">
-                                                {msg.role === 'user' ? '👤' : '🤖'}
-                                            </div>
+                                            <div className="ad-msg__avatar">{msg.role === 'user' ? '👤' : '🤖'}</div>
                                             <div className="ad-msg__bubble">
-                                                <pre>{msg.content}</pre>
+                                                {msg.tools?.length > 0 && (
+                                                    <div className="ad-steps">
+                                                        {msg.tools.map((t, ti) => (
+                                                            <span key={ti} className={`ad-step ${t.done ? 'done' : 'running'}`}>
+                                                                {t.done ? <FiCheck size={11} /> : <FiSearch size={11} />}
+                                                                {t.label}{t.done && t.summary ? ` · ${t.summary}` : '…'}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {msg.content && <div className="ad-msg__text">{formatText(msg.content)}</div>}
+                                                {msg.build && (
+                                                    <div className="ad-buildcard">
+                                                        <div className="ad-buildcard__head">
+                                                            <strong>{msg.build.title}</strong>
+                                                            <span>{formatPrice(msg.build.total)}</span>
+                                                        </div>
+                                                        <ul>
+                                                            {msg.build.items.map((it, ii) => (
+                                                                <li key={ii}>
+                                                                    <span className="ad-bc-cat">{it.category}</span>
+                                                                    <span className="ad-bc-name">{it.name}</span>
+                                                                    <span className="ad-bc-price">{formatPrice(it.price)}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                        <button className="btn btn-primary btn-sm"
+                                                            onClick={() => navigate('/builder', { state: { recommendation: msg.build } })}>
+                                                            Open in Builder <FiArrowRight size={12} />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))
                                 )}
-                                {asking && (
-                                    <div className="ad-msg ad-msg--ai">
+                                {isStreaming && messages[messages.length - 1]?.content === '' && !messages[messages.length - 1]?.tools?.length && (
+                                    <div className="ad-msg ad-msg--assistant">
                                         <div className="ad-msg__avatar">🤖</div>
-                                        <div className="ad-msg__bubble ad-msg--typing">
-                                            <span /><span /><span />
-                                        </div>
+                                        <div className="ad-msg__bubble ad-msg--typing"><span /><span /><span /></div>
                                     </div>
                                 )}
                                 <div ref={chatEndRef} />
                             </div>
                             <form className="ad-chat__input" onSubmit={askQuestion}>
-                                <input
-                                    type="text"
-                                    value={question}
-                                    onChange={e => setQuestion(e.target.value)}
-                                    placeholder="Ask about components, builds, comparisons..."
-                                    disabled={asking}
-                                />
-                                <button type="submit" className="btn btn-primary" disabled={asking || !question.trim()}>
+                                <input type="text" value={question} onChange={e => setQuestion(e.target.value)}
+                                    placeholder="Ask for a build or any PC advice…" disabled={isStreaming} />
+                                <button type="submit" className="btn btn-primary" disabled={isStreaming || !question.trim()}>
                                     <FiSend size={14} />
                                 </button>
                             </form>
