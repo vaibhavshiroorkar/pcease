@@ -238,20 +238,13 @@ def share_build(build: ShareBuildCreate, db: Client = Depends(get_db)):
 @router.get("/builds/shared/{share_id}")
 def get_shared_build(share_id: str, db: Client = Depends(get_db)):
     """Get a shared build by share_id with component details."""
-    # Try finding by short_id in build_data first, then by full UUID
-    # Check if it's a short ID (8 chars) vs full UUID
+    # Look up directly: short id is stored inside the build_data JSONB, full id
+    # is the share_id column. Both are single indexed lookups — no table scan.
     if len(share_id) <= 8:
-        # Search by short_id in build_data
-        all_builds = db.table("shared_builds").select("*").execute()
-        row_data = None
-        for row in (all_builds.data or []):
-            bd = row.get("build_data") or {}
-            if bd.get("short_id") == share_id:
-                row_data = row
-                break
+        result = db.table("shared_builds").select("*").eq("build_data->>short_id", share_id).maybe_single().execute()
     else:
         result = db.table("shared_builds").select("*").eq("share_id", share_id).maybe_single().execute()
-        row_data = result.data if result else None
+    row_data = result.data if result else None
 
     if not row_data:
         raise HTTPException(status_code=404, detail="Shared build not found")

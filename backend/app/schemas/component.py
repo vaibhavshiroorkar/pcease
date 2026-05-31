@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional, List, Any
 from decimal import Decimal
@@ -19,8 +19,7 @@ class CategoryCreate(CategoryBase):
 class CategoryResponse(CategoryBase):
     id: int
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Vendor Schemas
@@ -37,8 +36,7 @@ class VendorCreate(VendorBase):
 class VendorResponse(VendorBase):
     id: int
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Component Price Schemas
@@ -58,8 +56,7 @@ class ComponentPriceResponse(ComponentPriceBase):
     vendor: VendorResponse
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Component Schemas
@@ -79,8 +76,7 @@ class ComponentResponse(ComponentBase):
     category_id: int
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ComponentDetailResponse(ComponentResponse):
@@ -104,8 +100,7 @@ class BuildResponse(BuildBase):
     total_price: Optional[Decimal] = None
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Search & Filter Schemas

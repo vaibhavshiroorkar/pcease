@@ -104,10 +104,12 @@ export default function Advisor() {
                 </header>
 
                 {/* Tab Bar */}
-                <div className="ad-tabs">
+                <div className="ad-tabs" role="tablist" aria-label="Advisor modes">
                     {tabs.map(t => (
                         <button
                             key={t.id}
+                            role="tab"
+                            aria-selected={tab === t.id}
                             className={`ad-tab ${tab === t.id ? 'active' : ''}`}
                             onClick={() => setTab(t.id)}
                         >
@@ -360,7 +362,7 @@ export default function Advisor() {
                             <form className="ad-chat__input" onSubmit={askQuestion}>
                                 <input type="text" value={question} onChange={e => setQuestion(e.target.value)}
                                     placeholder="Ask for a build or any PC advice…" disabled={isStreaming} />
-                                <button type="submit" className="btn btn-primary" disabled={isStreaming || !question.trim()}>
+                                <button type="submit" className="btn btn-primary" aria-label="Send message" disabled={isStreaming || !question.trim()}>
                                     <FiSend size={14} />
                                 </button>
                             </form>

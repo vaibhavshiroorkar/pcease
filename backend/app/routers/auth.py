@@ -7,9 +7,14 @@ from supabase import Client
 from ..database import get_db
 from ..schemas.user import UserCreate, UserResponse, Token
 from ..utils.auth import verify_password, get_password_hash, create_access_token, get_current_user
+from ..utils.ratelimit import rate_limit
 from ..config import settings
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+
+# Pre-computed dummy hash so login does a bcrypt verify even when the user is
+# not found — removes the timing side-channel that leaks username existence.
+_DUMMY_HASH = get_password_hash("timing-equalizer-not-a-real-password")
 
 
 class ProfileUpdate(BaseModel):
@@ -22,14 +27,12 @@ class PasswordChange(BaseModel):
     new_password: str
 
 
-class PasswordReset(BaseModel):
-    username: str
-    email: str
-    new_password: str
-
-
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(user: UserCreate, db: Client = Depends(get_db)):
+def register(
+    user: UserCreate,
+    db: Client = Depends(get_db),
+    _rl: None = Depends(rate_limit(max_requests=5, window_seconds=300, scope="register")),
+):
     """Register a new user"""
     existing = db.table("users").select("id").eq("email", user.email).execute()
     if existing.data:
@@ -54,21 +57,27 @@ def register(user: UserCreate, db: Client = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Client = Depends(get_db)):
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Client = Depends(get_db),
+    _rl: None = Depends(rate_limit(max_requests=10, window_seconds=300, scope="login")),
+):
     """Login with username and password"""
     # Try username first, then email as fallback
     result = db.table("users").select("*").eq("username", form_data.username).maybe_single().execute()
     if not result or not result.data:
         result = db.table("users").select("*").eq("email", form_data.username).maybe_single().execute()
 
-    if not result or not result.data or not verify_password(form_data.password, result.data["hashed_password"]):
+    user = result.data if result and result.data else None
+    # Always run a bcrypt verify (real or dummy) so response timing does not
+    # reveal whether the account exists.
+    hashed = user["hashed_password"] if user else _DUMMY_HASH
+    if not verify_password(form_data.password, hashed) or not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    user = result.data
     access_token = create_access_token(
         data={"sub": user["id"]},
         expires_delta=timedelta(minutes=settings.access_token_expire_minutes),
@@ -111,16 +120,6 @@ async def change_password(data: PasswordChange, current_user: dict = Depends(get
         raise HTTPException(status_code=400, detail="Current password is incorrect")
     db.table("users").update({"hashed_password": get_password_hash(data.new_password)}).eq("id", current_user["id"]).execute()
     return {"detail": "Password changed successfully"}
-
-
-@router.post("/reset-password")
-def reset_password(data: PasswordReset, db: Client = Depends(get_db)):
-    """Reset password by verifying username + email match"""
-    result = db.table("users").select("*").eq("username", data.username).eq("email", data.email).maybe_single().execute()
-    if not result or not result.data:
-        raise HTTPException(status_code=400, detail="Username and email do not match any account")
-    db.table("users").update({"hashed_password": get_password_hash(data.new_password)}).eq("id", result.data["id"]).execute()
-    return {"detail": "Password has been reset successfully"}
 
 
 @router.delete("/account")

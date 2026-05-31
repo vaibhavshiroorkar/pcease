@@ -249,6 +249,17 @@ label { display: block; font-weight: 500; font-size: .8125rem; margin-bottom: 6p
 @keyframes gradient-shift { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
 @keyframes scan { 0% { transform: translateY(-100%) } 100% { transform: translateY(400%) } }
 
+/* ========== Reduced motion ========== */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        scroll-behavior: auto !important;
+    }
+    html.home-snap { scroll-snap-type: none !important; }
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
     .container { padding: 0 16px; }

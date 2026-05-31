@@ -339,69 +339,17 @@ def get_template(template_id: str, db: Client = Depends(get_db)):
     return result
 
 
-# ========== AI Recommendation ==========
+# ========== Recommendation (grounded) ==========
 @router.post("/recommend")
 async def get_recommendation(body: dict, db: Client = Depends(get_db)):
     """
-    Get AI-powered PC build recommendation.
+    Recommend a PC build from the REAL component database (no hallucinated parts/prices).
+    For a conversational, tool-using experience use POST /api/agent/chat instead.
     body: { budget: number, use_case: string, preferences?: string }
     """
     budget = body.get("budget", 50000)
     use_case = body.get("use_case", "gaming")
-    preferences = body.get("preferences", "")
-
-    # If Gemini API key is set, use real AI
-    if settings.gemini_api_key:
-        try:
-            import google.generativeai as genai
-
-            genai.configure(api_key=settings.gemini_api_key)
-            model = genai.GenerativeModel("gemini-1.5-flash")
-
-            prompt = f"""You are an expert PC building advisor for India. 
-Recommend a PC build based on:
-- Budget: ₹{budget:,}
-- Use Case: {use_case}
-- Preferences: {preferences or 'None specified'}
-
-Return a JSON response (no markdown, just raw JSON) with this exact structure:
-{{
-    "title": "Build name",
-    "description": "2-3 sentence description",
-    "components": [
-        {{"category": "CPU", "name": "Exact product name", "price": estimated_price_inr, "reason": "Why this component"}},
-        {{"category": "GPU", "name": "...", "price": ..., "reason": "..."}},
-        {{"category": "RAM", "name": "...", "price": ..., "reason": "..."}},
-        {{"category": "Motherboard", "name": "...", "price": ..., "reason": "..."}},
-        {{"category": "Storage", "name": "...", "price": ..., "reason": "..."}},
-        {{"category": "PSU", "name": "...", "price": ..., "reason": "..."}},
-        {{"category": "Case", "name": "...", "price": ..., "reason": "..."}}
-    ],
-    "total": total_price,
-    "tips": ["tip1", "tip2", "tip3"],
-    "performance_notes": "Expected performance description"
-}}
-
-Use real Indian market prices (2025-2026). Stay within budget. Include only components available in India."""
-
-            response = model.generate_content(prompt)
-            text = response.text.strip()
-
-            # Clean up markdown code blocks if present
-            if text.startswith("```"):
-                text = text.split("\n", 1)[1]
-            if text.endswith("```"):
-                text = text.rsplit("```", 1)[0]
-            if text.startswith("json"):
-                text = text[4:]
-
-            import json
-            return json.loads(text.strip())
-        except Exception as e:
-            # Fall back to smart database-based recommendation
-            pass
-
-    # Fallback: smart database-based recommendation
+    # Always build from actual catalogue components with their real prices.
     return _build_smart_recommendation(budget, use_case, db)
 
 
@@ -467,7 +415,7 @@ def calculate_wattage(body: dict, db: Client = Depends(get_db)):
     # Batch fetch all components
     comp_map = {}
     if component_ids:
-        result = db.table("components").select("id, name, specs").in_("id", component_ids).execute()
+        result = db.table("components").select("id, name, specifications").in_("id", component_ids).execute()
         comp_map = {c["id"]: c for c in (result.data or [])}
 
     total_tdp = 0
@@ -479,8 +427,8 @@ def calculate_wattage(body: dict, db: Client = Depends(get_db)):
         base_cat = cat.split('_')[0] if '_' in cat else cat
         tdp = default_tdp.get(base_cat, 10)
 
-        if comp_data and comp_data.get("specs"):
-            specs = comp_data["specs"]
+        if comp_data and comp_data.get("specifications"):
+            specs = comp_data["specifications"]
             if "tdp" in specs:
                 try:
                     tdp = int(str(specs["tdp"]).replace("W", "").strip())
@@ -518,8 +466,8 @@ def check_bottleneck(body: dict, db: Client = Depends(get_db)):
     if not cpu_id or not gpu_id:
         raise HTTPException(status_code=400, detail="Both cpu_id and gpu_id are required")
 
-    cpu = db.table("components").select("name, specs, brand").eq("id", cpu_id).single().execute()
-    gpu = db.table("components").select("name, specs, brand").eq("id", gpu_id).single().execute()
+    cpu = db.table("components").select("name, specifications, brand").eq("id", cpu_id).single().execute()
+    gpu = db.table("components").select("name, specifications, brand").eq("id", gpu_id).single().execute()
 
     if not cpu.data or not gpu.data:
         raise HTTPException(status_code=404, detail="Component not found")

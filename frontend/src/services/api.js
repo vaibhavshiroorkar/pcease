@@ -119,12 +119,6 @@ export const API = {
             body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
         }),
 
-    resetPassword: (username, email, newPassword) =>
-        request('/auth/reset-password', {
-            method: 'POST',
-            body: JSON.stringify({ username, email, new_password: newPassword }),
-        }),
-
     deleteAccount: () =>
         request('/auth/account', { method: 'DELETE' }),
 

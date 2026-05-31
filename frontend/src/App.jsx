@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function ScrollToTop() {
     const { pathname } = useLocation()
@@ -35,8 +36,9 @@ export default function App() {
         <AuthProvider>
             <ScrollToTop />
             <Navbar />
-            <Suspense fallback={<PageLoader />}>
-                <Routes>
+            <ErrorBoundary>
+                <Suspense fallback={<PageLoader />}>
+                    <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/browse" element={<Browse />} />
                     <Route path="/builder" element={<Builder />} />
@@ -51,7 +53,8 @@ export default function App() {
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/admin" element={<Admin />} />
                 </Routes>
-            </Suspense>
+                </Suspense>
+            </ErrorBoundary>
             <Footer />
         </AuthProvider>
     )

@@ -7,9 +7,19 @@ from .config import settings
 from .cache import get_cache, set_cache, clear_cache
 
 
+_DEFAULT_SECRET = "your-super-secret-key-change-this-in-production"
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup: warm caches. Shutdown: cleanup."""
+    # Fail fast in production if the JWT signing key was never changed —
+    # the default key would make every token forgeable.
+    if not settings.debug and settings.secret_key in ("", _DEFAULT_SECRET):
+        raise RuntimeError(
+            "SECRET_KEY must be set to a unique random value in production "
+            "(set DEBUG=false only after configuring SECRET_KEY)."
+        )
     from .database import get_db
     try:
         db = get_db()

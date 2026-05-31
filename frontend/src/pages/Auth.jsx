@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { API } from '../services/api'
 import toast from 'react-hot-toast'
 import { FiMail, FiUser, FiLock, FiEye, FiEyeOff, FiArrowRight, FiDollarSign, FiCpu, FiLink, FiMessageCircle } from 'react-icons/fi'
 import './Auth.css'
@@ -22,10 +21,6 @@ export default function Auth({ isRegister = false }) {
                 await register(form.email, form.username, form.password)
                 setMode('login')
                 toast.success('Account created! Please sign in.')
-            } else if (mode === 'forgot') {
-                await API.resetPassword(form.username, form.email, form.newPassword)
-                setMode('login')
-                toast.success('Password reset! Please sign in with your new password.')
             } else {
                 await login(form.username, form.password)
                 toast.success('Welcome back!')
@@ -56,7 +51,6 @@ export default function Auth({ isRegister = false }) {
     const titles = {
         login: { h: 'Welcome Back', p: 'Sign in to your PCease account' },
         register: { h: 'Create Account', p: 'Join PCease and start building' },
-        forgot: { h: 'Reset Password', p: 'Verify your identity to reset password' },
     }
 
     return (
@@ -134,90 +128,34 @@ export default function Auth({ isRegister = false }) {
                             </>
                         )}
 
-                        {/* Forgot: username + email + new password */}
-                        {mode === 'forgot' && (
-                            <>
-                                <div className="au-field">
-                                    <label className="au-label"><FiUser size={14} /> Username</label>
-                                    <input
-                                        type="text"
-                                        value={form.username}
-                                        onChange={e => updateForm('username', e.target.value)}
-                                        required
-                                        placeholder="Your username"
-                                        autoComplete="username"
-                                    />
-                                </div>
-                                <div className="au-field">
-                                    <label className="au-label"><FiMail size={14} /> Email</label>
-                                    <input
-                                        type="email"
-                                        value={form.email}
-                                        onChange={e => updateForm('email', e.target.value)}
-                                        required
-                                        placeholder="Email linked to your account"
-                                        autoComplete="email"
-                                    />
-                                </div>
-                            </>
-                        )}
-
-                        {/* Password field for login & register */}
-                        {mode !== 'forgot' && (
-                            <div className="au-field">
-                                <label className="au-label"><FiLock size={14} /> Password</label>
-                                <div className="au-pw">
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        value={form.password}
-                                        onChange={e => updateForm('password', e.target.value)}
-                                        required
-                                        placeholder="••••••••"
-                                        minLength="6"
-                                        autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                                    />
-                                    <button type="button" className="au-pw__toggle" onClick={() => setShowPassword(!showPassword)}>
-                                        {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                                    </button>
-                                </div>
+                        {/* Password field */}
+                        <div className="au-field">
+                            <label className="au-label"><FiLock size={14} /> Password</label>
+                            <div className="au-pw">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={form.password}
+                                    onChange={e => updateForm('password', e.target.value)}
+                                    required
+                                    placeholder="••••••••"
+                                    minLength="6"
+                                    autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                                />
+                                <button type="button" className="au-pw__toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(!showPassword)}>
+                                    {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                                </button>
                             </div>
-                        )}
-
-                        {/* New password for forgot mode */}
-                        {mode === 'forgot' && (
-                            <div className="au-field">
-                                <label className="au-label"><FiLock size={14} /> New Password</label>
-                                <div className="au-pw">
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        value={form.newPassword}
-                                        onChange={e => updateForm('newPassword', e.target.value)}
-                                        required
-                                        placeholder="Choose a new password"
-                                        minLength="6"
-                                        autoComplete="new-password"
-                                    />
-                                    <button type="button" className="au-pw__toggle" onClick={() => setShowPassword(!showPassword)}>
-                                        {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                        </div>
 
                         <button type="submit" className="btn btn-primary au-submit" disabled={loading}>
-                            {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Reset Password'}
+                            {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
                             {!loading && <FiArrowRight size={16} />}
                         </button>
                     </form>
 
                     {mode === 'login' && (
-                        <button className="au-forgot-link" onClick={() => switchMode('forgot')}>
-                            Forgot password?
-                        </button>
-                    )}
-                    {mode === 'forgot' && (
-                        <button className="au-forgot-link" onClick={() => switchMode('login')}>
-                            Back to Sign In
+                        <button className="au-forgot-link" onClick={() => navigate('/contact')}>
+                            Forgot password? Contact us
                         </button>
                     )}
 
