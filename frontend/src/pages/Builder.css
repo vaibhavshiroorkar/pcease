@@ -233,7 +233,22 @@
 }
 .bd-retailer-comp__brand { font-size: .75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
 .bd-retailer-comp__name { font-size: 1.0625rem; font-weight: 600; margin-top: 2px; }
-.bd-retailer-comp__specs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.bd-retailer-comp__specs {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px; margin-top: 14px;
+}
+.bd-spec {
+    display: flex; flex-direction: column; gap: 3px;
+    padding: 8px 11px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+.bd-spec__k {
+    font-family: var(--font-mono); font-size: .58rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted);
+}
+.bd-spec__v { font-size: .82rem; font-weight: 600; color: var(--text); line-height: 1.25; }
+/* legacy inline chip (slot card / list) */
 .bd-spec-chip {
     font-size: .75rem; padding: 3px 10px;
     background: var(--surface); border: 1px solid var(--border);

@@ -51,6 +51,18 @@ const getInlineSpecs = (comp, maxCount = 3) => {
         .map(k => `${formatSpecKey(k)}: ${formatSpecValue(specs[k])}`)
 }
 
+// Spec key/value pairs (for the nicer card layout in the retailer modal)
+const getSpecPairs = (comp, maxCount = 6) => {
+    const specs = getSpecs(comp)
+    if (!specs || !Object.keys(specs).length) return []
+    const catSlug = comp.category?.slug
+    const keys = SPEC_KEYS[catSlug] || Object.keys(specs)
+    return keys
+        .filter(k => specs[k] !== undefined)
+        .slice(0, maxCount)
+        .map(k => ({ label: formatSpecKey(k), value: formatSpecValue(specs[k]) }))
+}
+
 // Motherboard form factor compatibility with case
 const FORM_FACTOR_COMPAT = {
     'ATX': ['ATX', 'Micro-ATX', 'Mini-ITX'],
@@ -718,10 +730,13 @@ export default function Builder() {
                                         <div className="bd-retailer-comp">
                                             <span className="bd-retailer-comp__brand">{selectedComp.brand}</span>
                                             <h3 className="bd-retailer-comp__name">{selectedComp.name}</h3>
-                                            {getInlineSpecs(selectedComp, 6).length > 0 && (
+                                            {getSpecPairs(selectedComp, 6).length > 0 && (
                                                 <div className="bd-retailer-comp__specs">
-                                                    {getInlineSpecs(selectedComp, 6).map((spec, i) => (
-                                                        <span key={i} className="bd-spec-chip">{spec}</span>
+                                                    {getSpecPairs(selectedComp, 6).map((s, i) => (
+                                                        <div key={i} className="bd-spec">
+                                                            <span className="bd-spec__k">{s.label}</span>
+                                                            <span className="bd-spec__v">{s.value}</span>
+                                                        </div>
                                                     ))}
                                                 </div>
                                             )}
