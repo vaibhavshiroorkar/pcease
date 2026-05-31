@@ -4,6 +4,7 @@ import { API, formatPrice, getLowestPrice, BUILD_SLOTS } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { FiLink, FiSave, FiX, FiPlus, FiZap, FiActivity, FiSearch, FiExternalLink, FiChevronLeft, FiShoppingCart, FiHelpCircle, FiArrowRight, FiFilter, FiSliders } from 'react-icons/fi'
 import toast from 'react-hot-toast'
+import PriceGraph from '../components/PriceGraph'
 import './Builder.css'
 
 // Key specs to surface per category
@@ -725,6 +726,10 @@ export default function Builder() {
                                                 </div>
                                             )}
                                         </div>
+
+                                        {(selectedComp.prices || []).length > 0 && (
+                                            <PriceGraph price={getLowestPrice(selectedComp)} seed={selectedComp.id} />
+                                        )}
 
                                         <h4 className="bd-retailer-heading">
                                             <FiShoppingCart size={14} />

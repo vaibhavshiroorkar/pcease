@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { API, formatPrice, getLowestPrice, getSavings, getBestVendor, CATEGORIES } from '../services/api'
 import { FiSearch, FiX, FiExternalLink, FiCheck, FiPlus, FiGrid, FiList, FiShoppingCart, FiInfo, FiChevronRight, FiSliders, FiChevronDown } from 'react-icons/fi'
 import toast from 'react-hot-toast'
+import PriceGraph from '../components/PriceGraph'
 import './Browse.css'
 
 const SPEC_PRIORITY = {
@@ -428,6 +429,10 @@ export default function Browse() {
                                             ))}
                                         </div>
                                     </div>
+                                )}
+
+                                {detail.prices?.length > 0 && (
+                                    <PriceGraph price={getLowestPrice(detail)} seed={detail.id} />
                                 )}
 
                                 <div className="br-prices">

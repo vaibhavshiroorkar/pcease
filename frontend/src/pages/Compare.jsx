@@ -666,15 +666,7 @@ export default function Compare() {
                     <div className="cp-empty">
                         <div className="cp-empty__icon"><FiColumns size={36} /></div>
                         <h2>Nothing to compare yet</h2>
-                        <p>Add components using the slots above, or browse our catalog to get started.</p>
-                        <div className="cp-empty__actions">
-                            <button className="btn btn-primary" onClick={() => openSearch(0)}>
-                                <FiPlus size={16} /> Add Component
-                            </button>
-                            <Link to="/browse" className="btn btn-secondary">
-                                Browse Catalog <FiArrowRight size={16} />
-                            </Link>
-                        </div>
+                        <p>Add components using the slots above.</p>
                     </div>
                 )}
 
