@@ -12,7 +12,7 @@ Live at: [pcease.vercel.app](https://pcease.vercel.app) · Backend on Render · 
 - **Price comparison** — Up to 9 Indian vendors shown side-by-side per component, cheapest highlighted, direct buy links.
 - **PC Builder** — Slot-based builder with a live budget counter, wattage estimate, and basic bottleneck detection. Builds can be shared via a short link, no account needed.
 - **Compare tool** — Drop up to 4 components into a spec table. Better values turn green automatically.
-- **AI Advisor** — Give it a budget and use case, it returns a full build recommendation. There's also a follow-up chat mode. Powered by Gemini.
+- **AI Agent** — A grounded, tool-using agent: give it a budget and use case and it searches the real catalog, checks compatibility and wattage, and assembles a real build with live prices. Streams its steps. Powered by Claude or Gemini (configurable).
 - **Forum** — Threads, replies, upvotes/downvotes. Categories: Build Help, Reviews, Deals, etc.
 - **Auth** — JWT-based register/login. Signed-in users can save builds to their account.
 
@@ -26,7 +26,7 @@ Live at: [pcease.vercel.app](https://pcease.vercel.app) · Backend on Render · 
 
 **Database** — Supabase (hosted PostgreSQL)
 
-**AI** — Google Gemini (`google-generativeai`)
+**AI** — Agentic tool-use loop over the real DB, provider-agnostic (Anthropic Claude / Google Gemini) via LangChain Core
 
 **Hosting** — Vercel (frontend), Render (backend), Supabase (DB)
 
