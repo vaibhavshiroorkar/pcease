@@ -35,8 +35,8 @@ export default function Home() {
                             <Link to="/advisor" className="btn btn-primary btn-lg">
                                 Ask the agent <FiArrowRight size={15} />
                             </Link>
-                            <Link to="/browse" className="btn btn-lg">
-                                Browse components
+                            <Link to="/builder" className="btn btn-lg">
+                                Build your PC
                             </Link>
                         </div>
                         <div className="hero__stats">
