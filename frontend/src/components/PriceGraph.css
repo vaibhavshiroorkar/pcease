@@ -51,8 +51,42 @@
     position: relative;
     height: 150px;
     width: 100%;
+    overflow: visible;
+    cursor: crosshair;
 }
 .pg__svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+/* Hover tooltip */
+.pg__tip {
+    position: absolute;
+    top: -8px;
+    transform: translate(-50%, -100%);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-hover);
+    border-radius: var(--radius-sm);
+    padding: 5px 9px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    box-shadow: var(--shadow-md);
+}
+.pg__tip strong { font-family: var(--font-mono); font-size: .8rem; color: var(--volt-bright); }
+.pg__tip span { font-size: .66rem; color: var(--text-muted); }
+
+/* X-axis time labels */
+.pg__axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 9px;
+}
+.pg__axis span {
+    font-family: var(--font-mono);
+    font-size: .62rem;
+    color: var(--text-muted);
+}
 .pg__y {
     position: absolute;
     right: 6px;
