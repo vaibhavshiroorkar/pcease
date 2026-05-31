@@ -331,7 +331,16 @@ export default function Advisor() {
                                                             ))}
                                                         </ul>
                                                         <button className="btn btn-primary btn-sm"
-                                                            onClick={() => navigate('/builder', { state: { recommendation: msg.build } })}>
+                                                            onClick={() => navigate('/builder', { state: { recommendation: {
+                                                                title: msg.build.title,
+                                                                components: (msg.build.items || []).map(it => ({
+                                                                    category: it.slot,
+                                                                    component_id: it.component_id,
+                                                                    name: it.name,
+                                                                    price: it.price,
+                                                                    vendor: it.vendor,
+                                                                })),
+                                                            } } })}>
                                                             Open in Builder <FiArrowRight size={12} />
                                                         </button>
                                                     </div>

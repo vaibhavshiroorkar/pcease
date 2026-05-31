@@ -19,6 +19,7 @@ export function useAgentChat() {
 
         // Patch the last (assistant) message immutably.
         const patch = (fn) => setMessages(prev => {
+            if (prev.length === 0) return prev
             const next = [...prev]
             next[next.length - 1] = fn(next[next.length - 1])
             return next
