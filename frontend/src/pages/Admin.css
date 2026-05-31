@@ -50,8 +50,8 @@
 .adm-tab:hover { color: var(--text); }
 .adm-tab--active {
     background: var(--accent);
-    color: #fff;
-    font-weight: 600;
+    color: #0a0b0d;
+    font-weight: 700;
 }
 
 /* Loading */

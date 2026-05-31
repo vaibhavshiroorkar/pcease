@@ -7,7 +7,7 @@ import './Navbar.css'
 const navItems = [
     { to: '/browse', label: 'Browse' },
     { to: '/builder', label: 'Builder' },
-    { to: '/advisor', label: 'Advisor' },
+    { to: '/advisor', label: 'Agent', ai: true },
     { to: '/compare', label: 'Compare' },
     { to: '/forum', label: 'Forum' },
 ]
@@ -38,7 +38,8 @@ export default function Navbar() {
         <nav className={`nav${scrolled ? ' nav--scrolled' : ''}`}>
             <div className="container nav__inner">
                 <Link to="/" className="nav__logo">
-                    PC<span className="nav__logo-accent">ease</span><span className="nav__dot">.</span>
+                    <span className="nav__logo-mark" aria-hidden="true" />
+                    PC<span className="nav__logo-accent">ease</span>
                 </Link>
 
                 <div className={`nav__links${open ? ' nav__links--open' : ''}`}>
@@ -46,8 +47,9 @@ export default function Navbar() {
                         <NavLink
                             key={item.to}
                             to={item.to}
-                            className={({ isActive }) => `nav__link${isActive ? ' nav__link--active' : ''}`}
+                            className={({ isActive }) => `nav__link${isActive ? ' nav__link--active' : ''}${item.ai ? ' nav__link--ai' : ''}`}
                         >
+                            {item.ai && <span className="nav__link-pulse" aria-hidden="true" />}
                             {item.label}
                         </NavLink>
                     ))}

@@ -1,62 +1,96 @@
 /* =====================================================
-   Navbar — v2  Glassmorphism · Accent underline · Compact
+   Navbar — v5 "Instrument bar"
    ===================================================== */
 
 .nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(20,22,26,.65);
-    backdrop-filter: blur(16px) saturate(1.6);
-    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+    background: rgba(10,11,13,.6);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
     border-bottom: 1px solid transparent;
-    transition: border-color .2s, background .2s;
+    transition: border-color .25s, background .25s;
 }
 .nav--scrolled {
     border-bottom-color: var(--border);
-    background: rgba(20,22,26,.88);
+    background: rgba(10,11,13,.86);
 }
 
 .nav__inner {
     display: flex;
     align-items: center;
-    height: 52px;
-    gap: 28px;
+    height: 60px;
+    gap: 32px;
 }
 
 /* Logo */
 .nav__logo {
-    font-size: 1.05rem;
-    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
     color: var(--text);
     text-decoration: none;
-    letter-spacing: -.04em;
+    letter-spacing: -.02em;
 }
-.nav__logo-accent { color: var(--accent); }
-.nav__dot { color: var(--accent); font-weight: 800; }
+.nav__logo-mark {
+    width: 16px; height: 16px;
+    border-radius: 3px;
+    background: var(--volt);
+    box-shadow: 0 0 16px var(--accent-glow);
+    position: relative;
+    flex-shrink: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%);
+}
+.nav__logo-accent { color: var(--volt); }
+.nav__logo:hover .nav__logo-mark { box-shadow: 0 0 22px rgba(198,242,78,.45); }
 
 /* Links */
-.nav__links { display: flex; gap: 2px; }
+.nav__links { display: flex; gap: 3px; }
 
 .nav__link {
     position: relative;
     color: var(--text-muted);
-    font-size: .8rem;
+    font-family: var(--font-mono);
+    font-size: .72rem;
     font-weight: 500;
-    padding: 6px 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    padding: 8px 12px;
     border-radius: 6px;
     text-decoration: none;
-    transition: color .15s;
+    transition: color var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 .nav__link:hover { color: var(--text); }
 .nav__link--active { color: var(--text); }
 .nav__link--active::after {
     content: '';
     position: absolute;
-    bottom: -1px;
-    left: 10px;
-    right: 10px;
+    bottom: 1px;
+    left: 12px;
+    right: 12px;
     height: 2px;
     border-radius: 2px;
-    background: var(--accent);
+    background: var(--volt);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+/* The agent link — gets the volt identity */
+.nav__link--ai { color: var(--volt); }
+.nav__link--ai:hover { color: var(--volt-bright); }
+.nav__link-pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--volt);
+    box-shadow: 0 0 0 0 var(--accent-glow);
+    animation: navPulse 2s infinite;
+}
+@keyframes navPulse {
+    0% { box-shadow: 0 0 0 0 rgba(198,242,78,.5); }
+    70% { box-shadow: 0 0 0 6px rgba(198,242,78,0); }
+    100% { box-shadow: 0 0 0 0 rgba(198,242,78,0); }
 }
 
 /* Right section */
@@ -64,7 +98,7 @@
     margin-left: auto;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .nav__user {
@@ -76,7 +110,7 @@
 .nav__avatar-btn {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
     background: none;
     border: none;
     cursor: pointer;
@@ -84,11 +118,13 @@
     font-family: inherit;
 }
 .nav__avatar {
-    width: 24px; height: 24px;
-    background: var(--accent);
-    border-radius: 50%;
+    width: 26px; height: 26px;
+    background: var(--volt);
+    border-radius: 5px;
     display: flex; align-items: center; justify-content: center;
-    font-size: .65rem; font-weight: 700; color: #0e1117;
+    font-family: var(--font-mono);
+    font-size: .7rem; font-weight: 700; color: #0a0b0d;
+    box-shadow: 0 0 14px var(--accent-glow);
 }
 .nav__username {
     font-size: .8rem;
@@ -99,15 +135,15 @@
 /* Dropdown */
 .nav__dropdown {
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 10px);
     right: 0;
-    min-width: 180px;
+    min-width: 184px;
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    border: 1px solid var(--border-hover);
+    border-radius: 11px;
     padding: 6px;
     z-index: 200;
-    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    box-shadow: var(--shadow-md);
     animation: dropIn .12s ease;
 }
 @keyframes dropIn {
@@ -122,14 +158,14 @@
     padding: 9px 12px;
     background: none;
     border: none;
-    border-radius: 6px;
+    border-radius: 7px;
     color: var(--text-secondary);
     font-size: .8125rem;
     font-weight: 500;
     cursor: pointer;
     text-decoration: none;
     font-family: inherit;
-    transition: background .12s, color .12s;
+    transition: background var(--transition), color var(--transition);
 }
 .nav__dropdown-item:hover {
     background: var(--bg);
@@ -152,33 +188,29 @@
     background: none;
     border: 1px solid var(--border);
     color: var(--text);
-    width: 32px; height: 32px;
-    border-radius: 6px;
+    width: 34px; height: 34px;
+    border-radius: 7px;
     cursor: pointer;
     align-items: center;
     justify-content: center;
 }
 
 @media (max-width: 768px) {
-    .nav__inner { height: 46px; }
+    .nav__inner { height: 54px; }
     .nav__toggle { display: flex; }
     .nav__links {
         display: none;
         position: absolute;
-        top: 46px; left: 0; right: 0;
+        top: 54px; left: 0; right: 0;
         flex-direction: column;
         background: var(--bg-secondary);
         border-bottom: 1px solid var(--border);
-        padding: 6px;
+        padding: 8px;
+        gap: 2px;
     }
     .nav__links--open { display: flex; animation: slideUp .15s var(--ease); }
-    .nav__link { padding: 10px 14px; font-size: .85rem; border-radius: 8px; }
+    .nav__link { padding: 11px 14px; font-size: .8rem; border-radius: 8px; }
     .nav__link--active::after { display: none; }
     .nav__link--active { background: var(--surface); }
     .nav__username { display: none; }
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(-6px); }
-    to { opacity: 1; transform: translateY(0); }
 }

@@ -13,37 +13,78 @@ export default function Home() {
             {/* ===== Hero ===== */}
             <section className="hero">
                 <div className="hero__bg" />
-                <div className="container hero__inner">
-                    <h1>
-                        Build smarter.<br />
-                        <span className="text-accent">Pay less.</span>
-                    </h1>
-                    <p className="hero__sub">
-                        Stop overpaying for PC parts. See real prices from various stores, get a build
-                        recommendation in seconds, and know exactly where to buy.
-                    </p>
-                    <div className="hero__cta">
-                        <Link to="/builder" className="btn btn-primary btn-lg">
-                            Start Building <FiArrowRight size={15} />
-                        </Link>
-                        <Link to="/browse" className="btn btn-lg">
-                            Browse Components
-                        </Link>
+                <div className="container hero__grid">
+                    {/* Left — message */}
+                    <div className="hero__lead">
+                        <div className="hero__kicker">
+                            <span className="hero__kicker-dot" />
+                            <span className="mono-label">PCease Agent — grounded in live Indian prices</span>
+                        </div>
+                        <h1>
+                            Tell it your budget.<br />
+                            Get a <span className="text-accent">real build.</span>
+                        </h1>
+                        <p className="hero__sub">
+                            Not another chatbot that hallucinates parts. PCease runs an AI agent that
+                            searches the actual catalog across 9 Indian retailers, checks compatibility
+                            and wattage, and assembles a build with prices you can buy at today.
+                        </p>
+                        <div className="hero__cta">
+                            <Link to="/advisor" className="btn btn-primary btn-lg">
+                                Ask the agent <FiArrowRight size={15} />
+                            </Link>
+                            <Link to="/browse" className="btn btn-lg">
+                                Browse components
+                            </Link>
+                        </div>
+                        <div className="hero__stats">
+                            <div className="hero__stat">
+                                <span className="hero__stat-num">500+</span>
+                                <span className="hero__stat-label">Components</span>
+                            </div>
+                            <div className="hero__stat-divider" />
+                            <div className="hero__stat">
+                                <span className="hero__stat-num">9</span>
+                                <span className="hero__stat-label">Retailers</span>
+                            </div>
+                            <div className="hero__stat-divider" />
+                            <div className="hero__stat">
+                                <span className="hero__stat-num">₹0</span>
+                                <span className="hero__stat-label">Always Free</span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="hero__stats">
-                        <div className="hero__stat">
-                            <span className="hero__stat-num">500+</span>
-                            <span className="hero__stat-label">Components</span>
+
+                    {/* Right — live agent console */}
+                    <div className="agent-console" aria-hidden="true">
+                        <div className="agent-console__bar">
+                            <span className="agent-console__live" />
+                            <span className="agent-console__title">pcease-agent</span>
+                            <span className="agent-console__meta">claude · streaming</span>
                         </div>
-                        <div className="hero__stat-divider" />
-                        <div className="hero__stat">
-                            <span className="hero__stat-num">9</span>
-                            <span className="hero__stat-label">Retailers</span>
-                        </div>
-                        <div className="hero__stat-divider" />
-                        <div className="hero__stat">
-                            <span className="hero__stat-num">₹0</span>
-                            <span className="hero__stat-label">Always Free</span>
+                        <div className="agent-console__body">
+                            <div className="acl acl--user">› build me a ₹60,000 gaming PC</div>
+                            <div className="acl acl--tool" style={{ '--d': '.5s' }}>
+                                <span className="acl__tk">search_components</span>(gpu, ≤ ₹26k) <span className="acl__ok">✓ 8 found</span>
+                            </div>
+                            <div className="acl acl--tool" style={{ '--d': '1.1s' }}>
+                                <span className="acl__tk">search_components</span>(cpu, ≤ ₹18k) <span className="acl__ok">✓ 11 found</span>
+                            </div>
+                            <div className="acl acl--tool" style={{ '--d': '1.7s' }}>
+                                <span className="acl__tk">check_compatibility</span>() <span className="acl__ok">✓ AM5 ok</span>
+                            </div>
+                            <div className="acl acl--tool" style={{ '--d': '2.3s' }}>
+                                <span className="acl__tk">estimate_wattage</span>() <span className="acl__ok">✓ 550W</span>
+                            </div>
+                            <div className="acl acl--card" style={{ '--d': '3s' }}>
+                                <div className="acl-card__head">
+                                    <span>Budget Gaming Build</span>
+                                    <span className="acl-card__total">₹59,400</span>
+                                </div>
+                                <div className="acl-card__row"><i>GPU</i> RTX 4060 <b>₹29,000</b></div>
+                                <div className="acl-card__row"><i>CPU</i> Ryzen 5 7600 <b>₹21,000</b></div>
+                                <div className="acl-card__row acl-card__row--more">+ 5 more parts · MDComputers, PrimeABGB…</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -96,25 +137,27 @@ export default function Home() {
                         <h2>Everything you need to build a PC</h2>
                     </div>
                     <div className="features-grid">
-                        <div className="feat-card feat-card--large">
-                            <div className="feat-card__icon"><FiTrendingDown size={22} /></div>
-                            <h3>Price Comparison</h3>
+                        <div className="feat-card feat-card--large feat-card--agent">
+                            <div className="feat-card__icon feat-card__icon--volt"><FiCpu size={22} /></div>
+                            <h3>The AI Agent</h3>
                             <p>
-                                Real-time prices from Amazon, Flipkart, MD Computers, Vedant, PCStudio, and more.
-                                See price bars, savings, and buy links — all on one page.
+                                Give it a budget and a use case. It runs a real tool loop over the live
+                                catalog — searching parts, checking compatibility and wattage, and
+                                bottleneck-testing — then streams back a grounded build you can open in
+                                the Builder. No invented prices, ever.
                             </p>
-                            <Link to="/browse" className="feat-card__link">Browse prices <FiArrowRight size={13} /></Link>
+                            <Link to="/advisor" className="feat-card__link">Ask the agent <FiArrowRight size={13} /></Link>
                         </div>
                         <div className="feat-card">
-                            <div className="feat-card__icon"><FiCpu size={20} /></div>
-                            <h3>AI Advisor</h3>
-                            <p>Set your budget and use case. Our ML engine picks the best components, or chat with AI for any build question.</p>
-                            <Link to="/advisor" className="feat-card__link">Try Advisor <FiArrowRight size={13} /></Link>
+                            <div className="feat-card__icon"><FiTrendingDown size={20} /></div>
+                            <h3>Price Comparison</h3>
+                            <p>Real-time prices from Amazon, Flipkart, MD Computers, Vedant, PCStudio and more — price bars, savings, and direct buy links on one page.</p>
+                            <Link to="/browse" className="feat-card__link">Browse prices <FiArrowRight size={13} /></Link>
                         </div>
                         <div className="feat-card">
                             <div className="feat-card__icon"><FiLayers size={20} /></div>
                             <h3>PC Builder</h3>
-                            <p>Drag-and-drop builder with wattage calculator, bottleneck checker, and shareable build links.</p>
+                            <p>Slot-based builder with a live budget counter, wattage calculator, bottleneck checker, and shareable build links.</p>
                             <Link to="/builder" className="feat-card__link">Open Builder <FiArrowRight size={13} /></Link>
                         </div>
                         <div className="feat-card">

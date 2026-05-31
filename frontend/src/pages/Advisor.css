@@ -9,7 +9,7 @@
 .ad-tabs { display: flex; gap: 4px; margin-bottom: 32px; padding: 4px; background: var(--surface); border-radius: 10px; max-width: 440px; border: 1px solid var(--border); }
 .ad-tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; background: transparent; border: none; border-radius: 8px; color: var(--text-secondary); font-weight: 500; font-size: .875rem; cursor: pointer; transition: all .2s; font-family: inherit; }
 .ad-tab:hover { color: var(--text); background: rgba(255,255,255,.03); }
-.ad-tab.active { background: var(--accent); color: white; font-weight: 600; }
+.ad-tab.active { background: var(--volt); color: #0a0b0d; font-weight: 700; box-shadow: 0 0 20px var(--accent-glow); }
 .ad-tab__label { white-space: nowrap; }
 
 /* ========== Manual Tab ========== */
@@ -76,7 +76,7 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: v
 .ad-find-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
 
 /* Spinner */
-.ad-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: ad-spin .6s linear infinite; }
+.ad-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,.22); border-top-color: #0a0b0d; border-radius: 50%; animation: ad-spin .6s linear infinite; }
 @keyframes ad-spin { to { transform: rotate(360deg); } }
 
 /* ========== Result Card ========== */
@@ -84,7 +84,7 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: v
 .ad-result__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .ad-result__head h2 { font-size: 1.125rem; }
 .ad-result__src { font-size: .75rem; font-weight: 600; padding: 3px 10px; background: var(--accent-subtle); border-radius: 9999px; color: var(--accent); white-space: nowrap; }
-.ad-result__src--smart { background: linear-gradient(135deg, rgba(34,197,94,.15), rgba(6,182,212,.15)); color: #22c55e; }
+.ad-result__src--smart { background: linear-gradient(135deg, rgba(58,210,159,.15), rgba(198,242,78,.15)); color: var(--green); }
 .ad-result__desc { font-size: .9375rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.6; }
 
 /* Budget Status */

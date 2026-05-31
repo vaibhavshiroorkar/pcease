@@ -17,7 +17,7 @@
 }
 .guide-header__tag {
     display: inline-block;
-    background: rgba(6,182,212,0.12);
+    background: rgba(198,242,78,0.12);
     color: var(--accent);
     font-size: 0.75rem;
     font-weight: 600;
@@ -96,7 +96,7 @@
     justify-content: center;
     width: 34px;
     height: 34px;
-    background: rgba(6,182,212,0.12);
+    background: rgba(198,242,78,0.12);
     color: var(--accent);
     border-radius: 8px;
     flex-shrink: 0;
@@ -220,7 +220,7 @@
     justify-content: center;
     width: 34px;
     height: 34px;
-    background: rgba(6,182,212,0.12);
+    background: rgba(198,242,78,0.12);
     color: var(--accent);
     font-weight: 700;
     font-size: 0.9rem;
