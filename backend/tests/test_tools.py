@@ -27,3 +27,24 @@ def test_get_component_returns_full_specs(fake_db):
     out = _invoke(tools.get_component, {"component_id": 30}, fake_db)
     assert out["name"] == "MSI B650 Tomahawk"
     assert out["specifications"]["socket"] == "AM5"
+
+
+def test_check_compatibility_flags_socket_mismatch(fake_db):
+    # 11 = AM5 CPU, 30 = AM5 board -> compatible
+    ok = _invoke(tools.check_compatibility, {"component_ids": [11, 30]}, fake_db)
+    assert ok["compatible"] is True
+    assert ok["issues"] == []
+
+
+def test_estimate_wattage_uses_specifications_tdp(fake_db):
+    # 11 cpu tdp 120W, 20 gpu tdp 115W -> ~235W + headroom rounded to 50
+    out = _invoke(tools.estimate_wattage, {"component_ids": [11, 20]}, fake_db)
+    assert out["total_tdp"] == 235
+    assert out["recommended_psu"] % 50 == 0
+    assert out["recommended_psu"] >= 282  # 235 * 1.2
+
+
+def test_check_bottleneck_balanced_pair(fake_db):
+    out = _invoke(tools.check_bottleneck, {"cpu_id": 10, "gpu_id": 20}, fake_db)
+    assert out["status"] in ("balanced", "cpu_bottleneck", "gpu_bottleneck")
+    assert "severity" in out
