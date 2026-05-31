@@ -1,6 +1,7 @@
 """Agent tools. Each @tool generates its own JSON schema from the signature + docstring.
 `db` and `user` are InjectedToolArg — hidden from the model, supplied by the loop at runtime.
 """
+import uuid
 from typing import Annotated, Optional, List, Any, Dict
 from langchain_core.tools import tool, InjectedToolArg
 
@@ -105,14 +106,6 @@ def _tdp(specs: dict, default: int) -> int:
         return default
 
 
-# Form-factor compatibility (mirrors the frontend Builder map)
-_FORM_FACTOR_COMPAT = {
-    "ATX": ["ATX", "Micro-ATX", "Mini-ITX"],
-    "Micro-ATX": ["Micro-ATX", "Mini-ITX"],
-    "Mini-ITX": ["Mini-ITX"],
-}
-
-
 @tool
 def check_compatibility(
     component_ids: List[int],
@@ -214,3 +207,101 @@ def check_bottleneck(
                 "message": f"The CPU ({cpu['name']}) may bottleneck the GPU."}
     return {"status": "gpu_bottleneck", "severity": "warning" if diff <= 2 else "critical",
             "message": f"The GPU ({gpu['name']}) may bottleneck the CPU."}
+
+
+# ---------------------------------------------------------------------------
+# Build + write tools
+# ---------------------------------------------------------------------------
+
+def _min_prices(db, ids: List[int]) -> Dict[int, float]:
+    if not ids:
+        return {}
+    res = db.table("component_prices").select("component_id, price").in_("component_id", ids).execute()
+    out: Dict[int, float] = {}
+    for p in res.data or []:
+        cid = p["component_id"]; price = float(p["price"])
+        if cid not in out or price < out[cid]:
+            out[cid] = price
+    return out
+
+
+@tool
+def assemble_build(
+    title: str,
+    items: List[dict],
+    db: Annotated[Any, InjectedToolArg] = None,
+) -> dict:
+    """Assemble a final grounded build to show the user as a build card. `items` is a list of
+    {slot, component_id} where slot is cpu/gpu/motherboard/ram/storage/psu/case/cooler.
+    Pulls real names and lowest prices from the database and returns a structured build card."""
+    ids = [int(i["component_id"]) for i in items if i.get("component_id")]
+    res = db.table("components").select(_SELECT).in_("id", ids).execute()
+    by_id = {c["id"]: c for c in (res.data or [])}
+    card_items = []
+    total = 0
+    for it in items:
+        c = by_id.get(int(it["component_id"]))
+        if not c:
+            continue
+        low = _lowest_price(c) or 0
+        total += int(low)
+        card_items.append({
+            "slot": it["slot"],
+            "category": (c.get("category") or {}).get("name", it["slot"].upper()),
+            "component_id": c["id"],
+            "name": c["name"],
+            "vendor": _best_vendor(c),
+            "price": int(low),
+        })
+    return {"title": title, "items": card_items, "total": total,
+            "components": {i["slot"]: i["component_id"] for i in card_items}}
+
+
+@tool
+def save_build(
+    name: str,
+    components: Dict[str, int],
+    db: Annotated[Any, InjectedToolArg] = None,
+    user: Annotated[Any, InjectedToolArg] = None,
+) -> dict:
+    """Save a build to the signed-in user's account. components maps slot -> component_id.
+    Only call this AFTER the user confirms. Returns {ok, message, build?}."""
+    if not user:
+        return {"ok": False, "message": "Please log in to save builds to your account."}
+    total = sum(_min_prices(db, list(components.values())).values())
+    res = db.table("builds").insert({
+        "user_id": user["id"], "name": name,
+        "components": components, "total_price": total,
+    }).execute()
+    if not res.data:
+        return {"ok": False, "message": "Could not save the build. Please try again."}
+    return {"ok": True, "message": f"Saved '{name}'.", "build": res.data[0]}
+
+
+@tool
+def create_share_link(
+    name: str,
+    components: Dict[str, int],
+    db: Annotated[Any, InjectedToolArg] = None,
+) -> dict:
+    """Create a public shareable link for a build. components maps slot -> component_id.
+    Returns {ok, share_id, message}."""
+    share_uuid = str(uuid.uuid4())
+    short = share_uuid[:8]
+    total = sum(_min_prices(db, list(components.values())).values())
+    res = db.table("shared_builds").insert({
+        "share_id": share_uuid,
+        "build_data": {"name": name, "components": components,
+                       "total_price": total, "short_id": short},
+    }).execute()
+    if not res.data:
+        return {"ok": False, "message": "Could not create share link."}
+    return {"ok": True, "share_id": short, "message": f"Share id: {short}"}
+
+
+# ---- Registry ----
+TOOLS = [
+    search_components, get_component, check_compatibility, estimate_wattage,
+    check_bottleneck, assemble_build, save_build, create_share_link,
+]
+TOOL_MAP = {t.name: t for t in TOOLS}

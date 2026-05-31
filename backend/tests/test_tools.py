@@ -1,10 +1,13 @@
+import inspect
 from app.agent import tools
 
 
 def _invoke(tool, args, fake_db, user=None):
     payload = dict(args)
-    payload["db"] = fake_db
-    if "user" in tool.args:
+    params = inspect.signature(tool.func).parameters
+    if "db" in params:
+        payload["db"] = fake_db
+    if "user" in params:
         payload["user"] = user
     return tool.invoke(payload)
 
@@ -48,3 +51,35 @@ def test_check_bottleneck_balanced_pair(fake_db):
     out = _invoke(tools.check_bottleneck, {"cpu_id": 10, "gpu_id": 20}, fake_db)
     assert out["status"] in ("balanced", "cpu_bottleneck", "gpu_bottleneck")
     assert "severity" in out
+
+
+def test_assemble_build_computes_total(fake_db):
+    out = _invoke(tools.assemble_build, {
+        "title": "Budget Gaming",
+        "items": [{"slot": "cpu", "component_id": 10}, {"slot": "gpu", "component_id": 20}],
+    }, fake_db)
+    assert out["title"] == "Budget Gaming"
+    assert out["total"] == 51000   # 21000 + 30000
+    assert {i["slot"] for i in out["items"]} == {"cpu", "gpu"}
+
+
+def test_save_build_requires_login(fake_db):
+    out = _invoke(tools.save_build,
+                  {"name": "x", "components": {"cpu": 10}}, fake_db, user=None)
+    assert out["ok"] is False
+    assert "log in" in out["message"].lower()
+
+
+def test_save_build_persists_for_user(fake_db):
+    out = _invoke(tools.save_build,
+                  {"name": "My PC", "components": {"cpu": 10, "gpu": 20}},
+                  fake_db, user={"id": "u1"})
+    assert out["ok"] is True
+    assert out["build"]["name"] == "My PC"
+
+
+def test_registry_exposes_all_tools():
+    names = set(tools.TOOL_MAP)
+    assert {"search_components", "get_component", "check_compatibility",
+            "estimate_wattage", "check_bottleneck", "assemble_build",
+            "save_build", "create_share_link"} <= names
