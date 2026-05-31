@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     # App
     debug: bool = True
     frontend_url: str = "http://localhost:5173"
+    use_fake_db: bool = False  # in-memory seeded DB for local testing (no Supabase)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
