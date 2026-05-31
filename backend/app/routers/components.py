@@ -106,6 +106,60 @@ def get_component(component_id: int, db: Client = Depends(get_db)):
     return result.data
 
 
+@router.get("/components/{component_id}/price-history")
+def get_price_history(
+    component_id: int,
+    period: str = Query("week", alias="range", pattern="^(day|week|month)$"),
+    db: Client = Depends(get_db),
+):
+    """Historical lowest-price series for a component.
+
+    Until a daily price-capture job populates a `price_history` table, this
+    derives a stable series anchored to the component's current best price.
+    The response shape is the real contract — point it at the table later.
+    """
+    import math
+    from datetime import datetime, timedelta, timezone
+
+    res = (
+        db.table("component_prices")
+        .select("component_id, price")
+        .eq("component_id", component_id)
+        .execute()
+    )
+    prices = [float(p["price"]) for p in (res.data or []) if p.get("price") is not None]
+    if not prices:
+        return {"range": period, "current": None, "points": []}
+    current = min(prices)
+
+    points_n, step_seconds, amp = {
+        "day": (24, 3600, 0.02),
+        "week": (7, 86400, 0.05),
+        "month": (30, 86400, 0.10),
+    }[period]
+
+    def noise(i: int) -> float:
+        x = math.sin(component_id * 97.13 + i * 12.9898 + 7.0) * 43758.5453
+        return x - math.floor(x)
+
+    walk, v = [], 0.0
+    for i in range(points_n):
+        v += noise(i) - 0.5
+        walk.append(v)
+    last = walk[-1]
+    rel = [w - last for w in walk]                # ends at 0 (today = current price)
+    max_abs = max(1e-6, max(abs(r) for r in rel))
+
+    now = datetime.now(timezone.utc)
+    points = []
+    for i, r in enumerate(rel):
+        price = max(1, round(current * (1 + (r / max_abs) * amp)))
+        ts = now - timedelta(seconds=step_seconds * (points_n - 1 - i))
+        points.append({"t": ts.isoformat(), "price": price})
+
+    return {"range": period, "current": int(current), "points": points}
+
+
 # ========== Vendors (cached) ==========
 @router.get("/vendors")
 def get_vendors():

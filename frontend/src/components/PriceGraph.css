@@ -65,8 +65,11 @@
 }
 .pg__y--max { top: 2px; }
 .pg__y--min { bottom: 2px; }
-.pg__note {
-    margin-top: 10px;
-    font-size: .7rem;
+.pg__state {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--text-muted);
+    font-size: .8125rem;
 }

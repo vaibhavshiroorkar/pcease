@@ -147,6 +147,9 @@ export const API = {
 
     getComponent: (id) => request(`/components/${id}`),
 
+    getPriceHistory: (id, range = 'week') =>
+        request(`/components/${id}/price-history?range=${range}`),
+
     // --- Vendors ---
     getVendors: () => request('/vendors'),
 
@@ -237,6 +240,30 @@ export const API = {
 }
 
 // ========== Utility Helpers ==========
+// Nice human labels for component spec keys (falls back to Title Case)
+const SPEC_LABELS = {
+    cores: 'Cores', threads: 'Threads', base_clock: 'Base Clock', boost_clock: 'Boost Clock',
+    socket: 'Socket', tdp: 'TDP', tdp_rating: 'TDP Rating', cuda_cores: 'CUDA Cores',
+    memory: 'Memory', vram: 'VRAM', capacity: 'Capacity', type: 'Type', speed: 'Speed',
+    ram_type: 'RAM Type', ram_slots: 'RAM Slots', chipset: 'Chipset', form_factor: 'Form Factor',
+    wifi: 'Wi-Fi', wattage: 'Wattage', efficiency: 'Efficiency', modular: 'Modular',
+    fans_included: 'Fans Included', fan_size: 'Fan Size', resolution: 'Resolution',
+    refresh_rate: 'Refresh Rate', panel_type: 'Panel Type', size: 'Size', airflow: 'Airflow',
+    quantity: 'Quantity', switch: 'Switch', layout: 'Layout', dpi: 'DPI', connection: 'Connection',
+    weight: 'Weight', surface: 'Surface', driver: 'Driver', microphone: 'Microphone',
+}
+
+export function formatSpecKey(key) {
+    if (SPEC_LABELS[key]) return SPEC_LABELS[key]
+    return String(key).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+export function formatSpecValue(value) {
+    if (value === true) return 'Yes'
+    if (value === false) return 'No'
+    return String(value)
+}
+
 export function formatPrice(price) {
     if (!price && price !== 0) return 'N/A'
     return new Intl.NumberFormat('en-IN', {

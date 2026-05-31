@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
-import { API, formatPrice, getLowestPrice, BUILD_SLOTS } from '../services/api'
+import { API, formatPrice, getLowestPrice, BUILD_SLOTS, formatSpecKey, formatSpecValue } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { FiLink, FiSave, FiX, FiPlus, FiZap, FiActivity, FiSearch, FiExternalLink, FiChevronLeft, FiShoppingCart, FiHelpCircle, FiArrowRight, FiFilter, FiSliders } from 'react-icons/fi'
 import toast from 'react-hot-toast'
@@ -48,7 +48,7 @@ const getInlineSpecs = (comp, maxCount = 3) => {
     return keys
         .filter(k => specs[k] !== undefined)
         .slice(0, maxCount)
-        .map(k => `${k.replace(/_/g, ' ')}: ${specs[k]}`)
+        .map(k => `${formatSpecKey(k)}: ${formatSpecValue(specs[k])}`)
 }
 
 // Motherboard form factor compatibility with case
@@ -728,7 +728,7 @@ export default function Builder() {
                                         </div>
 
                                         {(selectedComp.prices || []).length > 0 && (
-                                            <PriceGraph price={getLowestPrice(selectedComp)} seed={selectedComp.id} />
+                                            <PriceGraph componentId={selectedComp.id} />
                                         )}
 
                                         <h4 className="bd-retailer-heading">
@@ -767,10 +767,6 @@ export default function Builder() {
                                                 })
                                             }
                                         </div>
-
-                                        <button className="btn bd-retailer-quick" onClick={() => confirmSelection(selectedComp)}>
-                                            Add with Best Price ({formatPrice(getLowestPrice(selectedComp))})
-                                        </button>
                                     </div>
                                 ) : (
                                     /* ── Step 1: Component List ── */

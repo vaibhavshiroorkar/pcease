@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { API, formatPrice, getLowestPrice, getSavings, getBestVendor, CATEGORIES } from '../services/api'
+import { API, formatPrice, getLowestPrice, getSavings, getBestVendor, CATEGORIES, formatSpecKey, formatSpecValue } from '../services/api'
 import { FiSearch, FiX, FiExternalLink, FiCheck, FiPlus, FiGrid, FiList, FiShoppingCart, FiInfo, FiChevronRight, FiSliders, FiChevronDown } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import PriceGraph from '../components/PriceGraph'
@@ -417,14 +417,14 @@ export default function Browse() {
                                     <span className="br-detail__brand">{detail.brand}</span>
                                 </div>
 
-                                {detail.specs && Object.keys(detail.specs).length > 0 && (
+                                {Object.keys(detail.specifications || detail.specs || {}).length > 0 && (
                                     <div className="br-specs">
                                         <h4><FiInfo size={14} /> Specifications</h4>
                                         <div className="br-specs__grid">
-                                            {Object.entries(detail.specs).map(([k, v]) => (
+                                            {Object.entries(detail.specifications || detail.specs).map(([k, v]) => (
                                                 <div key={k} className="br-specs__item">
-                                                    <span className="br-specs__key">{k.replace(/_/g, ' ')}</span>
-                                                    <span className="br-specs__val">{String(v)}</span>
+                                                    <span className="br-specs__key">{formatSpecKey(k)}</span>
+                                                    <span className="br-specs__val">{formatSpecValue(v)}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -432,7 +432,7 @@ export default function Browse() {
                                 )}
 
                                 {detail.prices?.length > 0 && (
-                                    <PriceGraph price={getLowestPrice(detail)} seed={detail.id} />
+                                    <PriceGraph componentId={detail.id} />
                                 )}
 
                                 <div className="br-prices">
