@@ -22,15 +22,15 @@ const priorities = [
 ]
 
 const tabs = [
-    { id: 'manual', label: 'Manual', icon: <FiSliders size={14} />, desc: 'Configure & find best via ML' },
     { id: 'ai', label: 'AI Chat', icon: <FiMessageSquare size={14} />, desc: 'Ask anything about PC building' },
     { id: 'presets', label: 'Presets', icon: <FiPackage size={14} />, desc: 'Ready-made build configs' },
+    { id: 'manual', label: 'Manual', icon: <FiSliders size={14} />, desc: 'Configure & find best via ML' },
 ]
 
 export default function Advisor() {
     const navigate = useNavigate()
     const chatEndRef = useRef(null)
-    const [tab, setTab] = useState('manual')
+    const [tab, setTab] = useState('ai')
 
     // Manual tab state
     const [budget, setBudget] = useState(60000)
