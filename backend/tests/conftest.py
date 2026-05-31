@@ -1,5 +1,11 @@
 """In-memory fake Supabase client for deterministic tool tests."""
+import os
 import pytest
+
+# Set dummy Supabase credentials before any app module is imported so that
+# app.database (which calls create_client at module level) does not raise.
+os.environ.setdefault("SUPABASE_URL", "https://fake.supabase.co")
+os.environ.setdefault("SUPABASE_KEY", "fakekey")
 
 
 class FakeResult:
