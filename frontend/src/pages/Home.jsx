@@ -25,9 +25,8 @@ export default function Home() {
                             Get a <span className="text-accent">real build.</span>
                         </h1>
                         <p className="hero__sub">
-                            Not another chatbot that hallucinates parts. PCease runs an AI agent that
-                            searches the actual catalog across 9 Indian retailers, checks compatibility
-                            and wattage, and assembles a build with prices you can buy at today.
+                            An AI agent that searches real Indian retailer prices, checks
+                            compatibility, and assembles a build you can actually buy today.
                         </p>
                         <div className="hero__cta">
                             <Link to="/advisor" className="btn btn-primary btn-lg">
@@ -63,27 +62,23 @@ export default function Home() {
                             <span className="agent-console__meta">claude · streaming</span>
                         </div>
                         <div className="agent-console__body">
-                            <div className="acl acl--user">› build me a ₹60,000 gaming PC</div>
-                            <div className="acl acl--tool" style={{ '--d': '.5s' }}>
-                                <span className="acl__tk">search_components</span>(gpu, ≤ ₹26k) <span className="acl__ok">✓ 8 found</span>
+                            <div className="acl acl--user">build me a ₹60,000 gaming PC</div>
+                            <div className="acl acl--tool" style={{ '--d': '.6s' }}>
+                                <span className="acl__tk">search_components</span> <span className="acl__ok">✓ 8 GPUs</span>
                             </div>
-                            <div className="acl acl--tool" style={{ '--d': '1.1s' }}>
-                                <span className="acl__tk">search_components</span>(cpu, ≤ ₹18k) <span className="acl__ok">✓ 11 found</span>
+                            <div className="acl acl--tool" style={{ '--d': '1.2s' }}>
+                                <span className="acl__tk">check_compatibility</span> <span className="acl__ok">✓ AM5</span>
                             </div>
-                            <div className="acl acl--tool" style={{ '--d': '1.7s' }}>
-                                <span className="acl__tk">check_compatibility</span>() <span className="acl__ok">✓ AM5 ok</span>
+                            <div className="acl acl--tool" style={{ '--d': '1.8s' }}>
+                                <span className="acl__tk">estimate_wattage</span> <span className="acl__ok">✓ 550W</span>
                             </div>
-                            <div className="acl acl--tool" style={{ '--d': '2.3s' }}>
-                                <span className="acl__tk">estimate_wattage</span>() <span className="acl__ok">✓ 550W</span>
-                            </div>
-                            <div className="acl acl--card" style={{ '--d': '3s' }}>
+                            <div className="acl acl--card" style={{ '--d': '2.5s' }}>
                                 <div className="acl-card__head">
                                     <span>Budget Gaming Build</span>
                                     <span className="acl-card__total">₹59,400</span>
                                 </div>
                                 <div className="acl-card__row"><i>GPU</i> RTX 4060 <b>₹29,000</b></div>
                                 <div className="acl-card__row"><i>CPU</i> Ryzen 5 7600 <b>₹21,000</b></div>
-                                <div className="acl-card__row acl-card__row--more">+ 5 more parts · MDComputers, PrimeABGB…</div>
                             </div>
                         </div>
                     </div>

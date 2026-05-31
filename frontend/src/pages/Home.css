@@ -17,16 +17,15 @@
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(ellipse 50% 60% at 78% 30%, rgba(198,242,78,.07) 0%, transparent 65%),
-        radial-gradient(ellipse 50% 50% at 10% 90%, rgba(58,210,159,.04) 0%, transparent 60%);
+        radial-gradient(ellipse 45% 55% at 80% 28%, rgba(198,242,78,.04) 0%, transparent 60%);
     pointer-events: none;
 }
 .hero__grid {
     position: relative;
     display: grid;
-    grid-template-columns: 1.05fr .95fr;
+    grid-template-columns: 1.1fr .9fr;
     align-items: center;
-    gap: 56px;
+    gap: 72px;
 }
 .hero__lead { max-width: 560px; }
 .hero__kicker {
@@ -98,26 +97,17 @@
 /* ---- Agent console (hero right) ---- */
 .agent-console {
     position: relative;
-    background: linear-gradient(180deg, #0d0f13 0%, #0a0b0d 100%);
-    border: 1px solid var(--border-hover);
+    background: #0c0e12;
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: var(--shadow-lg), 0 0 60px rgba(198,242,78,.06);
+    box-shadow: var(--shadow-md);
     animation: slideUp .5s var(--ease) both;
-}
-.agent-console::before {
-    /* scanline sweep */
-    content: '';
-    position: absolute; left: 0; right: 0; top: 0; height: 25%;
-    background: linear-gradient(180deg, rgba(198,242,78,.05), transparent);
-    animation: scan 5s linear infinite;
-    pointer-events: none;
 }
 .agent-console__bar {
     display: flex; align-items: center; gap: 9px;
-    padding: 11px 15px;
+    padding: 13px 16px;
     border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,.015);
 }
 .agent-console__live {
     width: 8px; height: 8px; border-radius: 50%;
@@ -131,15 +121,14 @@
     margin-left: auto; font-family: var(--font-mono); font-size: .68rem; color: var(--text-muted);
 }
 .agent-console__body {
-    padding: 16px 16px 18px;
+    padding: 20px 18px 22px;
     font-family: var(--font-mono);
-    font-size: .78rem;
+    font-size: .8rem;
     line-height: 1.5;
-    min-height: 290px;
 }
 .acl { opacity: 0; animation: aclIn .4s var(--ease) forwards; animation-delay: var(--d, 0s); }
-.acl--user { color: var(--text); margin-bottom: 14px; }
-.acl--tool { color: var(--text-secondary); margin-bottom: 9px; }
+.acl--user { color: var(--text); margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.acl--tool { color: var(--text-secondary); margin-bottom: 13px; display: flex; justify-content: space-between; align-items: center; }
 .acl__tk { color: var(--volt); }
 .acl__ok { color: var(--green); }
 @keyframes aclIn {
