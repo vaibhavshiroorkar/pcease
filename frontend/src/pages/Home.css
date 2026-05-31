@@ -2,6 +2,12 @@
    Home — v5  Full-section hero · Scrolling layout
    ===================================================== */
 
+/* ---- Each section behaves like its own full page ---- */
+html.home-snap { scroll-snap-type: y proximity; scroll-padding-top: 60px; }
+.hero, .home-section {
+    scroll-snap-align: start;
+}
+
 /* ---- Hero ---- */
 .hero {
     position: relative;
@@ -28,19 +34,6 @@
     gap: 72px;
 }
 .hero__lead { max-width: 560px; }
-.hero__kicker {
-    display: inline-flex; align-items: center; gap: 9px;
-    padding: 6px 13px 6px 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-full);
-    background: var(--surface);
-    margin-bottom: 22px;
-}
-.hero__kicker-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--volt); box-shadow: 0 0 10px var(--volt);
-    animation: pulse-glow 2s infinite;
-}
 .hero h1 {
     line-height: 1.04;
     margin-bottom: 20px;
@@ -188,7 +181,11 @@
 
 /* ---- Shared section ---- */
 .home-section {
-    padding: 80px 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 100px 0;
 }
 .home-section--alt {
     background: var(--bg-secondary);
@@ -415,7 +412,8 @@
     .hero__stat-num { font-size: 1.25rem; }
     .hero__scroll { display: none; }
 
-    .home-section { padding: 56px 0; }
+    html.home-snap { scroll-snap-type: none; }
+    .home-section { min-height: auto; padding: 56px 0; }
 
     .steps { flex-direction: column; align-items: center; gap: 8px; }
     .step { padding: 0; max-width: 320px; }

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
     FiArrowRight, FiDollarSign, FiCpu, FiLayers,
@@ -7,6 +8,12 @@ import {
 import './Home.css'
 
 export default function Home() {
+    // Full-page section snapping — scoped to the home route only
+    useEffect(() => {
+        document.documentElement.classList.add('home-snap')
+        return () => document.documentElement.classList.remove('home-snap')
+    }, [])
+
     return (
         <main className="home">
 
@@ -16,10 +23,6 @@ export default function Home() {
                 <div className="container hero__grid">
                     {/* Left — message */}
                     <div className="hero__lead">
-                        <div className="hero__kicker">
-                            <span className="hero__kicker-dot" />
-                            <span className="mono-label">PCease Agent — grounded in live Indian prices</span>
-                        </div>
                         <h1>
                             Tell it your budget.<br />
                             Get a <span className="text-accent">real build.</span>

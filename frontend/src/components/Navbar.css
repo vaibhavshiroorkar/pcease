@@ -78,21 +78,6 @@
     background: var(--volt);
     box-shadow: 0 0 10px var(--accent-glow);
 }
-/* The agent link — gets the volt identity */
-.nav__link--ai { color: var(--volt); }
-.nav__link--ai:hover { color: var(--volt-bright); }
-.nav__link-pulse {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--volt);
-    box-shadow: 0 0 0 0 var(--accent-glow);
-    animation: navPulse 2s infinite;
-}
-@keyframes navPulse {
-    0% { box-shadow: 0 0 0 0 rgba(198,242,78,.5); }
-    70% { box-shadow: 0 0 0 6px rgba(198,242,78,0); }
-    100% { box-shadow: 0 0 0 0 rgba(198,242,78,0); }
-}
-
 /* Right section */
 .nav__right {
     margin-left: auto;

@@ -7,7 +7,7 @@ import './Navbar.css'
 const navItems = [
     { to: '/browse', label: 'Browse' },
     { to: '/builder', label: 'Builder' },
-    { to: '/advisor', label: 'Agent', ai: true },
+    { to: '/advisor', label: 'Advisor' },
     { to: '/compare', label: 'Compare' },
     { to: '/forum', label: 'Forum' },
 ]
@@ -47,9 +47,8 @@ export default function Navbar() {
                         <NavLink
                             key={item.to}
                             to={item.to}
-                            className={({ isActive }) => `nav__link${isActive ? ' nav__link--active' : ''}${item.ai ? ' nav__link--ai' : ''}`}
+                            className={({ isActive }) => `nav__link${isActive ? ' nav__link--active' : ''}`}
                         >
-                            {item.ai && <span className="nav__link-pulse" aria-hidden="true" />}
                             {item.label}
                         </NavLink>
                     ))}
