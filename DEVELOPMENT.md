@@ -114,3 +114,59 @@ scripted fake chat model for the agent loop — no network or keys needed.
 - There is **no self-service password reset** (the old username+email reset was an
   account-takeover vector and was removed). Add a proper emailed-token flow when email exists.
 - JWTs are stored in `localStorage` (XSS tradeoff) — consider httpOnly cookies later.
+
+## API reference
+
+Full interactive docs at `/docs` (Swagger) or `/redoc` when the server runs. Overview:
+
+**Components**
+- `GET /api/categories` — all categories
+- `GET /api/components` — list with filters (`category`, `brand`, `search`, `sort`, `skip`, `limit`)
+- `GET /api/components/{id}` — single component + vendor prices
+- `GET /api/components/{id}/price-history?range=day|week|month` — lowest-price time series
+- `POST /api/compare` — compare up to 4 components `{ "ids": [1, 2, 3] }`
+- `GET /api/vendors` — tracked vendors
+- `GET /api/stats` — platform counts
+
+**Builds** *(✓ = auth required)*
+- `GET /api/builds` ✓ · `POST /api/builds` ✓ · `DELETE /api/builds/{id}` ✓
+- `POST /api/builds/share` — shareable link · `GET /api/builds/shared/{share_id}` — load shared
+
+**Auth**
+- `POST /api/auth/register` · `POST /api/auth/login` · `GET /api/auth/me` ✓
+- (no password reset — see Security notes)
+
+**Forum** *(auth for writes)*
+- `GET /api/forum/threads` · `GET /api/forum/threads/{id}`
+- `POST /api/forum/threads` ✓ · `POST /api/forum/threads/{id}/replies` ✓ · `POST /api/forum/threads/{id}/vote` ✓
+
+**AI**
+- `POST /api/agent/chat` — grounded tool-using agent, streamed over SSE (preferred)
+- `POST /api/advisor/recommend` — deterministic grounded build (Manual tab)
+- `GET /api/advisor/templates` · `POST /api/advisor/wattage` · `POST /api/advisor/bottleneck`
+
+## Database schema
+
+```
+categories        id · slug · name · description · icon
+vendors           id · slug · name · url · logo_url
+components        id · category_id · name · brand · model · specifications (jsonb) · image_url
+component_prices  id · component_id · vendor_id · price · currency · url · in_stock
+builds            id · user_id · name · components (jsonb) · total_price · created_at
+shared_builds     id · share_id · build_data (jsonb) · created_at
+users             id · username · email · hashed_password · is_active · is_admin · created_at
+forum_threads     id · author_id · title · content · category · created_at
+forum_replies     id · thread_id · author_id · content · created_at
+forum_votes       id · thread_id · user_id · vote_type
+```
+
+Migration + seed: run `backend/supabase_migration.sql` in Supabase, then `python backend/seed_supabase.py`.
+
+## Deploying
+
+- **Backend (Render):** root `backend`, build `pip install -r requirements.txt`,
+  start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Set all `backend/.env` vars
+  (including `DEBUG=false` and a real `SECRET_KEY`).
+- **Frontend (Vercel):** root `frontend`, framework Vite, build `npm run build` → `dist`,
+  set `VITE_API_URL` to the Render backend URL.
+- **Database (Supabase):** free tier is fine; the service key handles server-side writes.
