@@ -85,12 +85,14 @@ def test_watchlist_is_per_user():
 # ----------------------------- builders directory -----------------------------
 def test_builders_directory_lists_users_with_build_counts():
     d = client.get("/api/users").json()
-    assert d["total"] == 3
+    assert d["total"] == 4  # 3 builder accounts + the "demo" try-it account
     names = {u["username"] for u in d["items"]}
-    assert {"alishbuilds", "rajrenders", "miraITX"} <= names
+    assert {"alishbuilds", "rajrenders", "miraITX", "demo"} <= names
     assert all("email" not in u for u in d["items"])
     alish = next(u for u in d["items"] if u["username"] == "alishbuilds")
     assert alish["public_builds"] == 2  # seeded two public builds
+    demo = next(u for u in d["items"] if u["username"] == "demo")
+    assert demo["public_builds"] == 0  # demo account ships with no builds
 
 
 def test_builders_directory_search():

@@ -42,7 +42,7 @@
     transition: filter var(--transition);
 }
 .nav__logo-accent { color: var(--volt); }
-.nav__logo:hover .nav__logo-mark { filter: drop-shadow(0 0 11px rgba(198,242,78,.5)); }
+.nav__logo:hover .nav__logo-mark { filter: drop-shadow(0 0 11px rgba(59,157,255,.5)); }
 
 /* Links */
 .nav__links { display: flex; gap: 3px; }

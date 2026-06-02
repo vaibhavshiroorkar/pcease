@@ -146,6 +146,13 @@ export default function Compare() {
     const searchRef = useRef(null)
     const inputRef = useRef(null)
 
+    // Once the first part is chosen, the comparison locks to that part's category:
+    // you can only compare like with like (GPU vs GPU, not GPU vs CPU).
+    const firstFilled = slots.find(Boolean)
+    const lockedCategory = firstFilled ? (firstFilled.category?.slug || firstFilled.category_slug || null) : null
+    const lockedCategoryName = firstFilled ? (firstFilled.category?.name || firstFilled.category_name || '') : ''
+    const catSlug = (c) => c?.category?.slug || c?.category_slug || null
+
     useEffect(() => {
         const ids = searchParams.get('ids')?.split(',').map(Number).filter(Boolean) || []
         if (!ids.length) { setLoading(false); return }
@@ -180,7 +187,11 @@ export default function Compare() {
                 .then(data => {
                     const list = data.components || data || []
                     const used = new Set(slots.filter(Boolean).map(s => s.id))
-                    setSearchResults(list.filter(c => !used.has(c.id)).slice(0, 12))
+                    setSearchResults(
+                        list
+                            .filter(c => !used.has(c.id) && (!lockedCategory || catSlug(c) === lockedCategory))
+                            .slice(0, 12)
+                    )
                 })
                 .catch(() => setSearchResults([]))
                 .finally(() => setSearching(false))
@@ -199,7 +210,8 @@ export default function Compare() {
     const openSearch = (slotIdx) => {
         setActiveSlot(slotIdx)
         setQuery('')
-        setSelectedCategory('')
+        // Lock the category filter to the first chosen part's category (if any)
+        setSelectedCategory(lockedCategory || '')
         setSortOrder('price-low')
         setSearchResults([])
         setTimeout(() => inputRef.current?.focus(), 50)
@@ -215,6 +227,10 @@ export default function Compare() {
 
     const addComponent = (component) => {
         if (activeSlot === null) return
+        if (lockedCategory && catSlug(component) !== lockedCategory) {
+            toast.error(`You can only compare ${lockedCategoryName || 'the same'} parts together`)
+            return
+        }
         setSlots(prev => {
             const next = [...prev]
             next[activeSlot] = component
@@ -578,19 +594,26 @@ export default function Compare() {
                                 />
                                 {searching && <FiLoader size={14} className="cp-spin cp-search-panel__spinner" />}
                             </div>
-                            <div className="cp-search-panel__filters">
-                                <button
-                                    className={`cp-filter-chip${!selectedCategory ? ' active' : ''}`}
-                                    onClick={() => setSelectedCategory('')}
-                                >All</button>
-                                {categories.map(cat => (
+                            {lockedCategory ? (
+                                <div className="cp-search-panel__locked">
+                                    <FiColumns size={13} />
+                                    <span>Comparing <strong>{lockedCategoryName}</strong> only - clear all to compare a different part type</span>
+                                </div>
+                            ) : (
+                                <div className="cp-search-panel__filters">
                                     <button
-                                        key={cat.id}
-                                        className={`cp-filter-chip${selectedCategory === cat.slug ? ' active' : ''}`}
-                                        onClick={() => setSelectedCategory(cat.slug)}
-                                    >{cat.name}</button>
-                                ))}
-                            </div>
+                                        className={`cp-filter-chip${!selectedCategory ? ' active' : ''}`}
+                                        onClick={() => setSelectedCategory('')}
+                                    >All</button>
+                                    {categories.map(cat => (
+                                        <button
+                                            key={cat.id}
+                                            className={`cp-filter-chip${selectedCategory === cat.slug ? ' active' : ''}`}
+                                            onClick={() => setSelectedCategory(cat.slug)}
+                                        >{cat.name}</button>
+                                    ))}
+                                </div>
+                            )}
                             <div className="cp-search-panel__sort">
                                 <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}>
                                     <option value="price-low">Price: Low to High</option>

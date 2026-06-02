@@ -1,8 +1,8 @@
 /* =====================================================
    PCease v5 - "Performance Instrument"
    Engineering-workstation aesthetic: near-black, blueprint
-   grid, mechanical display type, electric volt-lime signal.
-   Volt = the AI agent's signature.
+   grid, mechanical display type, electric blue signal.
+   Accent blue = the AI agent's signature.
    ===================================================== */
 
 :root {
@@ -14,18 +14,20 @@
     --surface-active: #232832;
 
     /* --- Text --- */
-    --text: #f4f5f3;
-    --text-secondary: #a7adb6;
-    --text-muted: #6a7079;
+    --text: #f6f7f9;
+    --text-secondary: #c6ccd6;
+    --text-muted: #8b929d;
 
-    /* --- Signature accent: electric volt-lime (the agent) --- */
-    --volt: #c6f24e;
-    --volt-bright: #d6ff66;
-    --accent: #c6f24e;
-    --accent-hover: #d6ff66;
-    --accent-subtle: rgba(198,242,78,.10);
-    --accent-border: rgba(198,242,78,.32);
-    --accent-glow: rgba(198,242,78,.22);
+    /* --- Signature accent: electric blue (the agent) --- */
+    --volt: #3b9dff;
+    --volt-bright: #62b4ff;
+    --accent: #3b9dff;
+    --accent-hover: #62b4ff;
+    --accent-subtle: rgba(59,157,255,.12);
+    --accent-border: rgba(59,157,255,.34);
+    --accent-glow: rgba(59,157,255,.26);
+    /* text/icon colour that sits on top of the accent fill */
+    --on-accent: #04101f;
 
     /* --- Support signals --- */
     --green: #3ad29f;
@@ -44,7 +46,7 @@
     --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
     --shadow-md: 0 6px 24px rgba(0,0,0,.45);
     --shadow-lg: 0 20px 60px rgba(0,0,0,.6);
-    --shadow-glow: 0 0 50px rgba(198,242,78,.08);
+    --shadow-glow: 0 0 50px rgba(59,157,255,.08);
 
     /* --- Radii (technical: tight) --- */
     --radius-sm: 4px;
@@ -93,7 +95,7 @@ body::after {
     z-index: 0;
     pointer-events: none;
     background:
-        radial-gradient(60% 50% at 50% -8%, rgba(198,242,78,.06), transparent 70%),
+        radial-gradient(60% 50% at 50% -8%, rgba(59,157,255,.06), transparent 70%),
         radial-gradient(50% 40% at 100% 0%, rgba(58,210,159,.04), transparent 70%);
 }
 #root { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
@@ -134,9 +136,9 @@ a:hover { color: var(--accent-hover); }
     background: var(--volt); border-color: var(--volt); color: #0a0b0d; font-weight: 700;
     box-shadow: 0 0 0 0 var(--accent-glow), var(--shadow-glow);
 }
-.btn-primary:hover { background: var(--volt-bright); border-color: var(--volt-bright); color: #0a0b0d; box-shadow: 0 8px 30px rgba(198,242,78,.28); }
+.btn-primary:hover { background: var(--volt-bright); border-color: var(--volt-bright); color: #0a0b0d; box-shadow: 0 8px 30px rgba(59,157,255,.28); }
 .btn-secondary { background: var(--accent-subtle); border-color: var(--accent-border); color: var(--volt); }
-.btn-secondary:hover { background: rgba(198,242,78,.16); border-color: var(--volt); color: var(--volt-bright); }
+.btn-secondary:hover { background: rgba(59,157,255,.16); border-color: var(--volt); color: var(--volt-bright); }
 .btn-ghost { background: transparent; border-color: transparent; }
 .btn-ghost:hover { background: var(--surface); color: var(--text); }
 .btn-danger { background: rgba(255,107,107,.1); border-color: rgba(255,107,107,.24); color: var(--error); }

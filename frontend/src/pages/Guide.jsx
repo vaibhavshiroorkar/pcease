@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FiArrowLeft, FiCpu, FiGrid, FiDollarSign, FiTool, FiAlertTriangle, FiCheckCircle, FiMonitor, FiArrowRight } from 'react-icons/fi'
 import './Guide.css'
@@ -142,8 +143,42 @@ Pro tip: Prices fluctuate weekly. Use our Browse page to check which store has t
 ]
 
 export default function Guide() {
+    const [active, setActive] = useState(sections[0].id)
+    const [progress, setProgress] = useState(0)
+
+    // Reading-progress bar
+    useEffect(() => {
+        const onScroll = () => {
+            const h = document.documentElement
+            const max = h.scrollHeight - h.clientHeight
+            setProgress(max > 0 ? Math.min(100, (h.scrollTop / max) * 100) : 0)
+        }
+        onScroll()
+        window.addEventListener('scroll', onScroll, { passive: true })
+        return () => window.removeEventListener('scroll', onScroll)
+    }, [])
+
+    // Scrollspy: highlight the section currently in view in the TOC
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const visible = entries
+                    .filter((e) => e.isIntersecting)
+                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+                if (visible[0]) setActive(visible[0].target.id)
+            },
+            { rootMargin: '-30% 0px -60% 0px', threshold: 0 }
+        )
+        sections.forEach((s) => {
+            const el = document.getElementById(s.id)
+            if (el) observer.observe(el)
+        })
+        return () => observer.disconnect()
+    }, [])
+
     return (
-        <main className="page">
+        <main className="page guide-page">
+            <div className="guide-progress" style={{ transform: `scaleX(${progress / 100})` }} />
             <div className="container">
                 <Link to="/builds?tab=discussions" className="guide-back">
                     <FiArrowLeft size={14} /> Back to Community
@@ -151,16 +186,16 @@ export default function Guide() {
 
                 <header className="guide-header">
                     <span className="guide-header__tag">Beginner's Guide</span>
-                    <h1>How to Build a PC, start to finish</h1>
+                    <h1>How to Build a PC, <span className="guide-header__accent">start to finish</span></h1>
                     <p className="guide-header__sub">
                         Plan it, price it, and put it together yourself - even if you've never opened a
                         PC before. No jargon, no assumptions, and every price grounded in Indian retailers.
                     </p>
                     <div className="guide-header__meta">
                         <span>By the PCease team</span>
-                        <span>·</span>
+                        <span className="guide-header__dot" />
                         <span>15 min read</span>
-                        <span>·</span>
+                        <span className="guide-header__dot" />
                         <span>{sections.length} chapters</span>
                     </div>
                 </header>
@@ -172,7 +207,12 @@ export default function Guide() {
                         <ol>
                             {sections.map(s => (
                                 <li key={s.id}>
-                                    <a href={`#${s.id}`}>{s.title}</a>
+                                    <a
+                                        href={`#${s.id}`}
+                                        className={active === s.id ? 'is-active' : ''}
+                                    >
+                                        {s.title}
+                                    </a>
                                 </li>
                             ))}
                         </ol>

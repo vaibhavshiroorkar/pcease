@@ -626,6 +626,19 @@
     max-height: 100px;
     overflow-y: auto;
 }
+.cp-search-panel__locked {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--accent-subtle);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+.cp-search-panel__locked svg { color: var(--accent); flex-shrink: 0; }
+.cp-search-panel__locked strong { color: var(--accent); font-weight: 600; }
 .cp-filter-chip {
     font-size: 0.75rem;
     padding: 4px 12px;

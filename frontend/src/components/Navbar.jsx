@@ -8,6 +8,7 @@ import './Navbar.css'
 const navItems = [
     { to: '/browse', label: 'Browse' },
     { to: '/builder', label: 'Builder' },
+    { to: '/compare', label: 'Compare' },
     { to: '/advisor', label: 'Advisor' },
     { to: '/builds', label: 'Community' },
 ]

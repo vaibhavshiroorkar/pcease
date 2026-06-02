@@ -1,35 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { API, formatPrice, getLowestPrice, getSavings, getBestVendor, CATEGORIES, formatSpecKey, formatSpecValue } from '../services/api'
+import { API, formatPrice, getLowestPrice, getBestVendor, CATEGORIES, formatSpecKey, formatSpecValue } from '../services/api'
 import { FiSearch, FiX, FiExternalLink, FiCheck, FiBookmark, FiGrid, FiList, FiShoppingCart, FiInfo, FiChevronRight, FiSliders } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import PriceGraph from '../components/PriceGraph'
+import PartCard from '../components/PartCard'
 import { useWatchlist } from '../hooks/useWatchlist'
 import './Browse.css'
-
-const SPEC_PRIORITY = {
-    cpu: ['cores', 'boost_clock', 'socket', 'tdp'],
-    gpu: ['memory', 'boost_clock', 'tdp', 'cuda_cores'],
-    motherboard: ['socket', 'chipset', 'form_factor', 'ram_slots'],
-    ram: ['capacity', 'speed', 'type', 'cas_latency'],
-    storage: ['capacity', 'type', 'interface', 'read_speed'],
-    psu: ['wattage', 'efficiency', 'modular'],
-    case: ['form_factor', 'max_gpu_length', 'expansion_slots'],
-    cooler: ['type', 'tdp_rating', 'fan_size'],
-    monitor: ['resolution', 'refresh_rate', 'panel_type', 'size'],
-    fans: ['size', 'quantity', 'airflow', 'rpm'],
-}
-
-const getKeySpecs = (item, maxCount = 4) => {
-    if (!item.specs || !Object.keys(item.specs).length) return []
-    const priority = SPEC_PRIORITY[item.category?.slug] || []
-    const allKeys = Object.keys(item.specs)
-    const ordered = [...priority.filter(k => k in item.specs), ...allKeys.filter(k => !priority.includes(k))]
-    return ordered.slice(0, maxCount).map(k => ({
-        key: k.replace(/_/g, ' '),
-        val: String(item.specs[k]),
-    }))
-}
 
 // Extracted skeleton components for reuse
 const CardSkeleton = () => (
@@ -76,7 +53,7 @@ export default function Browse() {
     const [sort, setSort] = useState('price-low')
     const [detail, setDetail] = useState(null)
     const [viewMode, setViewMode] = useState('list')
-    const [pageSize, setPageSize] = useState(25)
+    const [pageSize, setPageSize] = useState(30)
     const [page, setPage] = useState(1)
     
     // Advanced filters
@@ -246,9 +223,10 @@ export default function Browse() {
                         </span>
                         <div className="br-meta__right">
                             <select className="br-pagesize" value={pageSize} onChange={e => setPageSize(Number(e.target.value))} aria-label="Results per page" title="Results per page">
-                                <option value={25}>25 / page</option>
-                                <option value={50}>50 / page</option>
-                                <option value={100}>100 / page</option>
+                                <option value={15}>15 / page</option>
+                                <option value={30}>30 / page</option>
+                                <option value={60}>60 / page</option>
+                                <option value={120}>120 / page</option>
                             </select>
                             <select value={sort} onChange={e => setSort(e.target.value)}>
                                 <option value="price-low">Price: Low to High</option>
@@ -263,148 +241,48 @@ export default function Browse() {
                     </div>
                 </section>
 
-                {/* ===== GRID VIEW ===== */}
-                {viewMode === 'grid' && (
-                    <section className="br-grid">
-                        {loading
-                            ? Array(12).fill(0).map((_, i) => <CardSkeleton key={i} />)
-                            : filteredComponents.length === 0 ? <EmptyState error={error} />
-                            : pagedComponents.map(item => {
-                                const lowest = getLowestPrice(item)
-                                const savings = getSavings(item)
-                                const bestVendor = getBestVendor(item)
-                                const isSaved = watchIds.has(item.id)
-                                const vendorCount = (item.prices || []).length
-                                const keySpecs = getKeySpecs(item, 3)
-
-                                return (
-                                    <article key={item.id} className={`br-card${isSaved ? ' br-card--selected' : ''}`} onClick={() => setDetail(item)}>
-                                        <div className="br-card__top">
-                                            <span className="br-card__badge">{CATEGORIES[item.category?.slug]?.name || 'Part'}</span>
-                                            <button
-                                                className={`br-card__cmp ${isSaved ? 'active' : ''}`}
-                                                onClick={e => { e.stopPropagation(); handleToggleWatch(item) }}
-                                                title={isSaved ? 'In your watchlist' : 'Save to watchlist'}
-                                            >
-                                                {isSaved ? <FiCheck size={12} /> : <FiBookmark size={12} />}
-                                            </button>
-                                        </div>
-
-                                        <h3 className="br-card__title">{item.name}</h3>
-                                        <span className="br-card__brand">{item.brand}</span>
-
-                                        {keySpecs.length > 0 && (
-                                            <div className="br-card__specs-preview">
-                                                {keySpecs.map(s => (
-                                                    <span key={s.key} className="br-spec-chip">
-                                                        <span className="br-spec-chip__k">{s.key}</span>{s.val}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        <div className="br-card__price-row">
-                                            <div className="br-card__price">
-                                                <span className="br-card__amount">{lowest ? formatPrice(lowest) : 'N/A'}</span>
-                                                {savings > 0 && <span className="br-card__save">Save {formatPrice(savings)}</span>}
-                                            </div>
-                                        </div>
-
-                                        {bestVendor && (
-                                            <div className="br-card__cheapest">
-                                                <span className="br-card__cheapest-store">{bestVendor.vendor?.name || 'Store'}</span>
-                                                {vendorCount > 1 && (
-                                                    <span className="br-card__cheapest-more">+{vendorCount - 1} more</span>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <div className="br-card__footer">
-                                            <span className="br-card__view-details">
-                                                View Details <FiChevronRight size={13} />
-                                            </span>
-                                        </div>
-                                    </article>
-                                )
-                            })
-                        }
+                {/* ===== RESULTS (box / rectangular share one card component) ===== */}
+                {loading ? (
+                    <section className={viewMode === 'grid' ? 'pc-grid' : 'pc-list'}>
+                        {Array(viewMode === 'grid' ? 12 : 8).fill(0).map((_, i) =>
+                            viewMode === 'grid' ? <CardSkeleton key={i} /> : <ListSkeleton key={i} />
+                        )}
                     </section>
-                )}
-
-                {/* ===== LIST VIEW ===== */}
-                {viewMode === 'list' && (
-                    <section className="br-list">
-                        {loading
-                            ? Array(8).fill(0).map((_, i) => <ListSkeleton key={i} />)
-                            : filteredComponents.length === 0 ? <EmptyState error={error} />
-                            : pagedComponents.map(item => {
-                                const lowest = getLowestPrice(item)
-                                const savings = getSavings(item)
-                                const bestVendor = getBestVendor(item)
-                                const isSaved = watchIds.has(item.id)
-                                const vendorCount = (item.prices || []).length
-                                const keySpecs = getKeySpecs(item, 4)
-
-                                return (
-                                    <article key={item.id} className={`br-list-item${isSaved ? ' br-list-item--selected' : ''}`}>
-                                        <div className="br-list-item__main" onClick={() => setDetail(item)}>
-                                            <div className="br-list-item__left">
-                                                <div className="br-list-item__meta">
-                                                    <span className="br-card__badge">{CATEGORIES[item.category?.slug]?.name || 'Part'}</span>
-                                                    <span className="br-list-item__brand">{item.brand}</span>
-                                                </div>
-                                                <h3 className="br-list-item__name">{item.name}</h3>
-                                                <div className="br-list-item__specs">
-                                                    {keySpecs.map(s => (
-                                                        <span key={s.key} className="br-spec-chip">
-                                                            <span className="br-spec-chip__k">{s.key}</span>{s.val}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div className="br-list-item__price-col">
-                                                <span className="br-list-item__price">{lowest ? formatPrice(lowest) : 'N/A'}</span>
-                                                {savings > 0 && <span className="br-list-item__save">Save {formatPrice(savings)}</span>}
-                                                {bestVendor && (
-                                                    <span className="br-list-item__store">
-                                                        {vendorCount > 1 ? `${vendorCount} stores` : bestVendor.vendor?.name}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="br-list-item__actions">
-                                            {bestVendor?.url ? (
-                                                <a 
-                                                    href={bestVendor.url} 
-                                                    target="_blank" 
-                                                    rel="noreferrer" 
-                                                    className="btn btn-sm btn-primary"
-                                                    onClick={e => e.stopPropagation()}
-                                                >
-                                                    <FiExternalLink size={12} /> Buy
-                                                </a>
-                                            ) : (
-                                                <button 
-                                                    className="btn btn-sm"
-                                                    onClick={() => setDetail(item)}
-                                                >
-                                                    View
-                                                </button>
-                                            )}
-                                            <button
-                                                className={`br-card__cmp ${isSaved ? 'active' : ''}`}
-                                                onClick={e => { e.stopPropagation(); handleToggleWatch(item) }}
-                                                title={isSaved ? 'In your watchlist' : 'Save to watchlist'}
-                                            >
-                                                {isSaved ? <FiCheck size={12} /> : <FiBookmark size={12} />}
-                                            </button>
-                                        </div>
-                                    </article>
-                                )
-                            })
-                        }
+                ) : filteredComponents.length === 0 ? (
+                    <EmptyState error={error} />
+                ) : (
+                    <section className={viewMode === 'grid' ? 'pc-grid' : 'pc-list'}>
+                        {pagedComponents.map(item => {
+                            const isSaved = watchIds.has(item.id)
+                            const bestVendor = getBestVendor(item)
+                            const corner = (
+                                <button
+                                    className={`pc-corner${isSaved ? ' is-active' : ''}`}
+                                    onClick={e => { e.stopPropagation(); handleToggleWatch(item) }}
+                                    title={isSaved ? 'In your watchlist' : 'Save to watchlist'}
+                                >
+                                    {isSaved ? <FiCheck size={13} /> : <FiBookmark size={13} />}
+                                </button>
+                            )
+                            const actions = viewMode === 'grid'
+                                ? <span className="pc-view-details">View Details <FiChevronRight size={13} /></span>
+                                : bestVendor?.url
+                                    ? <a href={bestVendor.url} target="_blank" rel="noreferrer" className="btn btn-sm btn-primary" onClick={e => e.stopPropagation()}>
+                                        <FiExternalLink size={12} /> Buy
+                                      </a>
+                                    : <button className="btn btn-sm" onClick={() => setDetail(item)}>View</button>
+                            return (
+                                <PartCard
+                                    key={item.id}
+                                    item={item}
+                                    variant={viewMode === 'grid' ? 'grid' : 'list'}
+                                    highlighted={isSaved}
+                                    onOpen={() => setDetail(item)}
+                                    corner={corner}
+                                    actions={actions}
+                                />
+                            )
+                        })}
                     </section>
                 )}
 

@@ -119,11 +119,19 @@ joins; `routers/social.py` enriches in Python).
 
 ## Conventions
 
-- **Mirror component UI across Browse and Builder.** The component detail UI exists in BOTH
-  `pages/Browse.jsx` (detail modal) and `pages/Builder.jsx` (retailer view). Any change to how
-  a component is presented - specs layout, the price graph, badges, actions - must be applied
-  to BOTH. They are not shared components yet, so it's easy to update one and forget the other.
-  (If this keeps happening, extract a shared `<ComponentDetail>`.)
+- **Catalogue cards are shared: `components/PartCard.jsx`.** Browse and Watchlist render their
+  box (grid) and rectangular (list) cards through this one component (`pc-*` classes,
+  `.pc-grid` / `.pc-list` containers). Change the card once and both pages stay consistent - do
+  NOT re-introduce per-page card markup. (The old `br-card*` / `wl-card*` styles are retired;
+  only the Browse loading skeletons still use `br-card` / `br-list-item`.)
+- **Mirror component UI across Browse and Builder.** The component *detail* UI (the modal /
+  retailer view, not the card) still exists in BOTH `pages/Browse.jsx` and `pages/Builder.jsx`.
+  Any change to how a component's detail is presented - specs layout, the price graph, badges,
+  actions - must be applied to BOTH. (If this keeps happening, extract a shared `<ComponentDetail>`.)
+- **Theme = CSS variables in `styles/global.css`.** The accent is currently electric blue
+  (`--accent`/`--volt` = `#3b9dff`). When changing the theme, also update static assets that
+  can't read the tokens: **`public/favicon.svg`** (the bar marks) and the `theme-color` meta in
+  `index.html`. Grep the old hex (and its `r,g,b` form) across CSS for stragglers.
 - Specs render as cards: mono uppercase label + bold value (`br-specs__item` / `bd-spec`).
 - Keep prices grounded - never display invented/LLM-generated prices outside the agent's
   clearly-labelled output.

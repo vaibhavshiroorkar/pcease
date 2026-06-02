@@ -36,6 +36,7 @@ const presetTag = (key, tmpl) =>
 export default function Advisor() {
     const navigate = useNavigate()
     const chatEndRef = useRef(null)
+    const buildRef = useRef(null)
     const [tab, setTab] = useState('ai')
 
     // Manual tab state
@@ -96,6 +97,31 @@ export default function Advisor() {
     }
 
     const totalPrice = recommendation?.components?.reduce((s, c) => s + (c.price || c.est_price || 0), 0) || 0
+
+    // The agent chat is for showing the agent works; when it produces a build we
+    // surface the most recent one prominently in a panel below the conversation.
+    const latestBuild = (() => {
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].build) return messages[i].build
+        }
+        return null
+    })()
+
+    const openBuildInBuilder = (build) => navigate('/builder', { state: { recommendation: {
+        title: build.title,
+        components: (build.items || []).map(it => ({
+            category: it.slot,
+            component_id: it.component_id,
+            name: it.name,
+            price: it.price,
+            vendor: it.vendor,
+        })),
+    } } })
+
+    // Auto-scroll to a freshly produced build so it gets attention
+    useEffect(() => {
+        if (latestBuild && !isStreaming) buildRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }, [latestBuild, isStreaming])
 
     const filteredPresets = presets
         ? Object.entries(presets).filter(([key]) => presetFilter === 'all' || key.includes(presetFilter))
@@ -326,34 +352,16 @@ export default function Advisor() {
                                                 )}
                                                 {msg.content && <div className="ad-msg__text">{formatText(msg.content)}</div>}
                                                 {msg.build && (
-                                                    <div className="ad-buildcard">
-                                                        <div className="ad-buildcard__head">
-                                                            <strong>{msg.build.title}</strong>
-                                                            <span>{formatPrice(msg.build.total)}</span>
-                                                        </div>
-                                                        <ul>
-                                                            {msg.build.items.map((it, ii) => (
-                                                                <li key={ii}>
-                                                                    <span className="ad-bc-cat">{it.category}</span>
-                                                                    <span className="ad-bc-name">{it.name}</span>
-                                                                    <span className="ad-bc-price">{formatPrice(it.price)}</span>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                        <button className="btn btn-primary btn-sm"
-                                                            onClick={() => navigate('/builder', { state: { recommendation: {
-                                                                title: msg.build.title,
-                                                                components: (msg.build.items || []).map(it => ({
-                                                                    category: it.slot,
-                                                                    component_id: it.component_id,
-                                                                    name: it.name,
-                                                                    price: it.price,
-                                                                    vendor: it.vendor,
-                                                                })),
-                                                            } } })}>
-                                                            Open in Builder <FiArrowRight size={12} />
-                                                        </button>
-                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className="ad-buildchip"
+                                                        onClick={() => buildRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                                                    >
+                                                        <FiPackage size={14} />
+                                                        <span className="ad-buildchip__title">{msg.build.title}</span>
+                                                        <span className="ad-buildchip__total">{formatPrice(msg.build.total)}</span>
+                                                        <span className="ad-buildchip__hint">See below ↓</span>
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
@@ -375,6 +383,38 @@ export default function Advisor() {
                                 </button>
                             </form>
                         </div>
+
+                        {/* Recommended build, surfaced below the chat */}
+                        {latestBuild && (
+                            <section className="ad-build-feature" ref={buildRef}>
+                                <div className="ad-build-feature__head">
+                                    <span className="ad-build-feature__tag"><FiPackage size={13} /> Recommended build</span>
+                                    <span className="ad-build-feature__total">{formatPrice(latestBuild.total)}</span>
+                                </div>
+                                <h2 className="ad-build-feature__title">{latestBuild.title}</h2>
+                                <ul className="ad-build-feature__list">
+                                    {latestBuild.items.map((it, ii) => (
+                                        <li key={ii}>
+                                            <span className="ad-bf-cat">{it.category}</span>
+                                            <div className="ad-bf-main">
+                                                <span className="ad-bf-name">{it.name}</span>
+                                                {it.vendor && <span className="ad-bf-vendor">{it.vendor}</span>}
+                                            </div>
+                                            <span className="ad-bf-price">{formatPrice(it.price)}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="ad-build-feature__footer">
+                                    <div className="ad-build-feature__total-row">
+                                        <span>Total</span>
+                                        <strong>{formatPrice(latestBuild.total)}</strong>
+                                    </div>
+                                    <button className="btn btn-primary" onClick={() => openBuildInBuilder(latestBuild)}>
+                                        Open in Builder <FiArrowRight size={14} />
+                                    </button>
+                                </div>
+                            </section>
+                        )}
                     </div>
                 )}
 

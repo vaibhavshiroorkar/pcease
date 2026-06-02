@@ -529,10 +529,14 @@ def seed_data():
     ]
 
     # Demo social data so the community feed and profiles aren't empty locally.
-    # All three demo accounts share the password "demo1234" so you can sign in as
-    # them to exercise the social features. (Local fake-DB only.)
+    # Every demo account shares the password "demo1234" so you can sign in to
+    # exercise the social features. Use "demo" / "demo1234" for a quick try.
+    # (Local fake-DB only.)
     demo_pw = _demo_password_hash()
     users = [
+        {"id": 4, "username": "demo", "email": "demo@demo.pcease", "hashed_password": demo_pw,
+         "is_active": True, "is_admin": False, "created_at": "2026-04-01T10:00:00+00:00",
+         "bio": "Demo account - take PCease for a spin.", "avatar_url": None, "favorites_public": True},
         {"id": 1, "username": "alishbuilds", "email": "alish@demo.pcease", "hashed_password": demo_pw,
          "is_active": True, "is_admin": False, "created_at": "2026-04-02T10:00:00+00:00",
          "bio": "Budget 1080p gaming builds, value-first.", "avatar_url": None, "favorites_public": True},

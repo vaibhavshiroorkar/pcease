@@ -1,8 +1,39 @@
 # PCease - Session Handoff
 
-_Last updated: 2026-06-02_
+_Last updated: 2026-06-03_
 
 A snapshot of where the project stands so anyone (human or agent) can pick up cleanly.
+
+## Latest session (2026-06-03): Blue theme, shared cards, UX round
+
+On branch `feat/ux-watchlist-community`. Frontend build + vitest clean; backend **38 tests pass**.
+
+- **Theme switched volt-lime -> electric blue** (`--accent`/`--volt` = `#3b9dff`) in
+  `styles/global.css`, plus every hardcoded `rgb(198,242,78)` across CSS and the
+  **`public/favicon.svg`** bar marks. Greys lightened for contrast (`--text-secondary`/`--muted`).
+  Convention added to DEVELOPMENT.md: on theme change, update favicon + `theme-color` too.
+- **Shared catalogue card: `components/PartCard.jsx`** (`pc-*`, `.pc-grid` / `.pc-list`). Browse
+  and Watchlist both render box/list cards through it, so the two views and pages stay
+  consistent (brand now sits next to the category badge in both variants). Retired the old
+  `br-card*` / `wl-card*` card markup (Browse skeletons still use `br-card`/`br-list-item`).
+- **Watchlist** got the Browse treatment: box/rectangular toggle (**defaults to list**), search,
+  advanced filters (brand / price / in-stock), category chips, and sort - reusing `br-filters` CSS.
+- **Browse:** consolidated to a single page-size selector (**15 / 30 / 60 / 120**, default 30) in
+  the toolbar; removed the duplicate one that briefly lived in the pagination bar.
+- **Compare:** restored as a standalone nav tab; once the first part is chosen the search
+  **locks to that category** (GPU vs GPU only), with a locked banner + a guard on add.
+- **Builder:** the Public checkbox + Share button became one **Share dropdown** - "Copy private
+  link" (`/builder/{share_id}`) and "Publish & copy public link" (`is_public`, `/build/{slug}`).
+  Save now always saves privately.
+- **Advisor:** the agent's build is surfaced in a prominent **panel below the chat** (chat keeps a
+  compact "see below" chip); auto-scrolls in and always shows the most recent build.
+- **Home:** removed the hero "Browse parts" button; sections are full-height (`100vh`) with
+  polished headers; scroll-snap removed earlier for smoothness.
+- **Guide** page visually reworked (progress bar, scrollspy TOC, timeline steps).
+- **Demo login:** added `demo` / `demo1234` to the fake DB (`fake_db.py`); `test_watchlist.py`
+  user-count assertion bumped 3 -> 4.
+- **Not yet done:** still no PR; branch not merged. Old `br-card*` detail-card CSS in Browse.css
+  is partly dead (kept for skeletons) - could be trimmed.
 
 ## Latest session (2026-06-02): Watchlist + Community merge + UX pass
 

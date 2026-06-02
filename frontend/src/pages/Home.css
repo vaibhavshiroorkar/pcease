@@ -2,11 +2,8 @@
    Home - v5  Full-section hero · Scrolling layout
    ===================================================== */
 
-/* ---- Each section behaves like its own full page ---- */
-html.home-snap { scroll-snap-type: y proximity; scroll-padding-top: 60px; }
-.hero, .home-section {
-    scroll-snap-align: start;
-}
+/* ---- Smooth, free-flowing scroll (no hard snapping) ---- */
+html.home-snap { scroll-padding-top: 72px; }
 
 /* ---- Hero ---- */
 .hero {
@@ -23,7 +20,7 @@ html.home-snap { scroll-snap-type: y proximity; scroll-padding-top: 60px; }
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(ellipse 45% 55% at 80% 28%, rgba(198,242,78,.04) 0%, transparent 60%);
+        radial-gradient(ellipse 45% 55% at 80% 28%, rgba(59,157,255,.04) 0%, transparent 60%);
     pointer-events: none;
 }
 .hero__grid {
@@ -281,39 +278,49 @@ html.home-snap { scroll-snap-type: y proximity; scroll-padding-top: 60px; }
     50%      { transform: translateX(-50%) translateY(6px); }
 }
 
-/* ---- Shared section ---- */
+/* ---- Shared section: each fills a full screen ---- */
 .home-section {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 100px 0;
+    padding: 104px 0;
+    scroll-margin-top: 72px;
 }
 .home-section--alt {
     background: var(--bg-secondary);
 }
 .section-header {
     text-align: center;
-    margin-bottom: 48px;
+    margin-bottom: 56px;
 }
 .section-tag {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     font-size: .7rem;
     font-weight: 600;
     font-family: var(--font-mono);
     text-transform: uppercase;
-    letter-spacing: .08em;
+    letter-spacing: .14em;
     color: var(--accent);
-    margin-bottom: 10px;
+    background: var(--accent-subtle);
+    border: 1px solid var(--accent-border);
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    margin-bottom: 18px;
 }
 .section-header h2 {
-    font-size: 1.5rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.15rem);
     font-weight: 700;
-    margin-bottom: 8px;
+    letter-spacing: -.02em;
+    margin-bottom: 10px;
 }
 .section-header p {
-    font-size: .875rem;
-    color: var(--text-muted);
+    font-size: .95rem;
+    color: var(--text-secondary);
+    max-width: 520px;
+    margin: 0 auto;
 }
 
 /* ---- Steps ---- */
@@ -349,12 +356,12 @@ html.home-snap { scroll-snap-type: y proximity; scroll-padding-top: 60px; }
     flex-shrink: 0;
 }
 .step__content h3 {
-    font-size: .9375rem;
+    font-size: 1.05rem;
     font-weight: 600;
     margin-bottom: 6px;
 }
 .step__content p {
-    font-size: .8125rem;
+    font-size: .85rem;
     color: var(--text-secondary);
     line-height: 1.6;
 }
@@ -392,11 +399,11 @@ html.home-snap { scroll-snap-type: y proximity; scroll-padding-top: 60px; }
 }
 .feat-card--agent {
     background:
-        radial-gradient(120% 140% at 100% 0%, rgba(198,242,78,.08), transparent 55%),
+        radial-gradient(120% 140% at 100% 0%, rgba(59,157,255,.08), transparent 55%),
         var(--surface);
     border-color: var(--accent-border);
 }
-.feat-card--agent:hover { border-color: var(--volt); box-shadow: 0 0 40px rgba(198,242,78,.08); }
+.feat-card--agent:hover { border-color: var(--volt); box-shadow: 0 0 40px rgba(59,157,255,.08); }
 .feat-card--agent h3 { font-family: var(--font-display); font-size: 1.35rem; }
 .feat-card--agent p { max-width: 620px; font-size: .875rem; }
 .feat-card__icon {
@@ -414,14 +421,14 @@ html.home-snap { scroll-snap-type: y proximity; scroll-padding-top: 60px; }
     background: var(--accent-subtle);
     border-color: var(--accent-border);
     color: var(--volt);
-    box-shadow: 0 0 24px rgba(198,242,78,.12);
+    box-shadow: 0 0 24px rgba(59,157,255,.12);
 }
 .feat-card h3 {
-    font-size: .9375rem;
+    font-size: 1.05rem;
     font-weight: 600;
 }
 .feat-card p {
-    font-size: .8125rem;
+    font-size: .85rem;
     color: var(--text-secondary);
     line-height: 1.6;
 }

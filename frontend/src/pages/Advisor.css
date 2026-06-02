@@ -84,7 +84,7 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: v
 .ad-result__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .ad-result__head h2 { font-size: 1.125rem; }
 .ad-result__src { font-size: .75rem; font-weight: 600; padding: 3px 10px; background: var(--accent-subtle); border-radius: 9999px; color: var(--accent); white-space: nowrap; }
-.ad-result__src--smart { background: linear-gradient(135deg, rgba(58,210,159,.15), rgba(198,242,78,.15)); color: var(--green); }
+.ad-result__src--smart { background: linear-gradient(135deg, rgba(58,210,159,.15), rgba(59,157,255,.15)); color: var(--green); }
 .ad-result__desc { font-size: .9375rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.6; }
 
 /* Budget Status */
@@ -220,12 +220,47 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: v
 .ad-step.done { color: var(--success, #4ade80); }
 .ad-msg__text { white-space: normal; line-height: 1.55; }
 .ad-bullet { padding-left: 4px; }
-.ad-buildcard {
-    margin-top: 10px; border: 1px solid var(--border, #2a2f3a);
-    border-radius: 10px; padding: 12px; background: var(--surface-2, #161a21);
+/* Compact in-chat reference; the full build is featured below the chat */
+.ad-buildchip {
+    margin-top: 10px; display: flex; align-items: center; gap: 9px; width: 100%;
+    padding: 10px 12px; border: 1px solid var(--accent-border); border-radius: var(--radius-md);
+    background: var(--accent-subtle); color: var(--text); cursor: pointer; text-align: left;
+    transition: border-color var(--transition), background var(--transition);
 }
-.ad-buildcard__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.ad-buildcard ul { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 4px; }
-.ad-buildcard li { display: grid; grid-template-columns: 64px 1fr auto; gap: 8px; font-size: 13px; align-items: center; }
-.ad-bc-cat { color: var(--text-muted, #9aa4b2); font-size: 11px; text-transform: uppercase; }
-.ad-bc-price { font-variant-numeric: tabular-nums; }
+.ad-buildchip:hover { border-color: var(--accent); }
+.ad-buildchip svg { color: var(--accent); flex-shrink: 0; }
+.ad-buildchip__title { font-weight: 600; font-size: .8125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ad-buildchip__total { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); margin-left: auto; flex-shrink: 0; }
+.ad-buildchip__hint { font-size: .7rem; color: var(--text-muted); flex-shrink: 0; }
+
+/* Featured build panel below the chat */
+.ad-build-feature {
+    margin-top: 16px; padding: 22px;
+    background:
+        radial-gradient(120% 140% at 100% 0%, var(--accent-subtle), transparent 55%),
+        var(--surface);
+    border: 1px solid var(--accent-border); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md); animation: slideUp .2s var(--ease);
+}
+.ad-build-feature__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.ad-build-feature__tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-size: .68rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .12em; color: var(--accent);
+}
+.ad-build-feature__total { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.1rem; color: var(--accent); }
+.ad-build-feature__title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
+.ad-build-feature__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ad-build-feature__list li {
+    display: grid; grid-template-columns: 92px 1fr auto; gap: 12px; align-items: center;
+    padding: 11px 0; border-bottom: 1px solid var(--border);
+}
+.ad-bf-cat { font-family: var(--font-mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
+.ad-bf-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ad-bf-name { font-size: .875rem; font-weight: 500; }
+.ad-bf-vendor { font-size: .7rem; color: var(--text-muted); }
+.ad-bf-price { font-variant-numeric: tabular-nums; font-weight: 600; font-size: .875rem; }
+.ad-build-feature__footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+.ad-build-feature__total-row { display: flex; align-items: baseline; gap: 10px; }
+.ad-build-feature__total-row span { font-size: .8125rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.ad-build-feature__total-row strong { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }

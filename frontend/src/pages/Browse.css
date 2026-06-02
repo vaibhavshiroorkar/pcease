@@ -81,7 +81,7 @@
 
 /* Pagination */
 .br-pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 24px; }
-.br-pagination__info { font-size: .8125rem; color: var(--text-muted); }
+.br-pagination__info { font-size: .8125rem; color: var(--text-secondary); }
 .br-pagination__controls { display: flex; align-items: center; gap: 12px; margin-left: auto; }
 .br-pagination__page { font-size: .8125rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .br-pagination .btn:disabled { opacity: .4; cursor: not-allowed; }
@@ -110,8 +110,8 @@
     color: var(--text-muted); transition: all .2s; flex-shrink: 0;
 }
 .br-card__cmp:hover, .br-card__cmp.active { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
-.br-card__title { font-size: .9375rem; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.br-card__brand { font-size: .8125rem; color: var(--text-muted); }
+.br-card__title { font-size: .9375rem; font-weight: 600; line-height: 1.35; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.br-card__brand { font-size: .75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
 
 /* Spec chips */
 .br-card__specs-preview { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
@@ -126,7 +126,7 @@
 .br-card__price-row { display: flex; align-items: baseline; gap: 10px; margin-top: auto; padding-top: 4px; }
 .br-card__price { display: flex; align-items: baseline; gap: 8px; }
 .br-card__amount { font-size: 1.125rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-.br-card__save { font-size: .6875rem; font-weight: 600; color: #22c55e; background: rgba(34,197,94,.1); padding: 2px 6px; border-radius: 4px; }
+.br-card__save { font-size: .6875rem; font-weight: 600; color: #22c55e; background: rgba(34,197,94,.12); padding: 2px 6px; border-radius: 4px; }
 
 /* Cheapest retailer preview */
 .br-card__cheapest {
@@ -197,10 +197,11 @@
     text-transform: uppercase;
     letter-spacing: .03em;
 }
-.br-list-item__name { 
-    font-size: 1rem; 
-    font-weight: 600; 
-    line-height: 1.35; 
+.br-list-item__name {
+    font-size: .9375rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--text);
     margin: 0; 
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -226,7 +227,7 @@
 .br-list-item__price {
     font-size: 1.125rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--text);
 }
 .br-list-item__save {
     font-size: .6875rem;

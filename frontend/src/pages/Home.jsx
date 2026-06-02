@@ -49,9 +49,6 @@ export default function Home() {
                             <Link to="/builder" className="btn btn-lg">
                                 Build your PC
                             </Link>
-                            <Link to="/browse" className="btn btn-lg">
-                                Browse parts
-                            </Link>
                         </div>
                         <div className="hero__stats">
                             <Link to="/browse" className="hero__stat hero__stat--link">
