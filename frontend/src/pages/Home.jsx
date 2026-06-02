@@ -1,17 +1,28 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
     FiArrowRight, FiDollarSign, FiCpu, FiLayers,
     FiSearch, FiZap, FiShield, FiTrendingDown,
-    FiMessageSquare, FiColumns, FiChevronDown
+    FiMessageSquare, FiColumns, FiChevronDown, FiX, FiExternalLink
 } from 'react-icons/fi'
+import { API } from '../services/api'
 import './Home.css'
 
 export default function Home() {
-    // Full-page section snapping — scoped to the home route only
+    const [vendors, setVendors] = useState([])
+    const [showRetailers, setShowRetailers] = useState(false)
+    const [stats, setStats] = useState(null)
+
+    // Full-page section snapping, scoped to the home route only
     useEffect(() => {
         document.documentElement.classList.add('home-snap')
         return () => document.documentElement.classList.remove('home-snap')
+    }, [])
+
+    // Live data for the hero stats and the retailers modal
+    useEffect(() => {
+        API.getVendors().then(setVendors).catch(() => {})
+        API.getStats().then(setStats).catch(() => {})
     }, [])
 
     return (
@@ -21,7 +32,7 @@ export default function Home() {
             <section className="hero">
                 <div className="hero__bg" />
                 <div className="container hero__grid">
-                    {/* Left — message */}
+                    {/* Left: message */}
                     <div className="hero__lead">
                         <h1>
                             Tell it your budget.<br />
@@ -40,48 +51,66 @@ export default function Home() {
                             </Link>
                         </div>
                         <div className="hero__stats">
-                            <div className="hero__stat">
+                            <Link to="/browse" className="hero__stat hero__stat--link">
                                 <span className="hero__stat-num">500+</span>
                                 <span className="hero__stat-label">Components</span>
-                            </div>
+                            </Link>
                             <div className="hero__stat-divider" />
-                            <div className="hero__stat">
-                                <span className="hero__stat-num">9</span>
+                            <button type="button" className="hero__stat hero__stat--link" onClick={() => setShowRetailers(true)}>
+                                <span className="hero__stat-num">{vendors.length || 9}</span>
                                 <span className="hero__stat-label">Retailers</span>
-                            </div>
+                            </button>
                             <div className="hero__stat-divider" />
-                            <div className="hero__stat">
-                                <span className="hero__stat-num">₹0</span>
-                                <span className="hero__stat-label">Always Free</span>
-                            </div>
+                            <Link to="/forum" className="hero__stat hero__stat--link">
+                                <span className="hero__stat-num">{stats?.forum_threads ?? 0}</span>
+                                <span className="hero__stat-label">Community</span>
+                            </Link>
                         </div>
                     </div>
 
-                    {/* Right — live agent console */}
+                    {/* Right: live agent console */}
                     <div className="agent-console" aria-hidden="true">
                         <div className="agent-console__bar">
-                            <span className="agent-console__live" />
-                            <span className="agent-console__title">pcease-agent</span>
-                            <span className="agent-console__meta">claude · streaming</span>
+                            <span className="agent-console__dots"><i /><i /><i /></span>
+                            <span className="agent-console__title">agent</span>
+                            <span className="agent-console__model">
+                                <span className="agent-console__live" />
+                            </span>
                         </div>
                         <div className="agent-console__body">
-                            <div className="acl acl--user">build me a ₹60,000 gaming PC</div>
-                            <div className="acl acl--tool" style={{ '--d': '.6s' }}>
-                                <span className="acl__tk">search_components</span> <span className="acl__ok">✓ 8 GPUs</span>
+                            <div className="acl acl--user" style={{ '--d': '.15s' }}>
+                                <span className="acl__chev">›</span> build me a ₹60,000 gaming PC
                             </div>
-                            <div className="acl acl--tool" style={{ '--d': '1.2s' }}>
-                                <span className="acl__tk">check_compatibility</span> <span className="acl__ok">✓ AM5</span>
+
+                            <div className="acl acl--step" style={{ '--d': '.7s' }}>
+                                <span className="acl__dot" />
+                                <span className="acl__tk">search_components</span>
+                                <span className="acl__ok">8 matches</span>
                             </div>
-                            <div className="acl acl--tool" style={{ '--d': '1.8s' }}>
-                                <span className="acl__tk">estimate_wattage</span> <span className="acl__ok">✓ 550W</span>
+                            <div className="acl acl--step" style={{ '--d': '1.3s' }}>
+                                <span className="acl__dot" />
+                                <span className="acl__tk">check_compatibility</span>
+                                <span className="acl__ok">AM5 ✓</span>
                             </div>
-                            <div className="acl acl--card" style={{ '--d': '2.5s' }}>
+                            <div className="acl acl--step" style={{ '--d': '1.9s' }}>
+                                <span className="acl__dot" />
+                                <span className="acl__tk">estimate_wattage</span>
+                                <span className="acl__ok">550W</span>
+                            </div>
+
+                            <div className="acl acl--reply" style={{ '--d': '2.5s' }}>
+                                Balanced pick, no bottleneck.<span className="acl__caret" />
+                            </div>
+
+                            <div className="acl acl--card" style={{ '--d': '2.9s' }}>
                                 <div className="acl-card__head">
                                     <span>Budget Gaming Build</span>
                                     <span className="acl-card__total">₹59,400</span>
                                 </div>
-                                <div className="acl-card__row"><i>GPU</i> RTX 4060 <b>₹29,000</b></div>
-                                <div className="acl-card__row"><i>CPU</i> Ryzen 5 7600 <b>₹21,000</b></div>
+                                <div className="acl-card__row"><i>GPU</i><span>RTX 4060</span><b>₹29,000</b></div>
+                                <div className="acl-card__row"><i>CPU</i><span>Ryzen 5 7600</span><b>₹21,000</b></div>
+                                <div className="acl-card__more">+ 5 more parts</div>
+                                <div className="acl-card__cta">Open in Builder <FiArrowRight size={12} /></div>
                             </div>
                         </div>
                     </div>
@@ -140,8 +169,8 @@ export default function Home() {
                             <h3>The AI Agent</h3>
                             <p>
                                 Give it a budget and a use case. It runs a real tool loop over the live
-                                catalog — searching parts, checking compatibility and wattage, and
-                                bottleneck-testing — then streams back a grounded build you can open in
+                                catalog - searching parts, checking compatibility and wattage, and
+                                bottleneck-testing - then streams back a grounded build you can open in
                                 the Builder. No invented prices, ever.
                             </p>
                             <Link to="/advisor" className="feat-card__link">Ask the agent <FiArrowRight size={13} /></Link>
@@ -149,7 +178,7 @@ export default function Home() {
                         <div className="feat-card">
                             <div className="feat-card__icon"><FiTrendingDown size={20} /></div>
                             <h3>Price Comparison</h3>
-                            <p>Real-time prices from Amazon, Flipkart, MD Computers, Vedant, PCStudio and more — price bars, savings, and direct buy links on one page.</p>
+                            <p>Real-time prices from Amazon, Flipkart, MD Computers, Vedant, PCStudio and more - price bars, savings, and direct buy links on one page.</p>
                             <Link to="/browse" className="feat-card__link">Browse prices <FiArrowRight size={13} /></Link>
                         </div>
                         <div className="feat-card">
@@ -229,6 +258,37 @@ export default function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* ===== Retailers modal ===== */}
+            {showRetailers && (
+                <div className="modal-overlay" onClick={() => setShowRetailers(false)}>
+                    <div className="modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Retailers we track</h2>
+                            <button className="modal-close" onClick={() => setShowRetailers(false)} aria-label="Close">
+                                <FiX />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <p className="home-retailers__sub">
+                                We compare live prices across these Indian stores so you always see the best deal.
+                            </p>
+                            <ul className="home-retailers">
+                                {vendors.map(v => (
+                                    <li key={v.id} className="home-retailer">
+                                        <span className="home-retailer__name">{v.name}</span>
+                                        {v.url && v.url !== '#' && (
+                                            <a href={v.url} target="_blank" rel="noopener noreferrer" className="home-retailer__link">
+                                                Visit <FiExternalLink size={12} />
+                                            </a>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </main>
     )

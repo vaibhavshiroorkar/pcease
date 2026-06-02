@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 import { API, formatPrice, getLowestPrice, BUILD_SLOTS, formatSpecKey, formatSpecValue } from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import { FiLink, FiSave, FiX, FiPlus, FiZap, FiActivity, FiSearch, FiExternalLink, FiChevronLeft, FiShoppingCart, FiHelpCircle, FiArrowRight, FiFilter, FiSliders } from 'react-icons/fi'
+import { FiLink, FiSave, FiX, FiPlus, FiZap, FiActivity, FiSearch, FiExternalLink, FiChevronLeft, FiShoppingCart, FiHelpCircle, FiArrowRight, FiFilter, FiSliders, FiTrash2, FiGlobe } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import PriceGraph from '../components/PriceGraph'
 import './Builder.css'
@@ -25,7 +25,7 @@ const SPEC_KEYS = {
     headset: ['driver', 'connection', 'microphone'],
 }
 
-// Core slots — ram2 and fans handled separately
+// Core slots - ram2 and fans handled separately
 const CORE_SLOTS = BUILD_SLOTS.filter(s => s.key !== 'ram2' && s.key !== 'fans')
 
 // All accessory categories
@@ -167,7 +167,7 @@ export default function Builder() {
     // Extra RAM sticks (dynamic array)
     const [extraRam, setExtraRam] = useState([])
 
-    // Accessories — dynamic per-category arrays { fans: [comp, comp], ... }
+    // Accessories - dynamic per-category arrays { fans: [comp, comp], ... }
     const [accessories, setAccessories] = useState({})
 
     // Modal state
@@ -182,7 +182,7 @@ export default function Builder() {
     const [brandFilter, setBrandFilter] = useState('')
     const [priceRange, setPriceRange] = useState({ min: '', max: '' })
     const [sortBy, setSortBy] = useState('price-low')
-    const [showFilters, setShowFilters] = useState(false)
+    const [showFilters, setShowFilters] = useState(true)
 
     // UI state
     const [saving, setSaving] = useState(false)
@@ -192,6 +192,8 @@ export default function Builder() {
     const [bottleneck, setBottleneck] = useState(null)
     const [sharedView, setSharedView] = useState(false)
     const [showGuide, setShowGuide] = useState(false)
+    const [showClearConfirm, setShowClearConfirm] = useState(false)
+    const [isPublic, setIsPublic] = useState(false)
     const [savedBuilds, setSavedBuilds] = useState([])
     const [loadingBuilds, setLoadingBuilds] = useState(false)
 
@@ -348,7 +350,7 @@ export default function Builder() {
         setBrandFilter('')
         setPriceRange({ min: '', max: '' })
         setSortBy('price-low')
-        setShowFilters(false)
+        setShowFilters(true)
         setLoading(true)
 
         // Determine the API category from slot key
@@ -429,16 +431,26 @@ export default function Builder() {
         }))
     }, [])
 
+    const handleClear = () => {
+        setBuild({})
+        setComponentIds({})
+        setExtraRam([])
+        setAccessories({})
+        setBuildName('My Build')
+        setShowClearConfirm(false)
+        toast.success('Build cleared')
+    }
+
     const handleSave = useCallback(async () => {
         if (!user) return toast.error('Please login to save')
         setSaving(true)
         try {
-            await API.saveBuild({ name: buildName, components: allComponentIds })
-            toast.success('Build saved!')
+            await API.saveBuild({ name: buildName, components: allComponentIds, is_public: isPublic })
+            toast.success(isPublic ? 'Build saved and published!' : 'Build saved!')
             API.getBuilds().then(setSavedBuilds).catch(() => {})
         } catch (e) { toast.error('Failed: ' + e.message) }
         finally { setSaving(false) }
-    }, [user, buildName, allComponentIds])
+    }, [user, buildName, allComponentIds, isPublic])
 
     const handleShare = useCallback(async () => {
         if (Object.keys(allComponentIds).length === 0) return toast.error('Add components first')
@@ -519,7 +531,7 @@ export default function Builder() {
                         <h1>{sharedView ? 'Shared Build' : 'PC Builder'}</h1>
                         <p className="bd-header__sub">
                             {sharedView
-                                ? 'Viewing a shared build — modify and save your own.'
+                                ? 'Viewing a shared build - modify and save your own.'
                                 : 'Select components, compare retailer prices, and share.'}
                         </p>
                     </div>
@@ -528,9 +540,21 @@ export default function Builder() {
                             <FiHelpCircle size={14} /> Guide Me
                         </button>
                         <input type="text" value={buildName} onChange={e => setBuildName(e.target.value)} placeholder="Build name" className="bd-name" />
+                        <button
+                            className="btn bd-clear-btn"
+                            onClick={() => setShowClearConfirm(true)}
+                            disabled={Object.keys(allComponentIds).length === 0}
+                            title="Clear build"
+                        >
+                            <FiTrash2 size={14} /> Clear
+                        </button>
                         <button className="btn" onClick={handleShare} disabled={sharing}>
                             <FiLink size={14} /> {sharing ? '...' : 'Share'}
                         </button>
+                        <label className="bd-public-toggle" title="Publish to the community feed when saved">
+                            <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} />
+                            <FiGlobe size={13} /> Public
+                        </label>
                         <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
                             <FiSave size={14} /> {saving ? '...' : 'Save'}
                         </button>
@@ -577,7 +601,7 @@ export default function Builder() {
                                         )}
                                     </div>
 
-                                    {/* ── Extra RAM sticks — nested inside the RAM group ── */}
+                                    {/* ── Extra RAM sticks - nested inside the RAM group ── */}
                                     {isRam && extraRam.map((ram, i) => (
                                         <div key={`extra_ram_${i}`} className="bd-slot bd-slot--filled bd-slot--extra">
                                             <div className="bd-slot__head">
@@ -604,10 +628,10 @@ export default function Builder() {
                             )
                         })}
 
-                        {/* ── Accessories Section — unified with filter tabs ── */}
+                        {/* ── Accessories Section - unified with filter tabs ── */}
                         <div className="bd-accessories">
                             <h3 className="bd-accessories__title">Accessories</h3>
-                            <p className="bd-accessories__sub">Add as many as you need — a new slot appears each time.</p>
+                            <p className="bd-accessories__sub">Add as many as you need - a new slot appears each time.</p>
 
                             {/* Show all added accessories across all categories */}
                             <div className="bd-accessory-list">
@@ -651,7 +675,7 @@ export default function Builder() {
                                 {CORE_SLOTS.map(slot => (
                                     <li key={slot.key} className={build[slot.key] ? 'has' : ''}>
                                         <span>{slot.name}</span>
-                                        <span>{build[slot.key] ? formatPrice(getLowestPrice(build[slot.key])) : '—'}</span>
+                                        <span>{build[slot.key] ? formatPrice(getLowestPrice(build[slot.key])) : '-'}</span>
                                     </li>
                                 ))}
                                 {extraRam.map((ram, i) => (
@@ -691,12 +715,40 @@ export default function Builder() {
                         )}
 
                         {bottleneck && (
-                            <div className={`bd-info-card bd-bn--${bottleneck.severity}`}>
-                                <h3><FiActivity size={14} /> Bottleneck Analysis</h3>
+                            <div className={`bd-info-card bd-bn bd-bn--${bottleneck.severity}`}>
+                                <h3>
+                                    <FiActivity size={14} /> Bottleneck Analysis
+                                    <span className="bd-bn__pill">
+                                        {bottleneck.status === 'balanced' ? 'Balanced'
+                                            : bottleneck.status === 'cpu_bottleneck' ? 'CPU Limited'
+                                                : 'GPU Limited'}
+                                    </span>
+                                </h3>
                                 <p className="bd-bn__msg">{bottleneck.message}</p>
-                                <div className="bd-bn__tiers">
-                                    <div><span>CPU</span><span className="bd-bn__bar">{'█'.repeat(bottleneck.cpu.tier)}{'░'.repeat(5 - bottleneck.cpu.tier)}</span></div>
-                                    <div><span>GPU</span><span className="bd-bn__bar">{'█'.repeat(bottleneck.gpu.tier)}{'░'.repeat(5 - bottleneck.gpu.tier)}</span></div>
+                                <div className="bd-bn__meters">
+                                    {[['CPU', bottleneck.cpu], ['GPU', bottleneck.gpu]].map(([label, part]) => {
+                                        const isLimiter =
+                                            (bottleneck.status === 'cpu_bottleneck' && label === 'CPU') ||
+                                            (bottleneck.status === 'gpu_bottleneck' && label === 'GPU')
+                                        return (
+                                            <div key={label} className={`bd-bn__meter${isLimiter ? ' is-limiter' : ''}`}>
+                                                <span className="bd-bn__label">{label}</span>
+                                                <span
+                                                    className="bd-bn__track"
+                                                    role="meter"
+                                                    aria-valuenow={part.tier}
+                                                    aria-valuemin={1}
+                                                    aria-valuemax={5}
+                                                    aria-label={`${label} performance tier ${part.tier} of 5`}
+                                                >
+                                                    {[1, 2, 3, 4, 5].map(n => (
+                                                        <span key={n} className={`bd-bn__seg${n <= part.tier ? ' is-on' : ''}`} />
+                                                    ))}
+                                                </span>
+                                                <span className="bd-bn__tier">{part.tier}<i>/5</i></span>
+                                            </div>
+                                        )
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -931,6 +983,29 @@ export default function Builder() {
                                         )}
                                     </>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Clear Build Confirmation */}
+                {showClearConfirm && (
+                    <div className="modal-overlay" onClick={() => setShowClearConfirm(false)}>
+                        <div className="modal bd-confirm" onClick={e => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h2>Clear this build?</h2>
+                                <button className="modal-close" onClick={() => setShowClearConfirm(false)}><FiX size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="bd-confirm__msg">
+                                    This removes every selected component and resets the build name. This can't be undone.
+                                </p>
+                                <div className="bd-confirm__actions">
+                                    <button className="btn" onClick={() => setShowClearConfirm(false)}>Cancel</button>
+                                    <button className="btn btn-danger" onClick={handleClear}>
+                                        <FiTrash2 size={14} /> Clear build
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

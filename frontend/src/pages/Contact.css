@@ -1,6 +1,8 @@
 /* Contact Page */
 
-.ct { padding-top: 40px; min-height: calc(100vh - 200px); }
+/* Don't override .page's padding-top (92px) - it clears the fixed navbar.
+   Add the extra breathing room as margin on the header instead. */
+.ct { min-height: calc(100vh - 200px); }
 
 .ct-header {
     text-align: center;

@@ -13,13 +13,16 @@ from ..config import settings
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 # Pre-computed dummy hash so login does a bcrypt verify even when the user is
-# not found — removes the timing side-channel that leaks username existence.
+# not found - removes the timing side-channel that leaks username existence.
 _DUMMY_HASH = get_password_hash("timing-equalizer-not-a-real-password")
 
 
 class ProfileUpdate(BaseModel):
     username: str | None = None
     email: str | None = None
+    bio: str | None = None
+    avatar_url: str | None = None
+    favorites_public: bool | None = None
 
 
 class PasswordChange(BaseModel):
@@ -79,7 +82,8 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(
-        data={"sub": user["id"]},
+        # JWT `sub` must be a string (python-jose rejects non-string subjects on decode)
+        data={"sub": str(user["id"])},
         expires_delta=timedelta(minutes=settings.access_token_expire_minutes),
     )
     return {"access_token": access_token, "token_type": "bearer"}
@@ -105,6 +109,13 @@ async def update_profile(update: ProfileUpdate, current_user: dict = Depends(get
         if existing.data:
             raise HTTPException(status_code=400, detail="Email already registered")
         changes["email"] = update.email
+    # Profile fields (no uniqueness checks). None means "not provided".
+    if update.bio is not None:
+        changes["bio"] = update.bio.strip()[:280]
+    if update.avatar_url is not None:
+        changes["avatar_url"] = update.avatar_url or None
+    if update.favorites_public is not None:
+        changes["favorites_public"] = update.favorites_public
     if not changes:
         raise HTTPException(status_code=400, detail="No changes provided")
     result = db.table("users").update(changes).eq("id", current_user["id"]).execute()
@@ -126,12 +137,30 @@ async def change_password(data: PasswordChange, current_user: dict = Depends(get
 async def delete_account(current_user: dict = Depends(get_current_user), db: Client = Depends(get_db)):
     """Delete current user account"""
     uid = current_user["id"]
-    # Clean up user data
+    _purge_user(db, uid)
+    return {"detail": "Account deleted"}
+
+
+def _purge_user(db: Client, uid: int) -> None:
+    """Remove a user and everything referencing them.
+
+    Supabase FKs use ON DELETE CASCADE, but the in-memory fake DB does not
+    cascade, so we delete explicitly to keep both backends consistent.
+    """
+    # Likes/favourites this user made, and follows in both directions
+    db.table("build_likes").delete().eq("user_id", uid).execute()
+    db.table("build_favorites").delete().eq("user_id", uid).execute()
+    db.table("user_follows").delete().eq("follower_id", uid).execute()
+    db.table("user_follows").delete().eq("following_id", uid).execute()
+    # Likes/favourites others left on this user's builds
+    own = db.table("builds").select("id").eq("user_id", uid).execute()
+    for b in own.data or []:
+        db.table("build_likes").delete().eq("build_id", b["id"]).execute()
+        db.table("build_favorites").delete().eq("build_id", b["id"]).execute()
     db.table("forum_replies").delete().eq("author_id", uid).execute()
     db.table("forum_threads").delete().eq("author_id", uid).execute()
     db.table("builds").delete().eq("user_id", uid).execute()
     db.table("users").delete().eq("id", uid).execute()
-    return {"detail": "Account deleted"}
 
 
 # ==================== Admin Endpoints ====================
@@ -168,10 +197,7 @@ async def admin_stats(admin: dict = Depends(require_admin), db: Client = Depends
 async def admin_delete_user(user_id: int, admin: dict = Depends(require_admin), db: Client = Depends(get_db)):
     if user_id == admin["id"]:
         raise HTTPException(status_code=400, detail="Cannot delete yourself")
-    db.table("forum_replies").delete().eq("author_id", user_id).execute()
-    db.table("forum_threads").delete().eq("author_id", user_id).execute()
-    db.table("builds").delete().eq("user_id", user_id).execute()
-    db.table("users").delete().eq("id", user_id).execute()
+    _purge_user(db, user_id)
     return {"detail": "User deleted"}
 
 

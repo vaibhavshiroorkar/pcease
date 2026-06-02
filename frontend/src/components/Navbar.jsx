@@ -9,6 +9,7 @@ const navItems = [
     { to: '/builder', label: 'Builder' },
     { to: '/advisor', label: 'Advisor' },
     { to: '/compare', label: 'Compare' },
+    { to: '/builds', label: 'Community' },
     { to: '/forum', label: 'Forum' },
 ]
 
@@ -38,7 +39,11 @@ export default function Navbar() {
         <nav className={`nav${scrolled ? ' nav--scrolled' : ''}`}>
             <div className="container nav__inner">
                 <Link to="/" className="nav__logo">
-                    <span className="nav__logo-mark" aria-hidden="true" />
+                    <svg className="nav__logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+                        <rect x="6.5" y="17" width="4" height="8" rx="1.5" />
+                        <rect x="14" y="11" width="4" height="14" rx="1.5" />
+                        <rect x="21.5" y="6" width="4" height="19" rx="1.5" />
+                    </svg>
                     PC<span className="nav__logo-accent">ease</span>
                 </Link>
 

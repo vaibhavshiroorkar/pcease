@@ -12,9 +12,12 @@ export default function Auth({ isRegister = false }) {
     const [form, setForm] = useState({ email: '', username: '', password: '', newPassword: '' })
     const [loading, setLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
+    const [remember, setRemember] = useState(true)
+    const [error, setError] = useState('')
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        setError('')
         setLoading(true)
         try {
             if (mode === 'register') {
@@ -22,23 +25,25 @@ export default function Auth({ isRegister = false }) {
                 setMode('login')
                 toast.success('Account created! Please sign in.')
             } else {
-                await login(form.username, form.password)
+                await login(form.username, form.password, remember)
                 toast.success('Welcome back!')
                 navigate('/')
             }
         } catch (err) {
+            setError(err.message)
             toast.error(err.message)
         } finally {
             setLoading(false)
         }
     }
 
-    const updateForm = (key, value) => setForm(prev => ({ ...prev, [key]: value }))
+    const updateForm = (key, value) => { setError(''); setForm(prev => ({ ...prev, [key]: value })) }
 
     const switchMode = (m) => {
         setMode(m)
         setForm({ email: '', username: '', password: '', newPassword: '' })
         setShowPassword(false)
+        setError('')
     }
 
     const features = [
@@ -87,13 +92,13 @@ export default function Auth({ isRegister = false }) {
                         {/* Login: username only */}
                         {mode === 'login' && (
                             <div className="au-field">
-                                <label className="au-label"><FiUser size={14} /> Username</label>
+                                <label className="au-label"><FiUser size={14} /> Username or Email</label>
                                 <input
                                     type="text"
                                     value={form.username}
                                     onChange={e => updateForm('username', e.target.value)}
                                     required
-                                    placeholder="Your username"
+                                    placeholder="username or you@example.com"
                                     autoComplete="username"
                                 />
                             </div>
@@ -146,6 +151,15 @@ export default function Auth({ isRegister = false }) {
                                 </button>
                             </div>
                         </div>
+
+                        {mode === 'login' && (
+                            <label className="au-remember">
+                                <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} />
+                                Keep me signed in
+                            </label>
+                        )}
+
+                        {error && <div className="au-error">{error}</div>}
 
                         <button type="submit" className="btn btn-primary au-submit" disabled={loading}>
                             {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}

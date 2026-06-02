@@ -1,5 +1,5 @@
 """
-Components Router — Optimized queries with batching and caching.
+Components Router - Optimized queries with batching and caching.
 """
 from typing import Optional, List, Dict
 from fastapi import APIRouter, Depends, HTTPException, status, Query
@@ -17,6 +17,7 @@ router = APIRouter(prefix="/api", tags=["Components"])
 class BuildCreate(BaseModel):
     name: str = "My Build"
     components: Dict[str, int]
+    is_public: bool = False
 
 
 class ShareBuildCreate(BaseModel):
@@ -116,7 +117,7 @@ def get_price_history(
 
     Until a daily price-capture job populates a `price_history` table, this
     derives a stable series anchored to the component's current best price.
-    The response shape is the real contract — point it at the table later.
+    The response shape is the real contract - point it at the table later.
     """
     import math
     from datetime import datetime, timedelta, timezone
@@ -218,6 +219,9 @@ async def create_build(
         "name": build.name,
         "components": build.components,
         "total_price": total_price,
+        "is_public": build.is_public,
+        "slug": uuid.uuid4().hex[:8],
+        "likes_count": 0,
     }).execute()
 
     if not result.data:
@@ -293,7 +297,7 @@ def share_build(build: ShareBuildCreate, db: Client = Depends(get_db)):
 def get_shared_build(share_id: str, db: Client = Depends(get_db)):
     """Get a shared build by share_id with component details."""
     # Look up directly: short id is stored inside the build_data JSONB, full id
-    # is the share_id column. Both are single indexed lookups — no table scan.
+    # is the share_id column. Both are single indexed lookups - no table scan.
     if len(share_id) <= 8:
         result = db.table("shared_builds").select("*").eq("build_data->>short_id", share_id).maybe_single().execute()
     else:
@@ -335,12 +339,14 @@ def get_stats(db: Client = Depends(get_db)):
     components = db.table("components").select("id", count="exact").execute()
     vendors = db.table("vendors").select("id", count="exact").execute()
     users = db.table("users").select("id", count="exact").execute()
+    forum_threads = db.table("forum_threads").select("id", count="exact").execute()
 
     return {
         "categories": categories.count or 0,
         "components": components.count or 0,
         "vendors": vendors.count or 0,
         "users": users.count or 0,
+        "forum_threads": forum_threads.count or 0,
     }
 
 

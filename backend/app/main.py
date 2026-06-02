@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from .routers import auth, components, forum, advisor, agent
+from .routers import auth, components, forum, advisor, agent, social
 from .config import settings
 from .cache import get_cache, set_cache, clear_cache
 
@@ -13,7 +13,7 @@ _DEFAULT_SECRET = "your-super-secret-key-change-this-in-production"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup: warm caches. Shutdown: cleanup."""
-    # Fail fast in production if the JWT signing key was never changed —
+    # Fail fast in production if the JWT signing key was never changed -
     # the default key would make every token forgeable.
     if not settings.debug and settings.secret_key in ("", _DEFAULT_SECRET):
         raise RuntimeError(
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="PCease API",
-    description="PC Building Platform — Compare prices, check compatibility, get AI recommendations.",
+    description="PC Building Platform - Compare prices, check compatibility, get AI recommendations.",
     version="4.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -60,6 +60,7 @@ app.include_router(components.router)
 app.include_router(forum.router)
 app.include_router(advisor.router)
 app.include_router(agent.router)
+app.include_router(social.router)
 
 
 @app.get("/")
@@ -74,7 +75,7 @@ def root():
 
 @app.get("/health")
 def health_check():
-    """Health check — tests Supabase connectivity."""
+    """Health check - tests Supabase connectivity."""
     from .database import get_db
     try:
         db = get_db()

@@ -1,5 +1,5 @@
 """Agent tools. Each @tool generates its own JSON schema from the signature + docstring.
-`db` and `user` are InjectedToolArg — hidden from the model, supplied by the loop at runtime.
+`db` and `user` are InjectedToolArg - hidden from the model, supplied by the loop at runtime.
 """
 import uuid
 from typing import Annotated, Optional, List, Any, Dict

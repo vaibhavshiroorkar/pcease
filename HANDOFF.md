@@ -1,8 +1,57 @@
-# PCease — Session Handoff
+# PCease - Session Handoff
 
-_Last updated: 2026-06-01_
+_Last updated: 2026-06-02_
 
 A snapshot of where the project stands so anyone (human or agent) can pick up cleanly.
+
+## Latest session (2026-06-02): Social layer
+
+A full social layer was added (design in `docs/superpowers/specs/2026-06-02-social-layer-design.md`).
+Backend **31 tests pass**, frontend build clean.
+
+- **Builds get visibility + identity:** `is_public` (private by default), `slug`, `likes_count`.
+  New `routers/social.py`: community feed (`GET /builds/public`, recent/popular, all/following),
+  build detail by slug, `PATCH /builds/{id}` (rename/visibility), likes, favourites, profiles,
+  following. Enrichment is done in Python so it works on Supabase **and** the fake DB.
+- **Profiles:** `bio`, `avatar_url`, `favorites_public` on `users`. Public profile page
+  `/u/:username` (never exposes email). Avatars are client-downscaled to a data URL (no storage).
+- **Likes vs favourites:** likes are a public heart + count; favourites are a private bookmark
+  with a profile toggle to show them publicly.
+- **Frontend:** new `Community` (`/builds`), `BuildDetail` (`/build/:slug`), `PublicProfile`
+  (`/u/:username`); reworked `Profile` (My Builds + Favourites + bio/avatar); Builder public/
+  private toggle; clickable forum authors; **Community** nav item; sign-in "remember me" +
+  username-or-email + inline errors. Shared `components/BuildCard.jsx` + `Avatar.jsx`.
+- **Schema:** `social_migration.sql` (run after `supabase_migration.sql`). Fake DB seeded with
+  demo users `alishbuilds` / `rajrenders` / `miraITX` (password `demo1234`) and public builds.
+- **Bugfix:** JWT `sub` was an int (python-jose rejects non-string subjects on decode), which had
+  broken **all** authenticated requests. Now `str(user["id"])` in `auth.login`.
+- **Also fixed:** the `.pf`/Profile padding-top navbar-overlap bug (same class of bug as Contact).
+- **Not yet done:** real avatar object storage (data URLs are fine for now); comments/notifications.
+
+## Latest session (2026-06-02): UI polish pass
+
+Working tree has **uncommitted** changes from this session (not yet committed):
+
+- **Bottleneck Analysis redesign** (`Builder.jsx` / `Builder.css`): replaced the ASCII `█░` bars
+  with segmented meter bars, a status pill (Balanced / CPU Limited / GPU Limited), per-component
+  tier readouts, and limiter highlighting. Fixed a latent bug where `severity: "critical"` from
+  the backend rendered unstyled (CSS only had `good`/`warning`/`bad`).
+- **New logo + favicon**: an ascending-bars mark (volt-lime) shared by the navbar (inline SVG in
+  `Navbar.jsx`) and `public/favicon.svg`, replacing the old cyan "PC" favicon.
+- **Interactive hero stats** (`Home.jsx`): Components links to /browse, Retailers opens a modal
+  listing tracked vendors (via `getVendors`), and "₹0 Always Free" became a live **Community**
+  stat (forum thread count) linking to /forum. Added `forum_threads` to `GET /api/stats`.
+- **Naming**: Advisor "AI Chat" tab and the "PCease AI Agent" empty-state heading are now just
+  **"Agent"**.
+- **Removed all em dashes** (131 across 29 files) from code, UI copy, and living docs; added a
+  no-em-dash rule to DEVELOPMENT.md Conventions. The two frozen docs under `docs/superpowers/`
+  were intentionally left as-is (point-in-time records).
+- **Expanded the fake DB** (`fake_db.py`): rewrote the seed as a deterministic generator (fixed
+  RNG seed) producing **~423 components** and **9 vendors** (added The IT Depot, Compify, Clarion),
+  spanning entry to enthusiast tiers across all 8 categories with valid sockets/RAM types/form
+  factors so compatibility, wattage, and bottleneck checks all work. CPUs/GPUs are curated real
+  models; boards/RAM/storage/PSUs are generated from brand+spec tables. Backend restarted on :8000
+  with `--reload` and verified serving the new catalog (`/api/stats` shows 423 / 9).
 
 ## TL;DR
 
@@ -34,12 +83,12 @@ npm run dev   # http://localhost:5173
 ```
 
 **No cloud accounts needed:** `backend/.env` has `USE_FAKE_DB=true`, which serves an in-memory
-seeded catalog (8 categories, 6 vendors, 18 components). `/health` is green. State resets on
-restart. The only thing the dummy DB can't do is the **live AI agent chat** — that needs a real
+seeded catalog (8 categories, 9 vendors, ~423 components). `/health` is green. State resets on
+restart. The only thing the dummy DB can't do is the **live AI agent chat** - that needs a real
 `ANTHROPIC_API_KEY` (or `GEMINI_API_KEY` + `LLM_PROVIDER=gemini`) in `backend/.env`.
 
 > Windows note: invoke the venv Python by its **absolute path** when launching as a background
-> task — relative `./.venv/...` has failed to resolve in this environment.
+> task - relative `./.venv/...` has failed to resolve in this environment.
 
 ## Tests
 
@@ -56,14 +105,14 @@ restart. The only thing the dummy DB can't do is the **live AI agent chat** — 
    - `POST /api/agent/chat` streams SSE; frontend consumes via `services/agentStream.js` +
      `hooks/useAgentChat.js`, rendered in the Advisor "AI Chat" tab (tool-step chips + build cards).
    - Design + plan: `docs/superpowers/specs/` and `docs/superpowers/plans/`.
-2. **Whole-app visual redesign** — "Performance Instrument" identity (near-black + volt-lime,
+2. **Whole-app visual redesign** - "Performance Instrument" identity (near-black + volt-lime,
    Chakra Petch/Sora/JetBrains Mono, blueprint grid). Home hero has an animated agent console.
-3. **Security/correctness/robustness pass** (commit `26f614f`) — see "Known issues" for what's
+3. **Security/correctness/robustness pass** (commit `26f614f`) - see "Known issues" for what's
    intentionally left.
 4. **In-memory dummy DB** (`backend/app/fake_db.py`, `USE_FAKE_DB`).
 5. **Price-history graph** (`components/PriceGraph.jsx` + `/api/components/:id/price-history`)
    in the Browse and Builder modals, with Day/Week/Month, a time axis, and a hover tooltip.
-6. **Docs split** — `README.md` (simple, human) and `DEVELOPMENT.md` (all technical detail).
+6. **Docs split** - `README.md` (simple, human) and `DEVELOPMENT.md` (all technical detail).
 
 ## Conventions to respect
 
@@ -71,7 +120,7 @@ restart. The only thing the dummy DB can't do is the **live AI agent chat** — 
   `frontend/src/pages/Browse.jsx` (detail modal) and `frontend/src/pages/Builder.jsx` (retailer
   view). Any change to specs/price-graph/badges/actions must go in **both**. (Documented in
   DEVELOPMENT.md; there's a saved memory about this.)
-- Keep prices grounded — never show invented prices outside the agent's labelled output.
+- Keep prices grounded - never show invented prices outside the agent's labelled output.
 - Specs render as cards (mono label + bold value).
 
 ## Known issues / deliberately deferred
@@ -82,13 +131,13 @@ restart. The only thing the dummy DB can't do is the **live AI agent chat** — 
 - **Legacy `_build_smart_recommendation`** (Manual tab) picks best-per-category and does **not**
   cross-check CPU/motherboard sockets, so it can pair e.g. an Intel CPU with an AM5 board. The
   **agent** path does run compatibility checks. Worth unifying.
-- **No self-service password reset** — the old username+email reset was an account-takeover
+- **No self-service password reset** - the old username+email reset was an account-takeover
   vector and was removed; "Forgot password?" points to Contact. Add an emailed-token flow when
   email exists.
-- **JWT in `localStorage`** (XSS tradeoff) — consider httpOnly cookies.
-- **Browse loads up to 500 components** in one payload — pagination/virtualization would help.
-- **Manual cascade deletes** in `auth.py` — prefer DB `ON DELETE CASCADE`.
-- **Other pages not bespoke-redesigned** — Browse/Builder/Compare/Forum are re-themed via tokens
+- **JWT in `localStorage`** (XSS tradeoff) - consider httpOnly cookies.
+- **Browse loads up to 500 components** in one payload - pagination/virtualization would help.
+- **Manual cascade deletes** in `auth.py` - prefer DB `ON DELETE CASCADE`.
+- **Other pages not bespoke-redesigned** - Browse/Builder/Compare/Forum are re-themed via tokens
   but not individually polished like Home/Advisor.
 - **No CI**; legacy routers (`auth`, `forum`, parts of `advisor`) have thin/no tests.
 

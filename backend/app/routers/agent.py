@@ -35,7 +35,7 @@ async def chat(
         except Exception as e:  # config error (missing keys) or provider failure
             raw = str(e)
             if "API_KEY" in raw or "api key" in raw.lower() or "not set" in raw.lower():
-                msg = ("The AI agent is offline right now — no model is configured. "
+                msg = ("The AI agent is offline right now - no model is configured. "
                        "Try the Presets or Manual tabs for grounded build suggestions.")
             else:
                 msg = "The AI agent hit an error. Please try again in a moment."

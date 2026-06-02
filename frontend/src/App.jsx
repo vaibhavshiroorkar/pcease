@@ -23,6 +23,9 @@ const Guide = lazy(() => import('./pages/Guide'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Contact = lazy(() => import('./pages/Contact'))
 const Admin = lazy(() => import('./pages/Admin'))
+const Community = lazy(() => import('./pages/Community'))
+const BuildDetail = lazy(() => import('./pages/BuildDetail'))
+const PublicProfile = lazy(() => import('./pages/PublicProfile'))
 
 // Loading fallback
 const PageLoader = () => (
@@ -47,6 +50,9 @@ export default function App() {
                     <Route path="/forum" element={<Forum />} />
                     <Route path="/forum/guide" element={<Guide />} />
                     <Route path="/compare" element={<Compare />} />
+                    <Route path="/builds" element={<Community />} />
+                    <Route path="/build/:slug" element={<BuildDetail />} />
+                    <Route path="/u/:username" element={<PublicProfile />} />
                     <Route path="/login" element={<Auth />} />
                     <Route path="/register" element={<Auth isRegister />} />
                     <Route path="/profile" element={<Profile />} />

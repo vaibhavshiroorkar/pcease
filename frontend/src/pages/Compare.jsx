@@ -37,7 +37,7 @@ function SpecsComparisonTable({ components }) {
                 <FiColumns size={18} />
                 <div>
                     <h2>Spec-by-Spec Comparison</h2>
-                    <p>Side-by-side specifications — green highlights the best value</p>
+                    <p>Side-by-side specifications - green highlights the best value</p>
                 </div>
             </div>
             <div className="cp-specs-table__wrap">
@@ -63,7 +63,7 @@ function SpecsComparisonTable({ components }) {
                                 const isBest = price && price <= Math.min(...allPrices)
                                 return (
                                     <td key={i} className={`cp-specs-tbl__val${isBest ? ' cp-specs-tbl__val--best' : ''}`}>
-                                        {price ? formatPrice(price) : '—'}
+                                        {price ? formatPrice(price) : '-'}
                                     </td>
                                 )
                             })}
@@ -83,7 +83,7 @@ function SpecsComparisonTable({ components }) {
                                     <td className="cp-specs-tbl__key">{key.replace(/_/g, ' ')}</td>
                                     {vals.map((v, i) => (
                                         <td key={i} className={`cp-specs-tbl__val${i === bestIdx ? ' cp-specs-tbl__val--best' : ''}${v === null ? ' cp-specs-tbl__val--na' : ''}`}>
-                                            {v !== null ? String(v) : '—'}
+                                            {v !== null ? String(v) : '-'}
                                         </td>
                                     ))}
                                 </tr>
@@ -282,7 +282,7 @@ export default function Compare() {
                     <div className="cp-header__left">
                         <h1>Compare</h1>
                         <p className="cp-header__sub">
-                            Compare prices across Indian retailers — up to {MAX_SLOTS} components side by side
+                            Compare prices across Indian retailers - up to {MAX_SLOTS} components side by side
                         </p>
                     </div>
                     <div className="cp-header__actions">
@@ -482,7 +482,7 @@ export default function Compare() {
                                         <td className="cp-table-view__key">Category</td>
                                         {filledSlots.map((slot, i) => (
                                             <td key={i} className="cp-table-view__val">
-                                                {slot.category?.name || slot.category_name || '—'}
+                                                {slot.category?.name || slot.category_name || '-'}
                                             </td>
                                         ))}
                                         {filledSlots.length < MAX_SLOTS && <td />}
@@ -495,7 +495,7 @@ export default function Compare() {
                                             const isBest = i === bestSlotIdx && filledSlots.length > 1
                                             return (
                                                 <td key={i} className={`cp-table-view__val cp-table-view__val--price${isBest ? ' cp-table-view__val--best-price' : ''}`}>
-                                                    {price ? formatPrice(price) : '—'}
+                                                    {price ? formatPrice(price) : '-'}
                                                 </td>
                                             )
                                         })}
@@ -506,7 +506,7 @@ export default function Compare() {
                                         <td className="cp-table-view__key">Best From</td>
                                         {filledSlots.map((slot, i) => (
                                             <td key={i} className="cp-table-view__val">
-                                                {getBestVendor(slot)?.vendor?.name || getBestVendor(slot)?.vendor_name || '—'}
+                                                {getBestVendor(slot)?.vendor?.name || getBestVendor(slot)?.vendor_name || '-'}
                                             </td>
                                         ))}
                                         {filledSlots.length < MAX_SLOTS && <td />}
@@ -540,7 +540,7 @@ export default function Compare() {
                                                     <td className="cp-table-view__key">{key.replace(/_/g, ' ')}</td>
                                                     {vals.map((v, i) => (
                                                         <td key={i} className={`cp-table-view__val${i === best ? ' cp-table-view__val--highlight' : ''}${v === null ? ' cp-table-view__val--na' : ''}`}>
-                                                            {v !== null ? String(v) : '—'}
+                                                            {v !== null ? String(v) : '-'}
                                                         </td>
                                                     ))}
                                                     {filledSlots.length < MAX_SLOTS && <td />}
@@ -625,7 +625,7 @@ export default function Compare() {
                                                 {c.brand && <span className="cp-search-result__brand">{c.brand}</span>}
                                             </div>
                                             <span className="cp-search-result__price">
-                                                {low ? formatPrice(low) : '—'}
+                                                {low ? formatPrice(low) : '-'}
                                             </span>
                                             <FiPlus size={14} className="cp-search-result__add" />
                                         </button>
@@ -650,7 +650,7 @@ export default function Compare() {
                                 {formatPrice(getLowestPrice(filledSlots[bestSlotIdx]))}
                             </strong>
                             {getSavings(filledSlots[bestSlotIdx]) > 0 && (
-                                <> — save up to <strong className="cp-verdict__savings">
+                                <> - save up to <strong className="cp-verdict__savings">
                                     {formatPrice(getSavings(filledSlots[bestSlotIdx]))}
                                 </strong> by choosing the right retailer</>
                             )}.

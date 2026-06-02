@@ -7,7 +7,7 @@ const sections = [
         id: 'what-is',
         title: 'What is a PC Build?',
         icon: <FiGrid size={18} />,
-        content: `A "PC build" means hand-picking every component that goes inside your computer — the processor, graphics card, memory, storage, and so on — and assembling them together yourself (or having a shop do it).
+        content: `A "PC build" means hand-picking every component that goes inside your computer - the processor, graphics card, memory, storage, and so on - and assembling them together yourself (or having a shop do it).
 
 Why build instead of buying a pre-built? You get exactly the performance you need, better value for money, easy future upgrades, and you'll actually understand what's inside your machine.`
     },
@@ -19,27 +19,27 @@ Why build instead of buying a pre-built? You get exactly the performance you nee
             {
                 title: 'Processor (CPU)',
                 desc: 'The brain of your PC. It handles every calculation your computer performs.',
-                tips: ['For gaming: AMD Ryzen 5 / Intel i5 and above', 'For editing & productivity: Ryzen 7 / i7 with more cores', 'Budget pick: Ryzen 5 5600 or Intel i5-12400F — both are excellent value in India']
+                tips: ['For gaming: AMD Ryzen 5 / Intel i5 and above', 'For editing & productivity: Ryzen 7 / i7 with more cores', 'Budget pick: Ryzen 5 5600 or Intel i5-12400F - both are excellent value in India']
             },
             {
                 title: 'Graphics Card (GPU)',
                 desc: 'Renders images, videos, and games. The single most impactful component for gaming.',
-                tips: ['Budget 1080p: RTX 4060 / RX 7600', 'Mid-range 1440p: RTX 4070 / RX 7800 XT', 'Skip integrated graphics if you want to game — a dedicated GPU makes a massive difference']
+                tips: ['Budget 1080p: RTX 4060 / RX 7600', 'Mid-range 1440p: RTX 4070 / RX 7800 XT', 'Skip integrated graphics if you want to game - a dedicated GPU makes a massive difference']
             },
             {
                 title: 'Motherboard',
                 desc: 'The backbone that connects everything. Make sure the socket matches your CPU.',
-                tips: ['AMD AM5 socket for Ryzen 7000 series, AM4 for 5000 series', 'Intel LGA 1700 for 12th/13th/14th gen', 'B-series boards (B650, B760) offer the best value — you don\'t need X-series unless overclocking heavily']
+                tips: ['AMD AM5 socket for Ryzen 7000 series, AM4 for 5000 series', 'Intel LGA 1700 for 12th/13th/14th gen', 'B-series boards (B650, B760) offer the best value - you don\'t need X-series unless overclocking heavily']
             },
             {
                 title: 'RAM (Memory)',
                 desc: 'Short-term memory your PC uses while running programs. More RAM = more multitasking.',
-                tips: ['16 GB is the sweet spot for most users', '32 GB if you do heavy editing, streaming, or run VMs', 'DDR5 is newer but DDR4 is still great value — match what your motherboard supports']
+                tips: ['16 GB is the sweet spot for most users', '32 GB if you do heavy editing, streaming, or run VMs', 'DDR5 is newer but DDR4 is still great value - match what your motherboard supports']
             },
             {
                 title: 'Storage (SSD / HDD)',
                 desc: 'Where your operating system, games, and files live.',
-                tips: ['Get an NVMe SSD (M.2) for your boot drive — it\'s 5-10x faster than a hard drive', '500 GB SSD + 1 TB HDD is a popular combo', 'Avoid SATA SSDs for new builds — NVMe is barely more expensive now']
+                tips: ['Get an NVMe SSD (M.2) for your boot drive - it\'s 5-10x faster than a hard drive', '500 GB SSD + 1 TB HDD is a popular combo', 'Avoid SATA SSDs for new builds - NVMe is barely more expensive now']
             },
             {
                 title: 'Power Supply (PSU)',
@@ -49,12 +49,12 @@ Why build instead of buying a pre-built? You get exactly the performance you nee
             {
                 title: 'Case',
                 desc: 'The enclosure that holds everything together. Mainly about airflow and aesthetics.',
-                tips: ['ATX Mid-Tower is the most common — fits most builds', 'Check GPU clearance before buying (some cards are 30+ cm long)', 'Mesh front panels = better airflow = cooler temps']
+                tips: ['ATX Mid-Tower is the most common - fits most builds', 'Check GPU clearance before buying (some cards are 30+ cm long)', 'Mesh front panels = better airflow = cooler temps']
             },
             {
                 title: 'CPU Cooler',
                 desc: 'Keeps your processor from overheating. Stock coolers work, but aftermarket ones are quieter and cooler.',
-                tips: ['AMD Ryzen 5000 comes with a decent stock cooler — you can start with it', 'Intel stock coolers are mediocre — consider a tower cooler like Deepcool AK400', 'AIO liquid coolers are great for high-end builds but not necessary for mid-range']
+                tips: ['AMD Ryzen 5000 comes with a decent stock cooler - you can start with it', 'Intel stock coolers are mediocre - consider a tower cooler like Deepcool AK400', 'AIO liquid coolers are great for high-end builds but not necessary for mid-range']
             }
         ]
     },
@@ -72,15 +72,15 @@ Why build instead of buying a pre-built? You get exactly the performance you nee
     },
     {
         id: 'compatibility',
-        title: 'Compatibility — What Fits What',
+        title: 'Compatibility - What Fits What',
         icon: <FiAlertTriangle size={18} />,
         content: `This is where beginners trip up the most. Here's what needs to match:
 
 • CPU ↔ Motherboard: The socket must be the same (e.g., AM5 CPU needs AM5 board)
-• RAM ↔ Motherboard: DDR4 board needs DDR4 RAM, DDR5 needs DDR5 — they're not interchangeable
+• RAM ↔ Motherboard: DDR4 board needs DDR4 RAM, DDR5 needs DDR5 - they're not interchangeable
 • GPU ↔ Case: Check that your case has enough clearance for the GPU length
 • PSU ↔ Everything: Make sure your power supply has enough wattage (add ~100W headroom)
-• Cooler ↔ Case: Tower coolers have height limits — check your case specs
+• Cooler ↔ Case: Tower coolers have height limits - check your case specs
 • Storage ↔ Motherboard: Confirm your board has an M.2 slot if using NVMe SSD
 
 Our Builder page automatically checks compatibility for you, but it's good to understand why.`
@@ -91,21 +91,21 @@ Our Builder page automatically checks compatibility for you, but it's good to un
         icon: <FiMonitor size={18} />,
         content: `PCease compares prices across these retailers so you don't have to:
 
-• Amazon.in & Flipkart — Convenient, fast delivery, easy returns
-• MD Computers — Great prices, trusted in the PC community
-• Vedant Computers — Competitive pricing, good customer service
-• PCStudio — Often has the lowest prices
-• PrimeABGB — Wide selection of components
-• The IT Depot, Compify, Clarion — Additional options worth checking
+• Amazon.in & Flipkart - Convenient, fast delivery, easy returns
+• MD Computers - Great prices, trusted in the PC community
+• Vedant Computers - Competitive pricing, good customer service
+• PCStudio - Often has the lowest prices
+• PrimeABGB - Wide selection of components
+• The IT Depot, Compify, Clarion - Additional options worth checking
 
 Pro tip: Prices fluctuate weekly. Use our Browse page to check which store has the best deal right now before ordering.`
     },
     {
         id: 'assembly',
-        title: 'Building It — Step by Step',
+        title: 'Building It - Step by Step',
         icon: <FiTool size={18} />,
         steps: [
-            { num: 1, title: 'Prepare your workspace', desc: 'Clear a large table, ground yourself (touch a metal object), and keep the motherboard box handy — it makes a great anti-static work surface.' },
+            { num: 1, title: 'Prepare your workspace', desc: 'Clear a large table, ground yourself (touch a metal object), and keep the motherboard box handy - it makes a great anti-static work surface.' },
             { num: 2, title: 'Install CPU on motherboard', desc: 'Lift the socket lever, align the golden triangle on the CPU with the triangle on the socket, gently place it in (zero force needed), and close the lever.' },
             { num: 3, title: 'Install RAM', desc: 'Open the clips on the RAM slots, align the notch, and press firmly until both clips snap shut. If using 2 sticks, use slots 2 and 4 for dual-channel.' },
             { num: 4, title: 'Install M.2 SSD', desc: 'Remove the M.2 heatsink (if present), slide the SSD in at a 30° angle, press it flat, and screw it down.' },
@@ -114,7 +114,7 @@ Pro tip: Prices fluctuate weekly. Use our Browse page to check which store has t
             { num: 7, title: 'Install power supply', desc: 'Mount the PSU in the bottom-rear of the case (fan facing down if there\'s a vent). Route cables through the back for clean management.' },
             { num: 8, title: 'Install GPU', desc: 'Remove the necessary PCIe slot covers from the case, push the GPU into the top x16 PCIe slot until it clicks, screw it in, and connect PCIe power cables.' },
             { num: 9, title: 'Connect all cables', desc: '24-pin ATX power to motherboard, 4/8-pin CPU power (top-left of board), SATA power to drives, front panel headers (check your manual).' },
-            { num: 10, title: 'First boot', desc: 'Double-check all connections, then power on. If you see the BIOS screen — congratulations, it works! Install your OS from a USB drive.' }
+            { num: 10, title: 'First boot', desc: 'Double-check all connections, then power on. If you see the BIOS screen - congratulations, it works! Install your OS from a USB drive.' }
         ]
     },
     {
@@ -122,19 +122,19 @@ Pro tip: Prices fluctuate weekly. Use our Browse page to check which store has t
         title: 'Common Beginner Mistakes',
         icon: <FiAlertTriangle size={18} />,
         mistakes: [
-            'Forgetting to plug in the CPU power cable (top-left of motherboard) — the PC won\'t boot without it',
-            'Not enabling XMP/DOCP in BIOS — your RAM will run slower than advertised until you do',
-            'Buying a CPU and motherboard with different sockets — always double-check',
+            'Forgetting to plug in the CPU power cable (top-left of motherboard) - the PC won\'t boot without it',
+            'Not enabling XMP/DOCP in BIOS - your RAM will run slower than advertised until you do',
+            'Buying a CPU and motherboard with different sockets - always double-check',
             'Spending too much on the CPU and not enough on the GPU for a gaming build',
-            'Cheaping out on the PSU — a bad power supply can fry your entire system',
-            'Installing RAM in slots 1 and 2 instead of 2 and 4 — you lose dual-channel performance',
-            'Not installing standoffs before mounting the motherboard — risk of short circuits',
-            'Panic when it doesn\'t boot — check the debug LEDs on your motherboard first before assuming something is dead'
+            'Cheaping out on the PSU - a bad power supply can fry your entire system',
+            'Installing RAM in slots 1 and 2 instead of 2 and 4 - you lose dual-channel performance',
+            'Not installing standoffs before mounting the motherboard - risk of short circuits',
+            'Panic when it doesn\'t boot - check the debug LEDs on your motherboard first before assuming something is dead'
         ]
     },
     {
         id: 'next-steps',
-        title: 'You\'re Ready — What Next?',
+        title: 'You\'re Ready - What Next?',
         icon: <FiCheckCircle size={18} />,
         content: `You now know everything you need to plan and build your first PC. Here's where to go from here:`,
         ctas: true
@@ -151,10 +151,10 @@ export default function Guide() {
 
                 <header className="guide-header">
                     <span className="guide-header__tag">Beginner's Guide</span>
-                    <h1>How to Build a PC — The Complete Guide</h1>
+                    <h1>How to Build a PC - The Complete Guide</h1>
                     <p className="guide-header__sub">
                         Everything you need to know to plan, buy, and assemble your first PC build in India.
-                        Written for complete beginners — no jargon, no assumptions.
+                        Written for complete beginners - no jargon, no assumptions.
                     </p>
                     <div className="guide-header__meta">
                         <span>By PCease Team</span>

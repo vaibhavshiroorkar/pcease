@@ -1,5 +1,5 @@
 /* =====================================================
-   Navbar — v5 "Instrument bar"
+   Navbar - v5 "Instrument bar"
    ===================================================== */
 
 .nav {
@@ -35,16 +35,14 @@
     letter-spacing: -.02em;
 }
 .nav__logo-mark {
-    width: 16px; height: 16px;
-    border-radius: 3px;
-    background: var(--volt);
-    box-shadow: 0 0 16px var(--accent-glow);
-    position: relative;
+    width: 20px; height: 20px;
     flex-shrink: 0;
-    clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%);
+    fill: var(--volt);
+    filter: drop-shadow(0 0 7px var(--accent-glow));
+    transition: filter var(--transition);
 }
 .nav__logo-accent { color: var(--volt); }
-.nav__logo:hover .nav__logo-mark { box-shadow: 0 0 22px rgba(198,242,78,.45); }
+.nav__logo:hover .nav__logo-mark { filter: drop-shadow(0 0 11px rgba(198,242,78,.5)); }
 
 /* Links */
 .nav__links { display: flex; gap: 3px; }

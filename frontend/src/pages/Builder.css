@@ -1,5 +1,5 @@
 /* =====================================================
-   Builder — v2.0
+   Builder - v2.0
    Two-step modal · RAM grouping · Dynamic accessories
    ===================================================== */
 
@@ -10,6 +10,18 @@
 .bd-actions { display: flex; gap: 10px; flex-shrink: 0; align-items: center; }
 .bd-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
 .bd-name { width: 160px; }
+.bd-clear-btn:not(:disabled):hover { border-color: rgba(255,107,107,.3); color: var(--error); }
+.bd-public-toggle {
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
+    font-size: .8125rem; color: var(--text-secondary); padding: 0 4px; white-space: nowrap;
+}
+.bd-public-toggle input { width: auto; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.bd-public-toggle:hover { color: var(--text); }
+
+/* Clear-build confirmation */
+.bd-confirm { max-width: 420px; }
+.bd-confirm__msg { font-size: .875rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 22px; }
+.bd-confirm__actions { display: flex; justify-content: flex-end; gap: 10px; }
 
 /* Layout */
 .bd-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
@@ -67,7 +79,7 @@
 }
 .bd-slot__add:hover { border-color: var(--accent); background: var(--accent-subtle); }
 
-/* "Add Another RAM Stick" — inline link style */
+/* "Add Another RAM Stick" - inline link style */
 .bd-slot__add-extra {
     display: flex; align-items: center; gap: 6px;
     padding: 8px 20px 12px 32px;
@@ -153,16 +165,43 @@
 .bd-info-card h3 { font-size: .875rem; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
 .bd-info__row { display: flex; justify-content: space-between; font-size: .8125rem; padding: 4px 0; }
 .bd-info__val { font-weight: 600; color: var(--accent); }
-.bd-bn__msg { font-size: .8125rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.5; }
-.bd-bn__tiers { display: flex; flex-direction: column; gap: 4px; }
-.bd-bn__tiers > div { display: flex; justify-content: space-between; font-size: .8125rem; }
-.bd-bn__bar { font-family: var(--font-mono); letter-spacing: 2px; }
-.bd-bn--good { border-color: rgba(34,197,94,.3); }
-.bd-bn--good .bd-info__val { color: #22c55e; }
-.bd-bn--warning { border-color: rgba(245,158,11,.3); }
-.bd-bn--warning .bd-info__val { color: #f59e0b; }
-.bd-bn--bad { border-color: rgba(239,68,68,.3); }
-.bd-bn--bad .bd-info__val { color: #ef4444; }
+/* Bottleneck card: per-severity accent tokens drive the whole card */
+.bd-bn { --bn-accent: var(--volt); --bn-tint: var(--accent-subtle); --bn-border: var(--accent-border); border-color: var(--bn-border); }
+.bd-bn--good     { --bn-accent: var(--volt);    --bn-tint: var(--accent-subtle);  --bn-border: var(--accent-border); }
+.bd-bn--warning  { --bn-accent: var(--warning); --bn-tint: rgba(245,181,68,.12);   --bn-border: rgba(245,181,68,.35); }
+.bd-bn--critical,
+.bd-bn--bad      { --bn-accent: var(--error);   --bn-tint: rgba(255,107,107,.12);  --bn-border: rgba(255,107,107,.35); }
+
+.bd-bn h3 { margin-bottom: 10px; }
+.bd-bn__pill {
+    margin-left: auto; font-family: var(--font-mono); font-size: .625rem; font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase; padding: 2px 8px; border-radius: var(--radius-full);
+    color: var(--bn-accent); background: var(--bn-tint); border: 1px solid var(--bn-border);
+}
+.bd-bn__msg { font-size: .8125rem; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.5; }
+
+.bd-bn__meters { display: flex; flex-direction: column; gap: 9px; }
+.bd-bn__meter { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 10px; }
+.bd-bn__label {
+    font-family: var(--font-mono); font-size: .625rem; font-weight: 600; letter-spacing: .1em;
+    color: var(--text-muted); transition: color var(--transition);
+}
+.bd-bn__track { display: flex; gap: 3px; }
+.bd-bn__seg {
+    flex: 1; height: 7px; border-radius: 2px; background: var(--surface-active);
+    transition: background var(--transition), box-shadow var(--transition);
+}
+.bd-bn__seg.is-on {
+    background: var(--bn-accent); box-shadow: 0 0 8px -2px var(--bn-accent);
+    animation: bd-bn-seg 260ms var(--ease) both;
+}
+.bd-bn__tier { font-family: var(--font-mono); font-size: .8125rem; font-weight: 600; color: var(--bn-accent); min-width: 30px; text-align: right; }
+.bd-bn__tier i { color: var(--text-muted); font-style: normal; font-weight: 400; }
+
+/* The limiting component is what the user should act on - pull the eye to it */
+.bd-bn__meter.is-limiter .bd-bn__label { color: var(--bn-accent); }
+
+@keyframes bd-bn-seg { from { opacity: 0; transform: scaleX(.5); transform-origin: left; } to { opacity: 1; transform: scaleX(1); } }
 
 /* ── Modal: Search & Loading ── */
 .bd-modal-search { position: relative; margin-bottom: 16px; }

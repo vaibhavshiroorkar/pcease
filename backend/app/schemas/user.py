@@ -17,6 +17,9 @@ class UserResponse(UserBase):
     is_active: bool
     is_admin: bool = False
     created_at: datetime
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+    favorites_public: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 

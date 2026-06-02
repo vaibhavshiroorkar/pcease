@@ -1,5 +1,5 @@
 /* =====================================================
-   Browse — v2.0  Clean cards · Detail modal · Click to expand
+   Browse - v2.0  Clean cards · Detail modal · Click to expand
    ===================================================== */
 
 /* Header */
@@ -71,6 +71,7 @@
 .br-meta__count { font-size: .8125rem; color: var(--text-muted); }
 .br-meta__right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 .br-meta select { width: auto; min-width: 170px; }
+.br-meta select.br-pagesize { min-width: 110px; }
 
 /* View toggle */
 .br-view-toggle { display: flex; gap: 4px; }
@@ -78,8 +79,15 @@
 .br-view-toggle button:hover { border-color: var(--accent); color: var(--accent); }
 .br-view-toggle button.active { background: var(--accent); border-color: var(--accent); color: #0e1117; }
 
+/* Pagination */
+.br-pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 24px; }
+.br-pagination__info { font-size: .8125rem; color: var(--text-muted); }
+.br-pagination__controls { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.br-pagination__page { font-size: .8125rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.br-pagination .btn:disabled { opacity: .4; cursor: not-allowed; }
+
 /* ===== GRID VIEW ===== */
-.br-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 14px; }
+.br-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
 .br-card {
     display: flex; flex-direction: column; gap: 8px; padding: 18px 20px;
@@ -128,7 +136,7 @@
 .br-card__cheapest-store { font-weight: 500; color: var(--text-secondary); }
 .br-card__cheapest-more { color: var(--accent); font-weight: 500; }
 
-/* Footer — view details link */
+/* Footer - view details link */
 .br-card__footer {
     display: flex; align-items: center; justify-content: flex-end;
     padding-top: 6px; border-top: 1px solid var(--border); margin-top: 2px;

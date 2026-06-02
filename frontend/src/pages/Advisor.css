@@ -110,7 +110,7 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: v
 .ad-tips li { font-size: .8125rem; color: var(--text-secondary); margin-bottom: 4px; }
 .ad-perf { font-size: .875rem; color: var(--text-secondary); margin-bottom: 16px; }
 
-/* ========== AI Chat Tab ========== */
+/* ========== Agent Tab ========== */
 .ad-ai { max-width: 720px; margin: 0 auto; }
 .ad-chat { display: flex; flex-direction: column; }
 .ad-chat__msgs { min-height: 400px; max-height: 520px; overflow-y: auto; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; }
@@ -141,7 +141,7 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: v
 .ad-chat__input input { flex: 1; }
 
 /* ========== Presets Tab ========== */
-.ad-presets { max-width: 900px; margin: 0 auto; }
+.ad-presets { max-width: 1200px; margin: 0 auto; }
 .ad-presets__intro { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; background: var(--accent-subtle); border: 1px solid var(--accent-border); border-radius: 10px; margin-bottom: 20px; }
 .ad-presets__intro svg { flex-shrink: 0; color: var(--accent); margin-top: 2px; }
 .ad-presets__intro h3 { font-size: .9375rem; margin-bottom: 2px; }
@@ -156,20 +156,43 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: v
 /* Preset Loading */
 .ad-presets__loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px; color: var(--text-muted); font-size: .9375rem; }
 
-/* Template Cards */
+/* Template cards + simplified boxes share head / frame / hover so the toggle feels seamless */
 .ad-tmpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-.ad-tmpl { padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; transition: border-color .2s; }
-.ad-tmpl:hover { border-color: rgba(255,255,255,.1); }
-.ad-tmpl__head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 12px; }
-.ad-tmpl__head h3 { font-size: 1rem; }
-.ad-tmpl__tag { display: inline-block; font-size: .6875rem; font-weight: 600; padding: 1px 8px; border-radius: 9999px; background: rgba(255,255,255,.05); color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .03em; }
+
+.ad-tmpl, .ad-tmpl-box {
+    padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    transition: border-color .2s, transform .2s, background .2s;
+}
+.ad-tmpl:hover, .ad-tmpl-box:hover { border-color: var(--accent-border); background: var(--surface-hover); transform: translateY(-2px); }
+
+/* Simplified box: same framing, plus a click affordance and a bottom count */
+.ad-tmpl-box { display: flex; flex-direction: column; justify-content: space-between; gap: 16px; min-height: 112px; text-align: left; cursor: pointer; font-family: inherit; color: inherit; }
+.ad-tmpl-box__count { display: inline-flex; align-items: center; gap: 5px; font-size: .6875rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+/* Shared head: name + tag + price */
+.ad-tmpl__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.ad-tmpl .ad-tmpl__head { margin-bottom: 14px; }
+.ad-tmpl__head-main { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; }
+.ad-tmpl__name { font-family: var(--font-display); font-weight: 700; font-size: 1rem; line-height: 1.25; }
+.ad-tmpl__tag { display: inline-block; flex-shrink: 0; font-size: .6875rem; font-weight: 600; padding: 1px 8px; border-radius: 9999px; background: rgba(255,255,255,.05); color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
 .ad-tmpl__budget { font-size: .9375rem; font-weight: 700; color: var(--accent); font-family: var(--font-mono); white-space: nowrap; }
 .ad-tmpl__desc { font-size: .875rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
+
+/* Parts list: fixed-width label column keeps long names like "Motherboard" aligned */
 .ad-tmpl__parts { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.ad-tmpl__parts li { display: flex; justify-content: space-between; gap: 8px; font-size: .8125rem; padding: 6px 10px; background: rgba(255,255,255,.02); border-radius: 6px; }
-.ad-tmpl__parts li span:first-child { font-weight: 600; color: var(--text-muted); font-size: .6875rem; text-transform: uppercase; min-width: 60px; }
-.ad-tmpl__parts li span:nth-child(2) { flex: 1; }
-.ad-tmpl__parts li span:last-child { color: var(--accent); font-weight: 600; font-family: var(--font-mono); }
+.ad-tmpl__parts li { display: grid; grid-template-columns: 96px 1fr auto; align-items: baseline; gap: 8px; font-size: .8125rem; padding: 6px 10px; background: rgba(255,255,255,.02); border-radius: 6px; }
+.ad-tmpl__parts li span:first-child { font-weight: 600; color: var(--text-muted); font-size: .6875rem; text-transform: uppercase; }
+.ad-tmpl__parts li span:last-child { color: var(--accent); font-weight: 600; font-family: var(--font-mono); text-align: right; }
+
+/* Simplified / Advanced view toggle */
+.ad-presets__view { margin-left: auto; display: inline-flex; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--border); border-radius: 9999px; }
+.ad-view-btn { padding: 5px 14px; border: 0; background: transparent; cursor: pointer; font-family: inherit; font-size: .75rem; font-weight: 600; color: var(--text-muted); border-radius: 9999px; transition: all .2s; }
+.ad-view-btn:hover { color: var(--text); }
+.ad-view-btn.active { background: var(--accent-subtle); color: var(--accent); }
+
+/* Preset detail modal */
+.ad-preset-modal__meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.ad-preset-modal__meta .ad-tmpl__budget { font-size: 1.05rem; }
 
 /* ========== Responsive ========== */
 @media (max-width: 768px) {

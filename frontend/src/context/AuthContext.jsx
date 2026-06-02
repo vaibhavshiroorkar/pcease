@@ -4,9 +4,11 @@ import { API } from '../services/api'
 // eslint-disable-next-line react-refresh/only-export-components
 const AuthContext = createContext(null)
 
+const readToken = () => localStorage.getItem('pcease_token') || sessionStorage.getItem('pcease_token')
+
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
-    const [token, setToken] = useState(() => localStorage.getItem('pcease_token'))
+    const [token, setToken] = useState(readToken)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -28,9 +30,12 @@ export function AuthProvider({ children }) {
         }
     }
 
-    const login = async (username, password) => {
+    const login = async (username, password, remember = true) => {
         const data = await API.login(username, password)
-        localStorage.setItem('pcease_token', data.access_token)
+        const store = remember ? localStorage : sessionStorage
+        const other = remember ? sessionStorage : localStorage
+        store.setItem('pcease_token', data.access_token)
+        other.removeItem('pcease_token')
         setToken(data.access_token)
         await fetchUser()
         return data
@@ -43,6 +48,7 @@ export function AuthProvider({ children }) {
 
     const logout = () => {
         localStorage.removeItem('pcease_token')
+        sessionStorage.removeItem('pcease_token')
         setToken(null)
         setUser(null)
     }

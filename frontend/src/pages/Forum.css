@@ -117,3 +117,7 @@
     .fm-votes--sm { flex-direction: row; gap: 6px; }
     .fm-search { max-width: 100%; }
 }
+/* Clickable author -> public profile */
+.fm-author { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); text-decoration: none; }
+.fm-author:hover { color: var(--accent); }
+.fm-author strong { font-weight: 600; }

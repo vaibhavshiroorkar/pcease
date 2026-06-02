@@ -2,7 +2,7 @@ import { Component } from 'react'
 
 /**
  * Top-level error boundary. Stops a render error in any page from white-screening
- * the whole app — shows a recoverable fallback instead.
+ * the whole app - shows a recoverable fallback instead.
  */
 export default class ErrorBoundary extends Component {
     constructor(props) {

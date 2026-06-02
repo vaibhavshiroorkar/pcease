@@ -76,6 +76,8 @@ export default function Browse() {
     const [detail, setDetail] = useState(null)
     const [compareList, setCompareList] = useState([])
     const [viewMode, setViewMode] = useState('list')
+    const [pageSize, setPageSize] = useState(25)
+    const [page, setPage] = useState(1)
     
     // Advanced filters
     const [showFilters, setShowFilters] = useState(false)
@@ -125,6 +127,15 @@ export default function Browse() {
         
         return list
     }, [components, brandFilter, priceRange, inStockOnly])
+
+    // Display pagination: only render the current page's slice
+    const totalPages = Math.max(1, Math.ceil(filteredComponents.length / pageSize))
+    const pagedComponents = useMemo(
+        () => filteredComponents.slice((page - 1) * pageSize, page * pageSize),
+        [filteredComponents, page, pageSize],
+    )
+    // Jump back to page 1 whenever the result set or page size changes
+    useEffect(() => { setPage(1) }, [category, search, sort, brandFilter, priceRange, inStockOnly, pageSize])
 
     const clearAllFilters = useCallback(() => {
         setBrandFilter('')
@@ -245,6 +256,11 @@ export default function Browse() {
                                 : `${components.length} results`}
                         </span>
                         <div className="br-meta__right">
+                            <select className="br-pagesize" value={pageSize} onChange={e => setPageSize(Number(e.target.value))} aria-label="Results per page" title="Results per page">
+                                <option value={25}>25 / page</option>
+                                <option value={50}>50 / page</option>
+                                <option value={100}>100 / page</option>
+                            </select>
                             <select value={sort} onChange={e => setSort(e.target.value)}>
                                 <option value="price-low">Price: Low to High</option>
                                 <option value="price-high">Price: High to Low</option>
@@ -264,7 +280,7 @@ export default function Browse() {
                         {loading
                             ? Array(12).fill(0).map((_, i) => <CardSkeleton key={i} />)
                             : filteredComponents.length === 0 ? <EmptyState error={error} />
-                            : filteredComponents.map(item => {
+                            : pagedComponents.map(item => {
                                 const lowest = getLowestPrice(item)
                                 const savings = getSavings(item)
                                 const bestVendor = getBestVendor(item)
@@ -332,7 +348,7 @@ export default function Browse() {
                         {loading
                             ? Array(8).fill(0).map((_, i) => <ListSkeleton key={i} />)
                             : filteredComponents.length === 0 ? <EmptyState error={error} />
-                            : filteredComponents.map(item => {
+                            : pagedComponents.map(item => {
                                 const lowest = getLowestPrice(item)
                                 const savings = getSavings(item)
                                 const bestVendor = getBestVendor(item)
@@ -403,6 +419,22 @@ export default function Browse() {
                     </section>
                 )}
 
+                {/* ===== PAGINATION ===== */}
+                {!loading && filteredComponents.length > 0 && (
+                    <div className="br-pagination">
+                        <span className="br-pagination__info">
+                            Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filteredComponents.length)} of {filteredComponents.length}
+                        </span>
+                        {totalPages > 1 && (
+                            <div className="br-pagination__controls">
+                                <button className="btn btn-sm" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Prev</button>
+                                <span className="br-pagination__page">Page {page} of {totalPages}</span>
+                                <button className="btn btn-sm" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Next</button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* ===== DETAIL MODAL ===== */}
                 {detail && (
                     <div className="modal-overlay" onClick={() => setDetail(null)}>
@@ -436,7 +468,7 @@ export default function Browse() {
                                 )}
 
                                 <div className="br-prices">
-                                    <h4><FiShoppingCart size={14} /> Price Comparison — {detail.prices?.length || 0} retailers</h4>
+                                    <h4><FiShoppingCart size={14} /> Price Comparison - {detail.prices?.length || 0} retailers</h4>
                                     {detail.prices?.length ? (
                                         <div className="br-vendor-list">
                                             {[...detail.prices].sort((a, b) => parseFloat(a.price) - parseFloat(b.price)).map((p, i) => (

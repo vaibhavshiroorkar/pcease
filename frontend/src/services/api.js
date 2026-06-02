@@ -1,5 +1,5 @@
 /**
- * PCease API Service — Optimized with caching and request deduplication
+ * PCease API Service - Optimized with caching and request deduplication
  * Backend: FastAPI on Render | DB: Supabase
  */
 
@@ -30,7 +30,8 @@ function setCache(key, data, ttl = CACHE_TTL) {
 
 // ========== Core Fetch ==========
 async function request(endpoint, options = {}) {
-    const token = localStorage.getItem('pcease_token')
+    // "Remember me" stores the token in localStorage; otherwise sessionStorage.
+    const token = localStorage.getItem('pcease_token') || sessionStorage.getItem('pcease_token')
     const headers = { 'Content-Type': 'application/json', ...options.headers }
     if (token) headers.Authorization = `Bearer ${token}`
 
@@ -172,6 +173,29 @@ export const API = {
 
     getSharedBuild: (shareId) => request(`/builds/shared/${shareId}`),
 
+    // --- Social: builds visibility, feed, detail ---
+    updateBuild: (id, patch) => {
+        invalidateCache('/builds')
+        return request(`/builds/${id}`, { method: 'PATCH', body: JSON.stringify(patch) })
+    },
+
+    getPublicBuilds: ({ sort = 'recent', scope = 'all', skip = 0, limit = 24 } = {}) =>
+        request(`/builds/public?sort=${sort}&scope=${scope}&skip=${skip}&limit=${limit}`),
+
+    getBuildBySlug: (slug) => request(`/builds/slug/${slug}`),
+
+    // --- Social: likes + favourites ---
+    likeBuild: (id) => { invalidateCache('/builds'); return request(`/builds/${id}/like`, { method: 'POST' }) },
+    unlikeBuild: (id) => { invalidateCache('/builds'); return request(`/builds/${id}/like`, { method: 'DELETE' }) },
+    favoriteBuild: (id) => { invalidateCache('/me/favorites'); invalidateCache('/users/'); return request(`/builds/${id}/favorite`, { method: 'POST' }) },
+    unfavoriteBuild: (id) => { invalidateCache('/me/favorites'); invalidateCache('/users/'); return request(`/builds/${id}/favorite`, { method: 'DELETE' }) },
+    getMyFavorites: () => request('/me/favorites'),
+
+    // --- Social: profiles + following ---
+    getProfile: (username) => request(`/users/${encodeURIComponent(username)}`),
+    followUser: (username) => { invalidateCache('/users/'); return request(`/users/${encodeURIComponent(username)}/follow`, { method: 'POST' }) },
+    unfollowUser: (username) => { invalidateCache('/users/'); return request(`/users/${encodeURIComponent(username)}/follow`, { method: 'DELETE' }) },
+
     // --- Compare ---
     compareComponents: (ids) =>
         request('/compare', { method: 'POST', body: JSON.stringify({ ids }) }),
@@ -237,6 +261,29 @@ export const API = {
             method: 'POST',
             body: JSON.stringify({ cpu_id: cpuId, gpu_id: gpuId }),
         }),
+}
+
+// Downscale an image File to a small square JPEG data URL. Lets avatars work
+// with no object storage - the data URL is saved on users.avatar_url.
+export function imageToAvatarDataUrl(file, size = 256) {
+    return new Promise((resolve, reject) => {
+        const img = new Image()
+        const url = URL.createObjectURL(file)
+        img.onload = () => {
+            URL.revokeObjectURL(url)
+            const canvas = document.createElement('canvas')
+            canvas.width = size
+            canvas.height = size
+            const ctx = canvas.getContext('2d')
+            const scale = Math.max(size / img.width, size / img.height) // cover-crop to square
+            const w = img.width * scale
+            const h = img.height * scale
+            ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h)
+            resolve(canvas.toDataURL('image/jpeg', 0.82))
+        }
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read image')) }
+        img.src = url
+    })
 }
 
 // ========== Utility Helpers ==========

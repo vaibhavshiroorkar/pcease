@@ -1,5 +1,5 @@
 /* =====================================================
-   PCease v5 — "Performance Instrument"
+   PCease v5 - "Performance Instrument"
    Engineering-workstation aesthetic: near-black, blueprint
    grid, mechanical display type, electric volt-lime signal.
    Volt = the AI agent's signature.
@@ -75,7 +75,7 @@ body {
     position: relative;
 }
 
-/* Blueprint dot-grid + subtle volt aura — the "instrument" atmosphere */
+/* Blueprint dot-grid + subtle volt aura - the "instrument" atmosphere */
 body::before {
     content: '';
     position: fixed;

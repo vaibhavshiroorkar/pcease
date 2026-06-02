@@ -1,0 +1,21 @@
+.pp { max-width: 1000px; margin: 0 auto; }
+.pp-head { display: flex; align-items: center; gap: 22px; margin-bottom: 26px; flex-wrap: wrap; }
+.pp-head__main { flex: 1; min-width: 0; }
+.pp-head__main h1 { font-size: 1.7rem; }
+.pp-bio { color: var(--text-secondary); font-size: .9rem; margin-top: 6px; max-width: 60ch; }
+.pp-meta { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 12px; font-size: .8125rem; color: var(--text-muted); }
+.pp-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.pp-meta b { color: var(--text); font-family: var(--font-mono); }
+.pp-head__action .btn { display: inline-flex; align-items: center; gap: 6px; }
+
+.pp-tabs { display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.pp-tab {
+    padding: 9px 16px; background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer;
+    font-family: inherit; font-size: .8125rem; font-weight: 600; color: var(--text-muted); transition: all var(--transition);
+}
+.pp-tab:hover { color: var(--text); }
+.pp-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.pp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 900px) { .pp-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .pp-grid { grid-template-columns: 1fr; } .pp-head { flex-direction: column; text-align: center; } }

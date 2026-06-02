@@ -80,7 +80,7 @@ export default function Forum() {
                     <div className="fm-pinned__icon"><FiBookOpen size={20} /></div>
                     <div className="fm-pinned__body">
                         <span className="fm-pinned__tag">Pinned · Guide</span>
-                        <h3>How to Build a PC — The Complete Beginner's Guide</h3>
+                        <h3>How to Build a PC - The Complete Beginner's Guide</h3>
                         <p>Everything you need to know to plan, buy, and assemble your first PC build in India.</p>
                     </div>
                     <FiArrowRight size={16} className="fm-pinned__arrow" />
@@ -135,7 +135,7 @@ export default function Forum() {
                                 <div className="fm-detail">
                                     <div className="fm-detail__meta">
                                         <span className="fm-thread__cat">{activeThread.category}</span>
-                                        <span><FiUser size={12} /> {getAuthor(activeThread)}</span>
+                                        <Link to={`/u/${getAuthor(activeThread)}`} className="fm-author"><FiUser size={12} /> {getAuthor(activeThread)}</Link>
                                         <span><FiClock size={12} /> {timeAgo(activeThread.created_at)}</span>
                                     </div>
                                     <div className="fm-detail__votes">
@@ -155,7 +155,7 @@ export default function Forum() {
                                                 <button className="fm-vote" onClick={() => handleVoteReply(r.id, 'downvote')}><FiChevronDown size={14} /></button>
                                             </div>
                                             <div className="fm-reply__content">
-                                                <div className="fm-reply__meta"><strong>{r.author?.username || r.author_username}</strong><span>{timeAgo(r.created_at)}</span></div>
+                                                <div className="fm-reply__meta"><Link to={`/u/${r.author?.username || r.author_username}`} className="fm-author"><strong>{r.author?.username || r.author_username}</strong></Link><span>{timeAgo(r.created_at)}</span></div>
                                                 <p>{r.content}</p>
                                             </div>
                                         </div>

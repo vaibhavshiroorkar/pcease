@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API, formatPrice } from '../services/api'
-import { FiCpu, FiSend, FiArrowRight, FiSliders, FiMessageSquare, FiPackage, FiZap, FiMonitor, FiCode, FiRadio, FiSearch, FiCheck } from 'react-icons/fi'
+import { FiCpu, FiSend, FiArrowRight, FiSliders, FiMessageSquare, FiPackage, FiZap, FiMonitor, FiCode, FiRadio, FiSearch, FiCheck, FiX } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAgentChat } from '../hooks/useAgentChat'
 import { formatText } from '../utils/formatText'
@@ -22,10 +22,16 @@ const priorities = [
 ]
 
 const tabs = [
-    { id: 'ai', label: 'AI Chat', icon: <FiMessageSquare size={14} />, desc: 'Ask anything about PC building' },
+    { id: 'ai', label: 'Agent', icon: <FiMessageSquare size={14} />, desc: 'Ask anything about PC building' },
     { id: 'presets', label: 'Presets', icon: <FiPackage size={14} />, desc: 'Ready-made build configs' },
     { id: 'manual', label: 'Manual', icon: <FiSliders size={14} />, desc: 'Configure & find best via ML' },
 ]
+
+const presetTag = (key, tmpl) =>
+    key.includes('budget') ? 'Budget'
+        : key.includes('mid') ? 'Mid-Range'
+            : key.includes('high') ? 'High-End'
+                : tmpl.source === 'smart' ? 'Optimized' : ''
 
 export default function Advisor() {
     const navigate = useNavigate()
@@ -42,13 +48,15 @@ export default function Advisor() {
     const [loading, setLoading] = useState(false)
     const [recommendation, setRecommendation] = useState(null)
 
-    // AI tab — agentic chat
+    // AI tab - agentic chat
     const [question, setQuestion] = useState('')
     const { messages, isStreaming, send } = useAgentChat()
 
     // Presets tab state
     const [presets, setPresets] = useState(null)
     const [presetFilter, setPresetFilter] = useState('all')
+    const [activePreset, setActivePreset] = useState(null) // [key, tmpl] shown in the detail modal
+    const [presetView, setPresetView] = useState('simple') // 'simple' (boxes + modal) | 'advanced' (full cards)
 
     useEffect(() => { API.getTemplates().then(setPresets).catch(() => {}) }, [])
     useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isStreaming])
@@ -100,7 +108,7 @@ export default function Advisor() {
             <div className="container">
                 <header className="ad-header">
                     <h1>Build Advisor</h1>
-                    <p className="ad-header__sub">Find your perfect PC build — manually configure, chat with AI, or pick a preset.</p>
+                    <p className="ad-header__sub">Find your perfect PC build - manually configure, chat with AI, or pick a preset.</p>
                 </header>
 
                 {/* Tab Bar */}
@@ -236,7 +244,7 @@ export default function Advisor() {
                                     {recommendation.within_budget !== undefined && (
                                         <div className={`ad-budget-status ${recommendation.within_budget ? 'ad-budget-status--ok' : 'ad-budget-status--over'}`}>
                                             {recommendation.within_budget
-                                                ? `✓ Within budget — ₹${recommendation.savings?.toLocaleString('en-IN')} remaining`
+                                                ? `✓ Within budget - ₹${recommendation.savings?.toLocaleString('en-IN')} remaining`
                                                 : `⚠ Over budget by ₹${(recommendation.total - recommendation.budget).toLocaleString('en-IN')}`
                                             }
                                         </div>
@@ -287,8 +295,8 @@ export default function Advisor() {
                                 {messages.length === 0 ? (
                                     <div className="ad-chat__empty">
                                         <div className="ad-chat__icon"><FiMessageSquare size={36} /></div>
-                                        <h3>PCease AI Agent</h3>
-                                        <p>Ask for a build or any PC advice — I search the real catalog, check compatibility, and assemble a grounded build.</p>
+                                        <h3>Agent</h3>
+                                        <p>Ask for a build or any PC advice. I search the real catalog, check compatibility, and assemble a grounded build.</p>
                                         <div className="ad-chat__sugg">
                                             {[
                                                 'Build me a ₹60,000 gaming PC',
@@ -397,22 +405,100 @@ export default function Advisor() {
                                     {f.label}
                                 </button>
                             ))}
+                            <div className="ad-presets__view" role="group" aria-label="Preset view">
+                                <button
+                                    type="button"
+                                    className={`ad-view-btn ${presetView === 'simple' ? 'active' : ''}`}
+                                    onClick={() => setPresetView('simple')}
+                                >
+                                    Simplified
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`ad-view-btn ${presetView === 'advanced' ? 'active' : ''}`}
+                                    onClick={() => setPresetView('advanced')}
+                                >
+                                    Advanced
+                                </button>
+                            </div>
                         </div>
 
                         <div className="ad-tmpl-grid">
                             {filteredPresets ? (
                                 filteredPresets.length > 0 ? filteredPresets.map(([key, tmpl]) => (
-                                    <div key={key} className="ad-tmpl">
-                                        <div className="ad-tmpl__head">
-                                            <div>
-                                                <h3>{tmpl.name || tmpl.title}</h3>
-                                                <span className="ad-tmpl__tag">{key.includes('budget') ? 'Budget' : key.includes('mid') ? 'Mid-Range' : key.includes('high') ? 'High-End' : tmpl.source === 'smart' ? 'Optimized' : ''}</span>
+                                    presetView === 'advanced' ? (
+                                        <div key={key} className="ad-tmpl">
+                                            <div className="ad-tmpl__head">
+                                                <div className="ad-tmpl__head-main">
+                                                    <h3 className="ad-tmpl__name">{tmpl.name || tmpl.title}</h3>
+                                                    {presetTag(key, tmpl) && <span className="ad-tmpl__tag">{presetTag(key, tmpl)}</span>}
+                                                </div>
+                                                <span className="ad-tmpl__budget">{formatPrice(tmpl.total || tmpl.budget)}</span>
                                             </div>
-                                            <span className="ad-tmpl__budget">{formatPrice(tmpl.total || tmpl.budget)}</span>
+                                            <p className="ad-tmpl__desc">{tmpl.description}</p>
+                                            <ul className="ad-tmpl__parts">
+                                                {tmpl.components?.map((c, i) => (
+                                                    <li key={i}>
+                                                        <span>{c.category}</span>
+                                                        <span>{c.name || c.suggestion}</span>
+                                                        <span>{formatPrice(c.price || c.est_price)}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <button
+                                                className="btn btn-primary btn-sm"
+                                                onClick={() => navigate('/builder', { state: { recommendation: tmpl } })}
+                                            >
+                                                Use This Build <FiArrowRight size={12} />
+                                            </button>
                                         </div>
-                                        <p className="ad-tmpl__desc">{tmpl.description}</p>
+                                    ) : (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            className="ad-tmpl-box"
+                                            onClick={() => setActivePreset([key, tmpl])}
+                                        >
+                                            <span className="ad-tmpl__head">
+                                                <span className="ad-tmpl__head-main">
+                                                    <span className="ad-tmpl__name">{tmpl.name || tmpl.title}</span>
+                                                    {presetTag(key, tmpl) && <span className="ad-tmpl__tag">{presetTag(key, tmpl)}</span>}
+                                                </span>
+                                                <span className="ad-tmpl__budget">{formatPrice(tmpl.total || tmpl.budget)}</span>
+                                            </span>
+                                            <span className="ad-tmpl-box__count">{tmpl.components?.length || 0} parts <FiArrowRight size={11} /></span>
+                                        </button>
+                                    )
+                                )) : <p className="text-muted">No presets match this filter.</p>
+                            ) : (
+                                <div className="ad-presets__loading">
+                                    <span className="ad-spinner" /> Loading presets...
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Preset detail modal */}
+                        {activePreset && (
+                            <div className="modal-overlay" onClick={() => setActivePreset(null)}>
+                                <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+                                    <div className="modal-header">
+                                        <h2>{activePreset[1].name || activePreset[1].title}</h2>
+                                        <button className="modal-close" onClick={() => setActivePreset(null)} aria-label="Close">
+                                            <FiX />
+                                        </button>
+                                    </div>
+                                    <div className="modal-body">
+                                        <div className="ad-preset-modal__meta">
+                                            {presetTag(activePreset[0], activePreset[1]) && (
+                                                <span className="ad-tmpl__tag">{presetTag(activePreset[0], activePreset[1])}</span>
+                                            )}
+                                            <span className="ad-tmpl__budget">{formatPrice(activePreset[1].total || activePreset[1].budget)}</span>
+                                        </div>
+                                        {activePreset[1].description && (
+                                            <p className="ad-tmpl__desc">{activePreset[1].description}</p>
+                                        )}
                                         <ul className="ad-tmpl__parts">
-                                            {tmpl.components?.map((c, i) => (
+                                            {activePreset[1].components?.map((c, i) => (
                                                 <li key={i}>
                                                     <span>{c.category}</span>
                                                     <span>{c.name || c.suggestion}</span>
@@ -421,19 +507,15 @@ export default function Advisor() {
                                             ))}
                                         </ul>
                                         <button
-                                            className="btn btn-primary btn-sm"
-                                            onClick={() => navigate('/builder', { state: { recommendation: tmpl } })}
+                                            className="btn btn-primary"
+                                            onClick={() => navigate('/builder', { state: { recommendation: activePreset[1] } })}
                                         >
-                                            Use This Build <FiArrowRight size={12} />
+                                            Use This Build <FiArrowRight size={13} />
                                         </button>
                                     </div>
-                                )) : <p className="text-muted">No presets match this filter.</p>
-                            ) : (
-                                <div className="ad-presets__loading">
-                                    <span className="ad-spinner" /> Loading presets...
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

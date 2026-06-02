@@ -83,7 +83,7 @@ export default function Admin() {
                                 {statCards.map((s, i) => (
                                     <div key={i} className="adm-stat-card">
                                         <div className="adm-stat-card__icon" style={{ color: s.color }}>{s.icon}</div>
-                                        <div className="adm-stat-card__value">{s.value?.toLocaleString() ?? '—'}</div>
+                                        <div className="adm-stat-card__value">{s.value?.toLocaleString() ?? '-'}</div>
                                         <div className="adm-stat-card__label">{s.label}</div>
                                     </div>
                                 ))}
@@ -111,7 +111,7 @@ export default function Admin() {
                                                 </td>
                                                 <td className="adm-muted">{u.email}</td>
                                                 <td className="adm-muted">{new Date(u.created_at).toLocaleDateString()}</td>
-                                                <td>{u.is_admin ? <span className="adm-badge">Admin</span> : '—'}</td>
+                                                <td>{u.is_admin ? <span className="adm-badge">Admin</span> : '-'}</td>
                                                 <td>
                                                     {u.id !== user.id && (
                                                         <button
