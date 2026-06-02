@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 import './Footer.css'
 
-// Deliberately not the navbar items (Browse/Builder/Advisor/Compare/Forum) -
+// Deliberately not the navbar items (Browse/Builder/Advisor/Community) -
 // the footer surfaces the secondary pages the nav doesn't.
 const links = [
-    { to: '/forum/guide', label: 'PC Building Guide' },
+    { to: '/guide', label: 'Guide' },
     { to: '/contact', label: 'Contact' },
 ]
 

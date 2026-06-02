@@ -200,6 +200,21 @@ export const API = {
     compareComponents: (ids) =>
         request('/compare', { method: 'POST', body: JSON.stringify({ ids }) }),
 
+    // --- Watchlist (account-backed; guests keep a local copy) ---
+    getWatchlist: () => request('/watchlist'),
+    addToWatchlist: (id) => { invalidateCache('/watchlist'); return request(`/watchlist/${id}`, { method: 'POST' }) },
+    removeFromWatchlist: (id) => { invalidateCache('/watchlist'); return request(`/watchlist/${id}`, { method: 'DELETE' }) },
+    mergeWatchlist: (ids) => { invalidateCache('/watchlist'); return request('/watchlist/merge', { method: 'POST', body: JSON.stringify({ ids }) }) },
+
+    // --- Builders directory ---
+    getBuilders: ({ q = '', skip = 0, limit = 24 } = {}) => {
+        const params = new URLSearchParams()
+        if (q) params.append('q', q)
+        params.append('skip', skip)
+        params.append('limit', limit)
+        return request(`/users?${params}`)
+    },
+
     // --- Forum ---
     getThreads: (params = {}) => {
         const q = new URLSearchParams()

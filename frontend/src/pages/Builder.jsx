@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 import { API, formatPrice, getLowestPrice, BUILD_SLOTS, formatSpecKey, formatSpecValue } from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import { FiLink, FiSave, FiX, FiPlus, FiZap, FiActivity, FiSearch, FiExternalLink, FiChevronLeft, FiShoppingCart, FiHelpCircle, FiArrowRight, FiFilter, FiSliders, FiTrash2, FiGlobe } from 'react-icons/fi'
+import { FiLink, FiSave, FiX, FiPlus, FiZap, FiActivity, FiSearch, FiExternalLink, FiChevronLeft, FiShoppingCart, FiHelpCircle, FiArrowRight, FiFilter, FiSliders, FiTrash2, FiGlobe, FiBookmark, FiCheck } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import PriceGraph from '../components/PriceGraph'
+import { useWatchlist } from '../hooks/useWatchlist'
 import './Builder.css'
 
 // Key specs to surface per category
@@ -159,6 +160,7 @@ export default function Builder() {
     const { shareId } = useParams()
     const location = useLocation()
     const { user } = useAuth()
+    const { has: inWatchlist, toggle: toggleWatch } = useWatchlist()
 
     // Core build state
     const [build, setBuild] = useState({})
@@ -792,6 +794,18 @@ export default function Builder() {
                                                     ))}
                                                 </div>
                                             )}
+                                            <button
+                                                className={`btn btn-sm bd-watch-btn${inWatchlist(selectedComp.id) ? ' active' : ''}`}
+                                                onClick={() => {
+                                                    const adding = !inWatchlist(selectedComp.id)
+                                                    toggleWatch(selectedComp)
+                                                    toast.success(adding ? 'Saved to watchlist' : 'Removed from watchlist')
+                                                }}
+                                            >
+                                                {inWatchlist(selectedComp.id)
+                                                    ? <><FiCheck size={13} /> In Watchlist</>
+                                                    : <><FiBookmark size={13} /> Save to Watchlist</>}
+                                            </button>
                                         </div>
 
                                         {(selectedComp.prices || []).length > 0 && (

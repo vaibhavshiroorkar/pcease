@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -16,7 +16,6 @@ const Home = lazy(() => import('./pages/Home'))
 const Browse = lazy(() => import('./pages/Browse'))
 const Builder = lazy(() => import('./pages/Builder'))
 const Advisor = lazy(() => import('./pages/Advisor'))
-const Forum = lazy(() => import('./pages/Forum'))
 const Auth = lazy(() => import('./pages/Auth'))
 const Compare = lazy(() => import('./pages/Compare'))
 const Guide = lazy(() => import('./pages/Guide'))
@@ -26,6 +25,7 @@ const Admin = lazy(() => import('./pages/Admin'))
 const Community = lazy(() => import('./pages/Community'))
 const BuildDetail = lazy(() => import('./pages/BuildDetail'))
 const PublicProfile = lazy(() => import('./pages/PublicProfile'))
+const Watchlist = lazy(() => import('./pages/Watchlist'))
 
 // Loading fallback
 const PageLoader = () => (
@@ -47,10 +47,13 @@ export default function App() {
                     <Route path="/builder" element={<Builder />} />
                     <Route path="/builder/:shareId" element={<Builder />} />
                     <Route path="/advisor" element={<Advisor />} />
-                    <Route path="/forum" element={<Forum />} />
+                    <Route path="/forum" element={<Navigate to="/builds?tab=discussions" replace />} />
                     <Route path="/forum/guide" element={<Guide />} />
+                    <Route path="/guide" element={<Guide />} />
                     <Route path="/compare" element={<Compare />} />
+                    <Route path="/watchlist" element={<Watchlist />} />
                     <Route path="/builds" element={<Community />} />
+                    <Route path="/community" element={<Navigate to="/builds" replace />} />
                     <Route path="/build/:slug" element={<BuildDetail />} />
                     <Route path="/u/:username" element={<PublicProfile />} />
                     <Route path="/login" element={<Auth />} />

@@ -299,7 +299,9 @@
     box-shadow: 0 8px 32px rgba(0,0,0,.3);
     z-index: 50; max-width: 860px; width: calc(100% - 32px);
 }
-.br-compare-bar__items { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+.br-compare-bar__items { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: 1; }
+.br-compare-bar__icon { color: var(--volt); flex-shrink: 0; }
+.br-compare-bar__label { font-size: .8125rem; color: var(--text-secondary); }
 .br-compare-bar__item {
     display: flex; align-items: center; gap: 6px;
     background: var(--bg-secondary); border: 1px solid var(--border);

@@ -657,6 +657,7 @@
     max-height: 360px;
     overflow-y: auto;
     flex: 1;
+    padding-top: 10px;
 }
 .cp-search-panel__hint {
     padding: 40px 24px;

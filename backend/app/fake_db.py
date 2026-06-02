@@ -596,6 +596,7 @@ def seed_data():
         "build_likes": build_likes,
         "build_favorites": build_favorites,
         "user_follows": user_follows,
+        "watchlist": [],
     }
 
 

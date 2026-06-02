@@ -232,6 +232,41 @@ def my_favorites(user: dict = Depends(get_current_user), db: Client = Depends(ge
     return builds
 
 
+# ----------------------------- builders directory -----------------------------
+@router.get("/users")
+def list_users(
+    q: Optional[str] = Query(None),
+    skip: int = 0,
+    limit: int = Query(24, le=60),
+    db: Client = Depends(get_db),
+):
+    """Public directory of builders. Searchable by username, paginated. Each
+    entry is public-safe and carries a count of that user's public builds."""
+    rows = db.table("users").select("*").execute().data or []
+    users = [u for u in rows if u.get("is_active", True)]
+    if q:
+        needle = q.strip().lower()
+        users = [u for u in users if needle in (u.get("username") or "").lower()]
+
+    # Public-build counts, computed once over all builds.
+    builds = db.table("builds").select("user_id, is_public").execute().data or []
+    counts: Dict[int, int] = {}
+    for b in builds:
+        if b.get("is_public"):
+            counts[b.get("user_id")] = counts.get(b.get("user_id"), 0) + 1
+
+    # Show the most active builders first, then newest accounts.
+    users.sort(key=lambda u: (counts.get(u["id"], 0), u.get("created_at") or ""), reverse=True)
+    total = len(users)
+    page = users[skip:skip + limit]
+    items = []
+    for u in page:
+        pu = _public_user(u)
+        pu["public_builds"] = counts.get(u["id"], 0)
+        items.append(pu)
+    return {"items": items, "total": total}
+
+
 # ----------------------------- profiles + following -----------------------------
 @router.get("/users/{username}")
 def get_profile(

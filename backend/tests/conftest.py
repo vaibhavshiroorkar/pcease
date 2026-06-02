@@ -77,6 +77,18 @@ class FakeSupabase:
         return FakeQuery(self.tables.get(name, []))
 
 
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """The rate limiter is a per-process singleton; clear it between tests so
+    accumulated login attempts in one test don't trip the limit in the next."""
+    try:
+        from app.utils.ratelimit import _hits
+        _hits.clear()
+    except Exception:
+        pass
+    yield
+
+
 @pytest.fixture
 def fake_db():
     """Supabase fake seeded with a tiny realistic catalog."""

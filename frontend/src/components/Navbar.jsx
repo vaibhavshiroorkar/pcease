@@ -1,16 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { FiMenu, FiX, FiLogOut, FiUser, FiSettings, FiShield } from 'react-icons/fi'
+import { FiMenu, FiX, FiLogOut, FiUser, FiSettings, FiShield, FiBookmark } from 'react-icons/fi'
 import { useAuth } from '../context/AuthContext'
+import { useWatchlist } from '../hooks/useWatchlist'
 import './Navbar.css'
 
 const navItems = [
     { to: '/browse', label: 'Browse' },
     { to: '/builder', label: 'Builder' },
     { to: '/advisor', label: 'Advisor' },
-    { to: '/compare', label: 'Compare' },
     { to: '/builds', label: 'Community' },
-    { to: '/forum', label: 'Forum' },
 ]
 
 export default function Navbar() {
@@ -18,6 +17,7 @@ export default function Navbar() {
     const [scrolled, setScrolled] = useState(false)
     const [dropdown, setDropdown] = useState(false)
     const { user, logout } = useAuth()
+    const { count: watchCount } = useWatchlist()
     const location = useLocation()
     const dropdownRef = useRef(null)
 
@@ -71,6 +71,10 @@ export default function Navbar() {
                                     <Link to="/profile" className="nav__dropdown-item">
                                         <FiUser size={14} /> Profile
                                     </Link>
+                                    <Link to="/watchlist" className="nav__dropdown-item">
+                                        <FiBookmark size={14} /> Watchlist
+                                        {watchCount > 0 && <span className="nav__dropdown-badge">{watchCount}</span>}
+                                    </Link>
                                     <Link to="/profile" className="nav__dropdown-item">
                                         <FiSettings size={14} /> Settings
                                     </Link>
@@ -87,7 +91,13 @@ export default function Navbar() {
                             )}
                         </div>
                     ) : (
-                        <NavLink to="/login" className="btn btn-primary btn-sm nav__signin">Sign In</NavLink>
+                        <>
+                            <Link to="/watchlist" className="nav__watch" aria-label="Watchlist" title="Watchlist">
+                                <FiBookmark size={16} />
+                                {watchCount > 0 && <span className="nav__watch-badge">{watchCount}</span>}
+                            </Link>
+                            <NavLink to="/login" className="btn btn-primary btn-sm nav__signin">Sign In</NavLink>
+                        </>
                     )}
                     <button className="nav__toggle" onClick={() => setOpen(!open)} aria-label="Menu">
                         {open ? <FiX size={17} /> : <FiMenu size={17} />}

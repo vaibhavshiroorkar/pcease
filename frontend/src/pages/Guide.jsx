@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { FiArrowLeft, FiCpu, FiMonitor, FiZap, FiHardDrive, FiServer, FiBox, FiWind, FiGrid, FiDollarSign, FiTool, FiAlertTriangle, FiCheckCircle } from 'react-icons/fi'
+import { FiArrowLeft, FiCpu, FiGrid, FiDollarSign, FiTool, FiAlertTriangle, FiCheckCircle, FiMonitor, FiArrowRight } from 'react-icons/fi'
 import './Guide.css'
 
 const sections = [
@@ -62,7 +62,7 @@ Why build instead of buying a pre-built? You get exactly the performance you nee
         id: 'budget',
         title: 'Budget Planning for India',
         icon: <FiDollarSign size={18} />,
-        content: `Here's a rough breakdown of what to expect in Indian pricing (2024-2025):`,
+        content: `Roughly what each budget gets you in India right now (2025-2026 pricing). Treat these as starting points, not hard rules:`,
         budgets: [
             { range: '₹30,000 – ₹45,000', label: 'Entry Level', desc: 'Basic 1080p gaming, office work, light editing. Ryzen 5 / i3 + integrated or entry GPU.' },
             { range: '₹50,000 – ₹80,000', label: 'Mid-Range', desc: 'Solid 1080p/1440p gaming. Ryzen 5 / i5 + RTX 4060 or RX 7600.' },
@@ -145,41 +145,45 @@ export default function Guide() {
     return (
         <main className="page">
             <div className="container">
-                <Link to="/forum" className="guide-back">
-                    <FiArrowLeft size={14} /> Back to Forum
+                <Link to="/builds?tab=discussions" className="guide-back">
+                    <FiArrowLeft size={14} /> Back to Community
                 </Link>
 
                 <header className="guide-header">
                     <span className="guide-header__tag">Beginner's Guide</span>
-                    <h1>How to Build a PC - The Complete Guide</h1>
+                    <h1>How to Build a PC, start to finish</h1>
                     <p className="guide-header__sub">
-                        Everything you need to know to plan, buy, and assemble your first PC build in India.
-                        Written for complete beginners - no jargon, no assumptions.
+                        Plan it, price it, and put it together yourself - even if you've never opened a
+                        PC before. No jargon, no assumptions, and every price grounded in Indian retailers.
                     </p>
                     <div className="guide-header__meta">
-                        <span>By PCease Team</span>
+                        <span>By the PCease team</span>
                         <span>·</span>
                         <span>15 min read</span>
+                        <span>·</span>
+                        <span>{sections.length} chapters</span>
                     </div>
                 </header>
 
-                {/* Table of Contents */}
-                <nav className="guide-toc">
-                    <h3>In this guide</h3>
-                    <ol>
-                        {sections.map(s => (
-                            <li key={s.id}>
-                                <a href={`#${s.id}`}>{s.title}</a>
-                            </li>
-                        ))}
-                    </ol>
-                </nav>
+                <div className="guide-layout">
+                    {/* Table of Contents (sticky sidebar on desktop) */}
+                    <aside className="guide-toc">
+                        <h3>In this guide</h3>
+                        <ol>
+                            {sections.map(s => (
+                                <li key={s.id}>
+                                    <a href={`#${s.id}`}>{s.title}</a>
+                                </li>
+                            ))}
+                        </ol>
+                    </aside>
 
-                {/* Sections */}
-                <div className="guide-content">
-                    {sections.map(section => (
+                    {/* Sections */}
+                    <div className="guide-content">
+                    {sections.map((section, i) => (
                         <section key={section.id} id={section.id} className="guide-section">
                             <div className="guide-section__head">
+                                <span className="guide-section__num">{String(i + 1).padStart(2, '0')}</span>
                                 <span className="guide-section__icon">{section.icon}</span>
                                 <h2>{section.title}</h2>
                             </div>
@@ -242,13 +246,16 @@ export default function Guide() {
 
                             {section.ctas && (
                                 <div className="guide-ctas">
-                                    <Link to="/builder" className="btn btn-primary btn-lg">Open PC Builder</Link>
-                                    <Link to="/advisor" className="btn btn-lg">Get AI Recommendation</Link>
+                                    <Link to="/advisor" className="btn btn-primary btn-lg">
+                                        Ask the Agent <FiArrowRight size={15} />
+                                    </Link>
+                                    <Link to="/builder" className="btn btn-lg">Open PC Builder</Link>
                                     <Link to="/browse" className="btn btn-lg">Browse Components</Link>
                                 </div>
                             )}
                         </section>
                     ))}
+                    </div>
                 </div>
             </div>
         </main>

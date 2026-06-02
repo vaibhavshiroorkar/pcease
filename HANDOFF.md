@@ -4,6 +4,40 @@ _Last updated: 2026-06-02_
 
 A snapshot of where the project stands so anyone (human or agent) can pick up cleanly.
 
+## Latest session (2026-06-02): Watchlist + Community merge + UX pass
+
+On branch `feat/ux-watchlist-community`. Design in
+`docs/superpowers/specs/2026-06-02-ux-watchlist-community-design.md`.
+Backend **38 tests pass** (was 31), frontend build + vitest clean.
+
+- **Watchlist replaces ephemeral compare.** The "+" on Browse (grid/list/detail) and the
+  Builder retailer view now saves to a persistent **watchlist** (bookmark toggle), mirrored
+  in both pages per the project convention.
+  - Store: `services/watchlist.js` (pub/sub over `localStorage`) + `hooks/useWatchlist.js`.
+    Guests keep a local list; signed-in it mirrors to the backend and **merges on login**
+    (wired in `AuthContext`).
+  - Backend: `routers/watchlist.py` (`GET /api/watchlist`, `POST`/`DELETE
+    /api/watchlist/{id}`, `POST /api/watchlist/merge`), `watchlist` table in fake-DB,
+    `watchlist_migration.sql`, tests in `tests/test_watchlist.py`. **Note:** `/merge` is
+    declared before `/{component_id}` so it isn't parsed as an id.
+  - New `pages/Watchlist.jsx` at `/watchlist` (saved-list view; "Compare side by side"
+    button still routes to the existing `/compare`). Reachable from the user dropdown
+    (signed-in) and a guest icon button + Browse bar (logged-out).
+- **Forum merged into Community.** `Community` now has tabs **Builds | Discussions |
+  Builders** (`components/Discussions.jsx` is the old Forum; `components/Builders.jsx` is a
+  new user directory via `GET /api/users` in `social.py`). Tab is in the `?tab=` param.
+  `/forum` redirects to `/builds?tab=discussions`; `Forum.jsx` page deleted (Forum.css kept).
+- **Nav slimmed** to Browse · Builder · Advisor · Community (Compare + Forum removed; both
+  pages still routable). Watchlist lives in the top-right dropdown.
+- **Guide** reworked: sticky TOC sidebar, numbered chapters, refreshed copy, CTAs now
+  Agent (green) + Build + Browse. **Footer** link is now "Guide" -> `/guide` (alias added).
+- **Green button hierarchy** on Home hero + final CTA and the Guide: Agent = `btn-primary`
+  (volt), Build/Browse = neutral `btn`.
+- **Misc:** fixed the cramped gap in the Compare search modal; added a rate-limiter reset
+  fixture in `tests/conftest.py` so login limits don't leak across tests; mobile pass on
+  all changed pages.
+- **Not yet done:** no PR opened; this branch not merged. Avatars still data-URL only.
+
 ## Latest session (2026-06-02): Social layer
 
 A full social layer was added (design in `docs/superpowers/specs/2026-06-02-social-layer-design.md`).

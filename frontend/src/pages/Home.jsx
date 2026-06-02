@@ -49,6 +49,9 @@ export default function Home() {
                             <Link to="/builder" className="btn btn-lg">
                                 Build your PC
                             </Link>
+                            <Link to="/browse" className="btn btn-lg">
+                                Browse parts
+                            </Link>
                         </div>
                         <div className="hero__stats">
                             <Link to="/browse" className="hero__stat hero__stat--link">
@@ -61,7 +64,7 @@ export default function Home() {
                                 <span className="hero__stat-label">Retailers</span>
                             </button>
                             <div className="hero__stat-divider" />
-                            <Link to="/forum" className="hero__stat hero__stat--link">
+                            <Link to="/builds?tab=discussions" className="hero__stat hero__stat--link">
                                 <span className="hero__stat-num">{stats?.forum_threads ?? 0}</span>
                                 <span className="hero__stat-label">Community</span>
                             </Link>
@@ -189,15 +192,15 @@ export default function Home() {
                         </div>
                         <div className="feat-card">
                             <div className="feat-card__icon"><FiColumns size={20} /></div>
-                            <h3>Side-by-Side Compare</h3>
-                            <p>Compare up to 4 components with spec highlights and per-retailer pricing in card or table view.</p>
-                            <Link to="/compare" className="feat-card__link">Compare now <FiArrowRight size={13} /></Link>
+                            <h3>Watchlist</h3>
+                            <p>Save parts you're eyeing to a watchlist, track their prices, and compare them side by side when you're ready.</p>
+                            <Link to="/watchlist" className="feat-card__link">Open watchlist <FiArrowRight size={13} /></Link>
                         </div>
                         <div className="feat-card">
                             <div className="feat-card__icon"><FiMessageSquare size={20} /></div>
-                            <h3>Community Forum</h3>
-                            <p>Ask questions, share builds, and get advice from fellow PC enthusiasts in India.</p>
-                            <Link to="/forum" className="feat-card__link">Visit Forum <FiArrowRight size={13} /></Link>
+                            <h3>Community</h3>
+                            <p>Share your builds, browse other builders, and get advice in the discussions from fellow PC enthusiasts in India.</p>
+                            <Link to="/builds" className="feat-card__link">Visit Community <FiArrowRight size={13} /></Link>
                         </div>
                     </div>
                 </div>
@@ -252,8 +255,11 @@ export default function Home() {
                         <Link to="/advisor" className="btn btn-primary btn-lg">
                             What should I build? <FiArrowRight size={15} />
                         </Link>
-                        <Link to="/forum" className="btn btn-lg">
-                            Need help? Ask the community
+                        <Link to="/builder" className="btn btn-lg">
+                            Build your PC
+                        </Link>
+                        <Link to="/browse" className="btn btn-lg">
+                            Browse parts
                         </Link>
                     </div>
                 </div>

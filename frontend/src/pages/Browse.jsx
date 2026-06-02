@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import { API, formatPrice, getLowestPrice, getSavings, getBestVendor, CATEGORIES, formatSpecKey, formatSpecValue } from '../services/api'
-import { FiSearch, FiX, FiExternalLink, FiCheck, FiPlus, FiGrid, FiList, FiShoppingCart, FiInfo, FiChevronRight, FiSliders, FiChevronDown } from 'react-icons/fi'
+import { FiSearch, FiX, FiExternalLink, FiCheck, FiBookmark, FiGrid, FiList, FiShoppingCart, FiInfo, FiChevronRight, FiSliders } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import PriceGraph from '../components/PriceGraph'
+import { useWatchlist } from '../hooks/useWatchlist'
 import './Browse.css'
 
 const SPEC_PRIORITY = {
@@ -66,7 +67,7 @@ const EmptyState = ({ error }) => (
 
 export default function Browse() {
     const [searchParams, setSearchParams] = useSearchParams()
-    const navigate = useNavigate()
+    const { ids: watchIds, has: inWatchlist, toggle: toggleWatch, count: watchCount } = useWatchlist()
     const [components, setComponents] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -74,7 +75,6 @@ export default function Browse() {
     const [category, setCategory] = useState(searchParams.get('category') || '')
     const [sort, setSort] = useState('price-low')
     const [detail, setDetail] = useState(null)
-    const [compareList, setCompareList] = useState([])
     const [viewMode, setViewMode] = useState('list')
     const [pageSize, setPageSize] = useState(25)
     const [page, setPage] = useState(1)
@@ -151,22 +151,11 @@ export default function Browse() {
         setSearchParams(params)
     }, [search, setSearchParams])
 
-    const toggleCompare = useCallback((item) => {
-        setCompareList(prev => {
-            const exists = prev.find(c => c.id === item.id)
-            if (exists) return prev.filter(c => c.id !== item.id)
-            if (prev.length >= 4) { toast.error('Maximum 4 items'); return prev }
-            return [...prev, item]
-        })
-    }, [])
-
-    const goCompare = useCallback(() => {
-        if (compareList.length < 2) { toast.error('Select at least 2 items'); return }
-        navigate(`/compare?ids=${compareList.map(c => c.id).join(',')}`)
-    }, [compareList, navigate])
-
-    // Memoize compare list IDs for faster lookups
-    const compareIds = useMemo(() => new Set(compareList.map(c => c.id)), [compareList])
+    const handleToggleWatch = useCallback((item) => {
+        const adding = !inWatchlist(item.id)
+        toggleWatch(item)
+        toast.success(adding ? 'Saved to watchlist' : 'Removed from watchlist')
+    }, [inWatchlist, toggleWatch])
 
     return (
         <main className="page">
@@ -176,10 +165,10 @@ export default function Browse() {
                         <h1>Browse Components</h1>
                         <p className="br-header__sub">Find parts and compare prices across Indian retailers.</p>
                     </div>
-                    {compareList.length > 0 && (
-                        <button className="btn btn-primary" onClick={goCompare}>
-                            Compare ({compareList.length})
-                        </button>
+                    {watchCount > 0 && (
+                        <Link to="/watchlist" className="btn btn-primary">
+                            <FiBookmark size={14} /> Watchlist ({watchCount})
+                        </Link>
                     )}
                 </header>
 
@@ -284,20 +273,20 @@ export default function Browse() {
                                 const lowest = getLowestPrice(item)
                                 const savings = getSavings(item)
                                 const bestVendor = getBestVendor(item)
-                                const isComp = compareIds.has(item.id)
+                                const isSaved = watchIds.has(item.id)
                                 const vendorCount = (item.prices || []).length
                                 const keySpecs = getKeySpecs(item, 3)
 
                                 return (
-                                    <article key={item.id} className={`br-card${isComp ? ' br-card--selected' : ''}`} onClick={() => setDetail(item)}>
+                                    <article key={item.id} className={`br-card${isSaved ? ' br-card--selected' : ''}`} onClick={() => setDetail(item)}>
                                         <div className="br-card__top">
                                             <span className="br-card__badge">{CATEGORIES[item.category?.slug]?.name || 'Part'}</span>
                                             <button
-                                                className={`br-card__cmp ${isComp ? 'active' : ''}`}
-                                                onClick={e => { e.stopPropagation(); toggleCompare(item) }}
-                                                title={isComp ? 'Remove from compare' : 'Add to compare'}
+                                                className={`br-card__cmp ${isSaved ? 'active' : ''}`}
+                                                onClick={e => { e.stopPropagation(); handleToggleWatch(item) }}
+                                                title={isSaved ? 'In your watchlist' : 'Save to watchlist'}
                                             >
-                                                {isComp ? <FiCheck size={12} /> : <FiPlus size={12} />}
+                                                {isSaved ? <FiCheck size={12} /> : <FiBookmark size={12} />}
                                             </button>
                                         </div>
 
@@ -352,12 +341,12 @@ export default function Browse() {
                                 const lowest = getLowestPrice(item)
                                 const savings = getSavings(item)
                                 const bestVendor = getBestVendor(item)
-                                const isComp = compareIds.has(item.id)
+                                const isSaved = watchIds.has(item.id)
                                 const vendorCount = (item.prices || []).length
                                 const keySpecs = getKeySpecs(item, 4)
 
                                 return (
-                                    <article key={item.id} className={`br-list-item${isComp ? ' br-list-item--selected' : ''}`}>
+                                    <article key={item.id} className={`br-list-item${isSaved ? ' br-list-item--selected' : ''}`}>
                                         <div className="br-list-item__main" onClick={() => setDetail(item)}>
                                             <div className="br-list-item__left">
                                                 <div className="br-list-item__meta">
@@ -405,11 +394,11 @@ export default function Browse() {
                                                 </button>
                                             )}
                                             <button
-                                                className={`br-card__cmp ${isComp ? 'active' : ''}`}
-                                                onClick={e => { e.stopPropagation(); toggleCompare(item) }}
-                                                title={isComp ? 'Remove from compare' : 'Add to compare'}
+                                                className={`br-card__cmp ${isSaved ? 'active' : ''}`}
+                                                onClick={e => { e.stopPropagation(); handleToggleWatch(item) }}
+                                                title={isSaved ? 'In your watchlist' : 'Save to watchlist'}
                                             >
-                                                {isComp ? <FiCheck size={12} /> : <FiPlus size={12} />}
+                                                {isSaved ? <FiCheck size={12} /> : <FiBookmark size={12} />}
                                             </button>
                                         </div>
                                     </article>
@@ -491,33 +480,34 @@ export default function Browse() {
 
                                 <div className="br-detail__actions">
                                     <button
-                                        className={`btn ${compareIds.has(detail.id) ? 'btn-primary' : ''}`}
-                                        onClick={() => toggleCompare(detail)}
+                                        className={`btn ${watchIds.has(detail.id) ? 'btn-primary' : ''}`}
+                                        onClick={() => handleToggleWatch(detail)}
                                     >
-                                        {compareIds.has(detail.id)
-                                            ? <><FiCheck size={14} /> In Compare</>
-                                            : <><FiPlus size={14} /> Add to Compare</>}
+                                        {watchIds.has(detail.id)
+                                            ? <><FiCheck size={14} /> In Watchlist</>
+                                            : <><FiBookmark size={14} /> Save to Watchlist</>}
                                     </button>
+                                    {watchCount > 0 && (
+                                        <Link to="/watchlist" className="btn">View Watchlist ({watchCount})</Link>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* ===== STICKY COMPARE BAR ===== */}
-                {compareList.length >= 1 && (
+                {/* ===== STICKY WATCHLIST BAR ===== */}
+                {watchCount >= 1 && (
                     <div className="br-compare-bar">
                         <div className="br-compare-bar__items">
-                            {compareList.map(c => (
-                                <span key={c.id} className="br-compare-bar__item">
-                                    <span className="br-compare-bar__item-name">{c.name}</span>
-                                    <button onClick={() => toggleCompare(c)} className="br-compare-bar__rm"><FiX size={10} /></button>
-                                </span>
-                            ))}
+                            <FiBookmark size={14} className="br-compare-bar__icon" />
+                            <span className="br-compare-bar__label">
+                                {watchCount} {watchCount === 1 ? 'item' : 'items'} saved to your watchlist
+                            </span>
                         </div>
-                        <button className="btn btn-primary" onClick={goCompare} disabled={compareList.length < 2}>
-                            Compare {compareList.length} {compareList.length === 1 ? '(need 1 more)' : 'items'}
-                        </button>
+                        <Link to="/watchlist" className="btn btn-primary">
+                            View Watchlist <FiChevronRight size={14} />
+                        </Link>
                     </div>
                 )}
             </div>

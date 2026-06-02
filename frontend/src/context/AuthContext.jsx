@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { API } from '../services/api'
+import { syncFromServer, mergeOnLogin } from '../services/watchlist'
 
 // eslint-disable-next-line react-refresh/only-export-components
 const AuthContext = createContext(null)
@@ -23,6 +24,7 @@ export function AuthProvider({ children }) {
         try {
             const userData = await API.getMe(token)
             setUser(userData)
+            syncFromServer()  // adopt the account's saved watchlist on reload
         } catch {
             logout()
         } finally {
@@ -38,6 +40,7 @@ export function AuthProvider({ children }) {
         other.removeItem('pcease_token')
         setToken(data.access_token)
         await fetchUser()
+        await mergeOnLogin()  // fold the guest watchlist into the account
         return data
     }
 

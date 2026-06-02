@@ -276,6 +276,10 @@
     display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
     gap: 8px; margin-top: 14px;
 }
+.bd-watch-btn { margin-top: 14px; }
+.bd-watch-btn.active {
+    background: var(--accent-subtle); border-color: var(--accent-border); color: var(--volt);
+}
 .bd-spec {
     display: flex; flex-direction: column; gap: 3px;
     padding: 8px 11px;

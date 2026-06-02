@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from .routers import auth, components, forum, advisor, agent, social
+from .routers import auth, components, forum, advisor, agent, social, watchlist
 from .config import settings
 from .cache import get_cache, set_cache, clear_cache
 
@@ -61,6 +61,7 @@ app.include_router(forum.router)
 app.include_router(advisor.router)
 app.include_router(agent.router)
 app.include_router(social.router)
+app.include_router(watchlist.router)
 
 
 @app.get("/")
