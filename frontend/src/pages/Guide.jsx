@@ -144,41 +144,16 @@ Pro tip: Prices fluctuate weekly. Use our Browse page to check which store has t
 
 export default function Guide() {
     const [active, setActive] = useState(sections[0].id)
-    const [progress, setProgress] = useState(0)
+    const activeIndex = Math.max(0, sections.findIndex(s => s.id === active))
+    const section = sections[activeIndex]
 
-    // Reading-progress bar
+    // Scroll the content area back to top whenever the section changes.
     useEffect(() => {
-        const onScroll = () => {
-            const h = document.documentElement
-            const max = h.scrollHeight - h.clientHeight
-            setProgress(max > 0 ? Math.min(100, (h.scrollTop / max) * 100) : 0)
-        }
-        onScroll()
-        window.addEventListener('scroll', onScroll, { passive: true })
-        return () => window.removeEventListener('scroll', onScroll)
-    }, [])
-
-    // Scrollspy: highlight the section currently in view in the TOC
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const visible = entries
-                    .filter((e) => e.isIntersecting)
-                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-                if (visible[0]) setActive(visible[0].target.id)
-            },
-            { rootMargin: '-30% 0px -60% 0px', threshold: 0 }
-        )
-        sections.forEach((s) => {
-            const el = document.getElementById(s.id)
-            if (el) observer.observe(el)
-        })
-        return () => observer.disconnect()
-    }, [])
+        document.querySelector('.guide-content')?.scrollTo({ top: 0 })
+    }, [active])
 
     return (
         <main className="page guide-page">
-            <div className="guide-progress" style={{ transform: `scaleX(${progress / 100})` }} />
             <div className="container">
                 <Link to="/builds?tab=discussions" className="guide-back">
                     <FiArrowLeft size={14} /> Back to Community
@@ -201,29 +176,29 @@ export default function Guide() {
                 </header>
 
                 <div className="guide-layout">
-                    {/* Table of Contents (sticky sidebar on desktop) */}
+                    {/* Section switcher (sticky sidebar on desktop) */}
                     <aside className="guide-toc">
                         <h3>In this guide</h3>
                         <ol>
                             {sections.map(s => (
                                 <li key={s.id}>
-                                    <a
-                                        href={`#${s.id}`}
+                                    <button
+                                        type="button"
                                         className={active === s.id ? 'is-active' : ''}
+                                        onClick={() => setActive(s.id)}
                                     >
                                         {s.title}
-                                    </a>
+                                    </button>
                                 </li>
                             ))}
                         </ol>
                     </aside>
 
-                    {/* Sections */}
+                    {/* Active section only */}
                     <div className="guide-content">
-                    {sections.map((section, i) => (
                         <section key={section.id} id={section.id} className="guide-section">
                             <div className="guide-section__head">
-                                <span className="guide-section__num">{String(i + 1).padStart(2, '0')}</span>
+                                <span className="guide-section__num">{String(activeIndex + 1).padStart(2, '0')}</span>
                                 <span className="guide-section__icon">{section.icon}</span>
                                 <h2>{section.title}</h2>
                             </div>
@@ -293,8 +268,27 @@ export default function Guide() {
                                     <Link to="/browse" className="btn btn-lg">Browse Components</Link>
                                 </div>
                             )}
+
+                            <div className="guide-section__nav">
+                                <button
+                                    type="button"
+                                    className="btn btn-sm"
+                                    disabled={activeIndex === 0}
+                                    onClick={() => setActive(sections[activeIndex - 1].id)}
+                                >
+                                    <FiArrowLeft size={13} /> Previous
+                                </button>
+                                <span className="guide-section__nav-count">{activeIndex + 1} / {sections.length}</span>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm"
+                                    disabled={activeIndex === sections.length - 1}
+                                    onClick={() => setActive(sections[activeIndex + 1].id)}
+                                >
+                                    Next <FiArrowRight size={13} />
+                                </button>
+                            </div>
                         </section>
-                    ))}
                     </div>
                 </div>
             </div>
