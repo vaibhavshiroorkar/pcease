@@ -20,7 +20,12 @@ const lowOf = getLowestPrice
  * - `hasWatch`/`toggleWatch`: watchlist state + toggle
  */
 export default function SpecTable({ items, category, onOpen, hasWatch, toggleWatch }) {
-    const specKeys = columnsForCategory(category)
+    // Only show spec columns that at least one item actually has, so the table
+    // shows real specs instead of columns full of "-".
+    const specKeys = useMemo(
+        () => columnsForCategory(category).filter(k => items.some(i => specOf(i, k) !== null)),
+        [category, items],
+    )
     const [sort, setSort] = useState({ key: '__price', dir: 'asc' })
 
     // Infer each spec column's type once over the current items (for numeric vs text sort).

@@ -88,6 +88,21 @@ export function invalidateCache(pattern = '') {
     }
 }
 
+// The DB/API exposes component specs under `specifications` (sometimes a JSON
+// string). The UI reads `item.specs`, so normalize every component to carry a
+// parsed `.specs` object. One place to fix it for cards, the table, and filters.
+function ensureSpecs(c) {
+    if (!c || typeof c !== 'object') return c
+    if (c.specs && typeof c.specs === 'object') return c
+    let s = c.specs ?? c.specifications
+    if (typeof s === 'string') { try { s = JSON.parse(s) } catch { s = {} } }
+    return { ...c, specs: s && typeof s === 'object' ? s : {} }
+}
+function normalizeComponents(data) {
+    if (Array.isArray(data)) return data.map(ensureSpecs)
+    return ensureSpecs(data)
+}
+
 // ========== API Methods ==========
 export const API = {
     // --- Auth ---
@@ -143,10 +158,10 @@ export const API = {
         if (params.search) q.append('search', params.search)
         if (params.sort) q.append('sort', params.sort)
         q.append('limit', params.limit || '500')
-        return request(`/components?${q}`)
+        return request(`/components?${q}`).then(normalizeComponents)
     },
 
-    getComponent: (id) => request(`/components/${id}`),
+    getComponent: (id) => request(`/components/${id}`).then(normalizeComponents),
 
     getPriceHistory: (id, range = 'week') =>
         request(`/components/${id}/price-history?range=${range}`),
@@ -198,10 +213,10 @@ export const API = {
 
     // --- Compare ---
     compareComponents: (ids) =>
-        request('/compare', { method: 'POST', body: JSON.stringify({ ids }) }),
+        request('/compare', { method: 'POST', body: JSON.stringify({ ids }) }).then(normalizeComponents),
 
     // --- Watchlist (account-backed; guests keep a local copy) ---
-    getWatchlist: () => request('/watchlist'),
+    getWatchlist: () => request('/watchlist').then(normalizeComponents),
     addToWatchlist: (id) => { invalidateCache('/watchlist'); return request(`/watchlist/${id}`, { method: 'POST' }) },
     removeFromWatchlist: (id) => { invalidateCache('/watchlist'); return request(`/watchlist/${id}`, { method: 'DELETE' }) },
     mergeWatchlist: (ids) => { invalidateCache('/watchlist'); return request('/watchlist/merge', { method: 'POST', body: JSON.stringify({ ids }) }) },

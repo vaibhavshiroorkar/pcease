@@ -83,8 +83,11 @@ export default function Browse() {
         return Array.from(brands).sort()
     }, [components])
 
-    // Per-spec filters only apply in Advanced mode with a specific category chosen.
-    const specCols = (mode === 'advanced' && category) ? columnsForCategory(category) : []
+    // Per-spec filters only apply in Advanced mode with a specific category chosen,
+    // and only for spec columns that actually have data in the loaded components.
+    const specCols = (mode === 'advanced' && category)
+        ? columnsForCategory(category).filter(k => components.some(c => c.specs?.[k] != null))
+        : []
     const specColTypes = useMemo(() => {
         const t = {}
         for (const k of specCols) t[k] = inferColumnType(components.map(c => c.specs?.[k]))
@@ -439,20 +442,6 @@ export default function Browse() {
                     </div>
                 )}
 
-                {/* ===== STICKY WATCHLIST BAR ===== */}
-                {watchCount >= 1 && (
-                    <div className="br-compare-bar">
-                        <div className="br-compare-bar__items">
-                            <FiBookmark size={14} className="br-compare-bar__icon" />
-                            <span className="br-compare-bar__label">
-                                {watchCount} {watchCount === 1 ? 'item' : 'items'} saved to your watchlist
-                            </span>
-                        </div>
-                        <Link to="/watchlist" className="btn btn-primary">
-                            View Watchlist <FiChevronRight size={14} />
-                        </Link>
-                    </div>
-                )}
             </div>
         </main>
     )
