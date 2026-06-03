@@ -5,6 +5,7 @@ import {
     inferColumnType,
     distinctValues,
     compareValues,
+    applySpecFilters,
 } from './specColumns'
 
 describe('columnsForCategory', () => {
@@ -46,6 +47,25 @@ describe('inferColumnType', () => {
 describe('distinctValues', () => {
     it('returns sorted unique non-empty strings', () => {
         expect(distinctValues(['AM5', 'AM4', 'AM5', null, ''])).toEqual(['AM4', 'AM5'])
+    })
+})
+
+describe('applySpecFilters', () => {
+    const items = [
+        { id: 1, specs: { tdp: '65W', socket: 'AM5' } },
+        { id: 2, specs: { tdp: '120W', socket: 'LGA1700' } },
+        { id: 3, specs: { tdp: '95W', socket: 'AM5' } },
+    ]
+    const colTypes = { tdp: 'numeric', socket: 'categorical' }
+    it('returns all items when no filters are active', () => {
+        expect(applySpecFilters(items, {}, colTypes)).toHaveLength(3)
+        expect(applySpecFilters(items, { tdp: { min: '', max: '' } }, colTypes)).toHaveLength(3)
+    })
+    it('filters by numeric range', () => {
+        expect(applySpecFilters(items, { tdp: { min: '90', max: '' } }, colTypes).map(i => i.id)).toEqual([2, 3])
+    })
+    it('filters by categorical multi-select', () => {
+        expect(applySpecFilters(items, { socket: ['AM5'] }, colTypes).map(i => i.id)).toEqual([1, 3])
     })
 })
 

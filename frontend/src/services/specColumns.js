@@ -50,6 +50,29 @@ export function distinctValues(values) {
     return [...set].sort()
 }
 
+// Apply per-spec column filters to a list of items. `filters` maps a spec key to
+// either {min,max} (numeric) or an array of allowed string values (categorical).
+// `colTypes` maps a spec key to 'numeric' | 'categorical'. Pure + testable.
+export function applySpecFilters(items, filters, colTypes) {
+    const active = Object.entries(filters || {}).filter(([, f]) =>
+        f && (Array.isArray(f) ? f.length > 0 : (f.min !== '' && f.min != null) || (f.max !== '' && f.max != null))
+    )
+    if (active.length === 0) return items
+    return items.filter(item => {
+        for (const [key, f] of active) {
+            const raw = item.specs?.[key]
+            if (colTypes[key] === 'numeric') {
+                const n = parseSpecNum(raw)
+                if (f.min !== '' && f.min != null && (n === null || n < parseFloat(f.min))) return false
+                if (f.max !== '' && f.max != null && (n === null || n > parseFloat(f.max))) return false
+            } else if (Array.isArray(f) && f.length > 0) {
+                if (!f.includes(String(raw))) return false
+            }
+        }
+        return true
+    })
+}
+
 export function compareValues(a, b, type) {
     if (type === 'numeric') {
         const na = parseSpecNum(a)
