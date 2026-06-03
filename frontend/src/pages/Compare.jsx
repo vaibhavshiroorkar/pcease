@@ -218,7 +218,14 @@ export default function Compare() {
                                 <FiTrash2 size={12} /> Clear All
                             </button>
                         )}
-                        <Link to="/browse" className="btn btn-secondary btn-sm">Browse All</Link>
+                        <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => openSearch(filledSlots.length)}
+                            disabled={filledSlots.length >= MAX_SLOTS}
+                            title={filledSlots.length >= MAX_SLOTS ? `Up to ${MAX_SLOTS} components` : 'Add a component to compare'}
+                        >
+                            <FiPlus size={12} /> Add Component
+                        </button>
                     </div>
                 </header>
 
