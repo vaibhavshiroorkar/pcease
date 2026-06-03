@@ -1,4 +1,5 @@
 import { formatPrice, getLowestPrice, getSavings, getBestVendor, CATEGORIES } from '../services/api'
+import { SPEC_PRIORITY } from '../services/specColumns'
 import './PartCard.css'
 
 /**
@@ -11,19 +12,6 @@ import './PartCard.css'
  *   - `actions` : primary buttons (Buy / View / Remove)
  *   - `onOpen`  : optional click handler for the card body (opens detail)
  */
-
-const SPEC_PRIORITY = {
-    cpu: ['cores', 'boost_clock', 'socket', 'tdp'],
-    gpu: ['memory', 'boost_clock', 'tdp', 'cuda_cores'],
-    motherboard: ['socket', 'chipset', 'form_factor', 'ram_slots'],
-    ram: ['capacity', 'speed', 'type', 'cas_latency'],
-    storage: ['capacity', 'type', 'interface', 'read_speed'],
-    psu: ['wattage', 'efficiency', 'modular'],
-    case: ['form_factor', 'max_gpu_length', 'expansion_slots'],
-    cooler: ['type', 'tdp_rating', 'fan_size'],
-    monitor: ['resolution', 'refresh_rate', 'panel_type', 'size'],
-    fans: ['size', 'quantity', 'airflow', 'rpm'],
-}
 
 export function getKeySpecs(item, maxCount = 4) {
     if (!item.specs || !Object.keys(item.specs).length) return []
