@@ -453,6 +453,18 @@ export default function Builder() {
         finally { setSaving(false) }
     }, [user, buildName, allComponentIds])
 
+    // Share action: a private, unlisted view link. Works without an account.
+    const handleShareLink = useCallback(async () => {
+        if (Object.keys(allComponentIds).length === 0) return toast.error('Add components first')
+        setSharing(true)
+        try {
+            const r = await API.shareBuild({ name: buildName, components: allComponentIds })
+            await navigator.clipboard.writeText(`${window.location.origin}/builder/${r.share_id}`)
+            toast.success('Share link copied')
+        } catch (e) { toast.error('Failed: ' + e.message) }
+        finally { setSharing(false) }
+    }, [buildName, allComponentIds])
+
     // Share action: publish to the community feed and copy the public link.
     const handlePublish = useCallback(async () => {
         if (!user) return toast.error('Please login to publish')
@@ -552,6 +564,9 @@ export default function Builder() {
                             title="Clear build"
                         >
                             <FiTrash2 size={14} /> Clear
+                        </button>
+                        <button className="btn" onClick={handleShareLink} disabled={sharing} title="Copy a private link, no account needed">
+                            <FiLink size={14} /> Share link
                         </button>
                         <button className="btn" onClick={handlePublish} disabled={sharing} title="Publish to the community and copy the public link">
                             <FiGlobe size={14} /> {sharing ? '...' : 'Publish'}
