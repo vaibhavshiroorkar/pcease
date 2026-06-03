@@ -601,6 +601,7 @@ def seed_data():
         "build_favorites": build_favorites,
         "user_follows": user_follows,
         "watchlist": [],
+        "tickets": [],
     }
 
 

@@ -154,6 +154,11 @@ joins; `routers/social.py` enriches in Python).
 - **Discussions are Reddit-style threaded** (`components/Discussions.jsx`): replies nest via
   `parent_reply_id`, rendered as a collapsible tree with reply-to-comment. The backend
   (`routers/forum.py`) validates the parent belongs to the thread.
+- **Support tickets** (`routers/tickets.py`, `pages/Contact.jsx`, Admin Tickets tab): the Contact
+  page creates persisted tickets (guests use name+email; logged-in users get them linked to the
+  account). Track via `GET /tickets/me` (users) or `GET /tickets/lookup?reference=&email=` (guests).
+  Admins list and set status at `/tickets/admin`. New `tickets` table - run
+  `backend/support_tickets_migration.sql` on Supabase; the fake DB seeds an empty `tickets: []`.
 - **Shared dropdown / range inputs.** `components/SearchableSelect.jsx` is the type-to-search
   dropdown (single or multi-select) and `components/PriceRange.jsx` is the dual-thumb price slider
   with typeable ends. Prefer these over raw `<select>` for long option lists. Browse filters live in

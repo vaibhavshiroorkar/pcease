@@ -4,6 +4,35 @@
    Add the extra breathing room as margin on the header instead. */
 .ct { min-height: calc(100vh - 200px); }
 
+/* Ticket status badges */
+.ct-status { display: inline-flex; align-items: center; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 2px 8px; border-radius: 9999px; }
+.ct-status--open { color: var(--accent); background: var(--accent-subtle); }
+.ct-status--in_progress { color: var(--warning); background: rgba(245,181,68,.14); }
+.ct-status--closed { color: var(--text-muted); background: var(--surface-active); }
+
+/* Two-up row inside the form */
+.ct-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ct-asaccount { font-size: .8rem; color: var(--text-muted); margin: -4px 0 4px; }
+
+/* Guest ticket tracker (in the info column) */
+.ct-track { display: flex; flex-direction: column; gap: 8px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.ct-track h4 { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; margin: 0 0 2px; }
+.ct-track input { padding: 7px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font: inherit; font-size: .82rem; }
+.ct-track__err { color: var(--error); font-size: .78rem; margin: 0; }
+.ct-track__result { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--text-secondary); }
+
+/* Your tickets list */
+.ct-mine { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+.ct-mine h3 { font-size: 1rem; margin-bottom: 12px; }
+.ct-ticket-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ct-ticket { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.ct-ticket__main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ct-ticket__ref { font-family: var(--font-mono); font-size: .68rem; color: var(--text-muted); }
+.ct-ticket__subj { font-size: .88rem; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ct-ticket__meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.ct-ticket__time { font-size: .72rem; color: var(--text-muted); }
+@media (max-width: 540px) { .ct-row { grid-template-columns: 1fr; } }
+
 .ct-header {
     text-align: center;
     margin-bottom: 40px;

@@ -11,6 +11,7 @@ export default function Admin() {
     const { user } = useAuth()
     const [stats, setStats] = useState(null)
     const [users, setUsers] = useState([])
+    const [tickets, setTickets] = useState([])
     const [tab, setTab] = useState('overview')
     const [loading, setLoading] = useState(true)
 
@@ -22,11 +23,19 @@ export default function Admin() {
     const loadData = async () => {
         setLoading(true)
         try {
-            const [s, u] = await Promise.all([API.adminGetStats(), API.adminGetUsers()])
+            const [s, u, t] = await Promise.all([API.adminGetStats(), API.adminGetUsers(), API.adminGetTickets()])
             setStats(s)
             setUsers(u)
+            setTickets(t)
         } catch (err) { toast.error('Failed to load admin data: ' + err.message) }
         finally { setLoading(false) }
+    }
+
+    const handleTicketStatus = async (id, status) => {
+        try {
+            await API.adminUpdateTicket(id, status)
+            setTickets(prev => prev.map(t => (t.id === id ? { ...t, status } : t)))
+        } catch (err) { toast.error(err.message) }
     }
 
     const handleDeleteUser = async (id, username) => {
@@ -72,6 +81,7 @@ export default function Admin() {
                 <div className="adm-tabs">
                     <button className={`adm-tab${tab === 'overview' ? ' adm-tab--active' : ''}`} onClick={() => setTab('overview')}>Overview</button>
                     <button className={`adm-tab${tab === 'users' ? ' adm-tab--active' : ''}`} onClick={() => setTab('users')}>Users</button>
+                    <button className={`adm-tab${tab === 'tickets' ? ' adm-tab--active' : ''}`} onClick={() => setTab('tickets')}>Tickets {tickets.length > 0 && `(${tickets.length})`}</button>
                 </div>
 
                 {loading ? (
@@ -128,6 +138,46 @@ export default function Admin() {
                                     </tbody>
                                 </table>
                                 {users.length === 0 && <p className="adm-empty">No users found.</p>}
+                            </div>
+                        )}
+
+                        {tab === 'tickets' && (
+                            <div className="adm-table-wrap">
+                                <table className="adm-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Reference</th>
+                                            <th>Subject</th>
+                                            <th>From</th>
+                                            <th>Category</th>
+                                            <th>Created</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {tickets.map(t => (
+                                            <tr key={t.id}>
+                                                <td className="adm-muted" style={{ fontFamily: 'var(--font-mono)', fontSize: '.75rem' }}>{t.reference}</td>
+                                                <td title={t.message}>{t.subject}</td>
+                                                <td className="adm-muted">{t.name || 'Guest'}<br /><span style={{ fontSize: '.72rem' }}>{t.email}</span></td>
+                                                <td className="adm-muted">{t.category}</td>
+                                                <td className="adm-muted">{new Date(t.created_at).toLocaleDateString()}</td>
+                                                <td>
+                                                    <select
+                                                        className="adm-ticket-status"
+                                                        value={t.status}
+                                                        onChange={e => handleTicketStatus(t.id, e.target.value)}
+                                                    >
+                                                        <option value="open">Open</option>
+                                                        <option value="in_progress">In progress</option>
+                                                        <option value="closed">Closed</option>
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {tickets.length === 0 && <p className="adm-empty">No tickets yet.</p>}
                             </div>
                         )}
                     </>

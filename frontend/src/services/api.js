@@ -144,6 +144,17 @@ export const API = {
     adminDeleteUser: (id) => request(`/auth/admin/users/${id}`, { method: 'DELETE' }),
     adminDeleteThread: (id) => request(`/auth/admin/threads/${id}`, { method: 'DELETE' }),
 
+    // --- Support tickets ---
+    createTicket: (ticket) => request('/tickets', { method: 'POST', body: JSON.stringify(ticket) }),
+    getMyTickets: () => { invalidateCache('/tickets/me'); return request('/tickets/me') },
+    lookupTicket: (reference, email) =>
+        request(`/tickets/lookup?reference=${encodeURIComponent(reference)}&email=${encodeURIComponent(email)}`),
+    adminGetTickets: () => request('/tickets/admin'),
+    adminUpdateTicket: (id, status) => {
+        invalidateCache('/tickets/admin')
+        return request(`/tickets/admin/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) })
+    },
+
     // --- Stats ---
     getStats: () => request('/stats'),
 

@@ -4,6 +4,23 @@ _Last updated: 2026-06-03_
 
 A snapshot of where the project stands so anyone (human or agent) can pick up cleanly.
 
+## Latest session (2026-06-04): Support tickets
+
+Replaced the dummy Contact form with a real **ticket system** (submit + track +
+admin). Frontend build clean; backend **45 pass** (5 new ticket tests).
+
+- **Backend** `routers/tickets.py`: `POST /api/tickets` (guests or users, attaches
+  account when logged in), `GET /api/tickets/me`, `GET /api/tickets/lookup`
+  (reference + email, for guests), admin `GET /api/tickets/admin` +
+  `PATCH /api/tickets/admin/{id}` (status). `tickets` added to the fake DB; Supabase
+  migration in `backend/support_tickets_migration.sql` (run it).
+- **Contact page** is now Support: ticket form (subject/category/message, name+email
+  for guests, account identity for users), a created-confirmation with the
+  `PCE-XXXXXX` reference, a "Your tickets" list for users, and a guest
+  "Track a ticket" lookup.
+- **Admin** has a Tickets tab to list and change status (open/in_progress/closed).
+- Statuses: `open | in_progress | closed`. Categories: General/Bug/Feature/Account/Other.
+
 ## Latest session (2026-06-04): UX round 4
 
 Frontend build clean; vitest 16 pass; backend 40 pass.
