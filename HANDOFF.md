@@ -4,6 +4,38 @@ _Last updated: 2026-06-03_
 
 A snapshot of where the project stands so anyone (human or agent) can pick up cleanly.
 
+## Latest session (2026-06-03): Softer theme, Browse Advanced table, Compare alignment
+
+On branch `feat/ux-watchlist-community`. Frontend build clean; vitest **13 pass**.
+Design + plan: `docs/superpowers/specs/2026-06-03-browse-advanced-table-design.md`
+and `docs/superpowers/plans/2026-06-03-browse-advanced-table.md`.
+
+- **Softer dark theme.** Lifted the near-black palette to charcoal in
+  `styles/global.css` (`--bg` `#0a0b0d` -> `#15171c`, surfaces/text eased) to cut
+  eye-strain while keeping the "Performance Instrument" identity (accent blue
+  unchanged). The exact previous palette is snapshotted to
+  **`styles/global.dark-backup.css`** (never imported); restore by copying it back
+  over `global.css`.
+- **Browse Simple / Advanced toggle.** New top-level toggle in the toolbar,
+  defaults to **Simple** (today's grid/list cards, untouched), persisted to
+  `localStorage` (`pcease_browse_mode`). **Advanced** renders a new connected
+  **`components/SpecTable.jsx`**: one aligned table with category-aware spec
+  columns, click-to-sort headers, and smart per-column filters (numeric specs get
+  min/max, categorical specs get multi-select). "All" category shows base columns
+  plus a "pick a category" hint. Rows open the existing detail modal.
+- **Shared column config.** `services/specColumns.js` is now the single source of
+  truth for which specs matter per category (with `parseSpecNum`/`inferColumnType`/
+  `compareValues`/`distinctValues`, unit-tested in `specColumns.test.js`).
+  `PartCard` imports `SPEC_PRIORITY` from it, so cards and the table never drift.
+- **Compare alignment fixed.** Card view no longer renders independent per-card
+  collapsible specs (which did not line up). Specs now render once in the
+  connected `SpecsComparisonTable` placed directly under the cards, with
+  `table-layout: fixed` equal component columns so each spec reads straight across.
+- **Not yet done:** the follow-up Community spec (Reddit-style threaded
+  discussions + account deletion that keeps and anonymizes posts as `[deleted]`)
+  is agreed but not started. Manual browser pass on the new table interactions
+  still worth a human eyeball.
+
 ## Latest session (2026-06-03): Blue theme, shared cards, UX round
 
 On branch `feat/ux-watchlist-community`. Frontend build + vitest clean; backend **38 tests pass**.

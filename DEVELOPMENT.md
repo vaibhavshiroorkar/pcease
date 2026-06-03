@@ -128,10 +128,23 @@ joins; `routers/social.py` enriches in Python).
   retailer view, not the card) still exists in BOTH `pages/Browse.jsx` and `pages/Builder.jsx`.
   Any change to how a component's detail is presented - specs layout, the price graph, badges,
   actions - must be applied to BOTH. (If this keeps happening, extract a shared `<ComponentDetail>`.)
+- **Spec columns are shared: `services/specColumns.js`.** This is the single source of truth for
+  which specs matter per category (`SPEC_PRIORITY` / `columnsForCategory`), plus the pure
+  sort/filter helpers (`parseSpecNum`, `inferColumnType`, `distinctValues`, `compareValues`,
+  unit-tested in `specColumns.test.js`). Both `PartCard` (card key-specs) and `SpecTable` (Browse
+  Advanced columns) import from it, so the two never drift. Add a category's specs here, not in a
+  component.
+- **Browse has Simple / Advanced modes.** Simple is the card view (grid/list via `PartCard`);
+  Advanced renders the connected `components/SpecTable.jsx` (category-aware columns, header sort,
+  per-column smart filters). The chosen mode is persisted in `localStorage` under
+  `pcease_browse_mode`.
 - **Theme = CSS variables in `styles/global.css`.** The accent is currently electric blue
-  (`--accent`/`--volt` = `#3b9dff`). When changing the theme, also update static assets that
-  can't read the tokens: **`public/favicon.svg`** (the bar marks) and the `theme-color` meta in
-  `index.html`. Grep the old hex (and its `r,g,b` form) across CSS for stragglers.
+  (`--accent`/`--volt` = `#3b9dff`); the base is a softened charcoal (`--bg` `#15171c`). When
+  changing the theme, also update static assets that can't read the tokens: **`public/favicon.svg`**
+  (the bar marks) and the `theme-color` meta in `index.html`. Grep the old hex (and its `r,g,b`
+  form) across CSS for stragglers. The previous near-black palette is snapshotted to
+  **`styles/global.dark-backup.css`** (never imported); to restore it, copy that file back over
+  `global.css`.
 - Specs render as cards: mono uppercase label + bold value (`br-specs__item` / `bd-spec`).
 - Keep prices grounded - never display invented/LLM-generated prices outside the agent's
   clearly-labelled output.
