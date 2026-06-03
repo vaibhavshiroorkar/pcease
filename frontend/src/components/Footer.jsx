@@ -21,13 +21,13 @@ export default function Footer() {
                     <span>PC<span className="ft__brand-accent">ease</span></span>
                 </Link>
 
+                <span className="ft__copy">&copy; 2026 PCease &middot; Built for Indian PC builders</span>
+
                 <nav className="ft__links">
                     {links.map(l => (
                         <Link key={l.to} to={l.to} className="ft__link">{l.label}</Link>
                     ))}
                 </nav>
-
-                <span className="ft__copy">&copy; 2026 PCease &middot; Built for Indian PC builders</span>
             </div>
         </footer>
     )
