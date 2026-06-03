@@ -4,8 +4,7 @@ import { API, formatPrice, getLowestPrice, getBestVendor, getSavings } from '../
 import toast from 'react-hot-toast'
 import {
     FiPlus, FiX, FiSearch, FiAward, FiPackage, FiColumns,
-    FiArrowRight, FiTrendingDown, FiLoader, FiShoppingCart,
-    FiGrid, FiList, FiTrash2
+    FiArrowRight, FiTrendingDown, FiLoader, FiTrash2
 } from 'react-icons/fi'
 import './Compare.css'
 
@@ -22,78 +21,6 @@ function parseNum(v) {
     if (v === null || v === undefined) return null
     const n = parseFloat(String(v).replace(/[^0-9.-]/g, ''))
     return isNaN(n) ? null : n
-}
-
-/* ========== Specs Comparison Table ========== */
-function SpecsComparisonTable({ components }) {
-    if (!components || components.length < 2) return null
-    const allSpecs = components.map(getSpecsObj)
-    const allKeys = [...new Set(allSpecs.flatMap(s => Object.keys(s)))]
-    if (!allKeys.length) return null
-
-    return (
-        <section className="cp-specs-table">
-            <div className="cp-section-head">
-                <FiColumns size={18} />
-                <div>
-                    <h2>Spec-by-Spec Comparison</h2>
-                    <p>Side-by-side specifications - green highlights the best value</p>
-                </div>
-            </div>
-            <div className="cp-specs-table__wrap">
-                <table className="cp-specs-tbl">
-                    <thead>
-                        <tr>
-                            <th className="cp-specs-tbl__label-col">Specification</th>
-                            {components.map((c, i) => (
-                                <th key={i} className="cp-specs-tbl__comp-col">
-                                    <span className="cp-specs-tbl__comp-name">{c.name}</span>
-                                    <span className="cp-specs-tbl__comp-brand">{c.brand}</span>
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {/* Price row */}
-                        <tr className="cp-specs-tbl__price-row">
-                            <td className="cp-specs-tbl__key">Lowest Price</td>
-                            {components.map((c, i) => {
-                                const price = getLowestPrice(c)
-                                const allPrices = components.map(getLowestPrice).filter(Boolean)
-                                const isBest = price && price <= Math.min(...allPrices)
-                                return (
-                                    <td key={i} className={`cp-specs-tbl__val${isBest ? ' cp-specs-tbl__val--best' : ''}`}>
-                                        {price ? formatPrice(price) : '-'}
-                                    </td>
-                                )
-                            })}
-                        </tr>
-                        {allKeys.map(key => {
-                            const vals = allSpecs.map(s => s[key] !== undefined ? s[key] : null)
-                            const nums = vals.map(parseNum)
-                            const allNum = nums.every(n => n !== null)
-                            let bestIdx = -1
-                            if (allNum && new Set(nums).size > 1) {
-                                bestIdx = LOWER_IS_BETTER.has(key)
-                                    ? nums.indexOf(Math.min(...nums))
-                                    : nums.indexOf(Math.max(...nums))
-                            }
-                            return (
-                                <tr key={key}>
-                                    <td className="cp-specs-tbl__key">{key.replace(/_/g, ' ')}</td>
-                                    {vals.map((v, i) => (
-                                        <td key={i} className={`cp-specs-tbl__val${i === bestIdx ? ' cp-specs-tbl__val--best' : ''}${v === null ? ' cp-specs-tbl__val--na' : ''}`}>
-                                            {v !== null ? String(v) : '-'}
-                                        </td>
-                                    ))}
-                                </tr>
-                            )
-                        })}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    )
 }
 
 /* ========== Summary Bar ========== */
@@ -140,7 +67,6 @@ export default function Compare() {
     const [searching, setSearching] = useState(false)
     const [categories, setCategories] = useState([])
     const [selectedCategory, setSelectedCategory] = useState('')
-    const [view, setView] = useState('cards') // 'cards' or 'table'
     const [sortOrder, setSortOrder] = useState('price-low')
     const searchRef = useRef(null)
     const inputRef = useRef(null)
@@ -253,9 +179,6 @@ export default function Compare() {
 
     const filledSlots = slots.filter(Boolean)
 
-    const getPricesSorted = (item) =>
-        (item.prices || []).slice().sort((a, b) => a.price - b.price)
-
     const bestSlotIdx = filledSlots.length > 0
         ? filledSlots.reduce((bestIdx, cur, idx) => {
             const curLow = getLowestPrice(cur)
@@ -291,27 +214,9 @@ export default function Compare() {
                     </div>
                     <div className="cp-header__actions">
                         {filledSlots.length > 0 && (
-                            <>
-                                <div className="cp-view-toggle">
-                                    <button
-                                        className={`cp-view-btn ${view === 'cards' ? 'active' : ''}`}
-                                        onClick={() => setView('cards')}
-                                        title="Card view"
-                                    >
-                                        <FiGrid size={14} />
-                                    </button>
-                                    <button
-                                        className={`cp-view-btn ${view === 'table' ? 'active' : ''}`}
-                                        onClick={() => setView('table')}
-                                        title="Table view"
-                                    >
-                                        <FiList size={14} />
-                                    </button>
-                                </div>
-                                <button className="btn btn-secondary btn-sm cp-clear-btn" onClick={clearAll}>
-                                    <FiTrash2 size={12} /> Clear All
-                                </button>
-                            </>
+                            <button className="btn btn-secondary btn-sm cp-clear-btn" onClick={clearAll}>
+                                <FiTrash2 size={12} /> Clear All
+                            </button>
                         )}
                         <Link to="/browse" className="btn btn-secondary btn-sm">Browse All</Link>
                     </div>
@@ -320,106 +225,8 @@ export default function Compare() {
                 {/* ===== Summary Bar ===== */}
                 <SummaryBar components={filledSlots} />
 
-                {/* ===== Card View ===== */}
-                {view === 'cards' && (
-                    <div className={`cp-slots cp-slots--${Math.max(filledSlots.length + (filledSlots.length < MAX_SLOTS ? 1 : 0), 2)}`}>
-                        {slots.map((slot, idx) => {
-                            const prevFilled = idx === 0 || slots[idx - 1] !== null
-                            const showSlot = slot !== null || (prevFilled && idx < MAX_SLOTS)
-                            if (!showSlot) return null
-
-                            const prices = slot ? getPricesSorted(slot) : []
-                            const low = slot ? getLowestPrice(slot) : 0
-                            const maxP = slot ? Math.max(...prices.map(p => p.price), 1) : 1
-                            const isBest = slot && filledSlots.indexOf(slot) === bestSlotIdx && filledSlots.length > 1
-
-                            return (
-                                <div
-                                    key={idx}
-                                    className={`cp-card${slot ? ' cp-card--filled' : ' cp-card--empty'}${isBest ? ' cp-card--best' : ''}`}
-                                >
-                                    {slot ? (
-                                        <>
-                                            {isBest && (
-                                                <span className="cp-card__badge">
-                                                    <FiTrendingDown size={11} /> Best Price
-                                                </span>
-                                            )}
-                                            <button className="cp-card__remove" onClick={() => removeComponent(idx)} title="Remove">
-                                                <FiX size={14} />
-                                            </button>
-                                            <div className="cp-card__img">
-                                                {slot.image_url
-                                                    ? <img src={slot.image_url} alt={slot.name} />
-                                                    : <FiPackage size={32} />}
-                                            </div>
-                                            <div className="cp-card__info">
-                                                <span className="cp-card__category">
-                                                    {slot.category?.name || slot.category_name || 'Component'}
-                                                </span>
-                                                <h3 className="cp-card__name">{slot.name}</h3>
-                                                {slot.brand && <p className="cp-card__brand">{slot.brand}</p>}
-                                            </div>
-                                            <div className="cp-card__price-hero">
-                                                <div className="cp-card__price-main">
-                                                    <span className="cp-card__price-label">From</span>
-                                                    <span className="cp-card__price-value">{formatPrice(low)}</span>
-                                                </div>
-                                                <span className="cp-card__price-vendor">
-                                                    {getBestVendor(slot)?.vendor?.name || getBestVendor(slot)?.vendor_name || ''}
-                                                </span>
-                                            </div>
-                                            <div className="cp-card__vendors">
-                                                <div className="cp-card__vendors-head">
-                                                    <span>{prices.length} retailer{prices.length !== 1 ? 's' : ''}</span>
-                                                    {getSavings(slot) > 0 && (
-                                                        <span className="cp-card__savings">Save {formatPrice(getSavings(slot))}</span>
-                                                    )}
-                                                </div>
-                                                {prices.map((p, j) => {
-                                                    const pct = Math.round((p.price / maxP) * 100)
-                                                    const isLowest = j === 0
-                                                    return (
-                                                        <div key={j} className={`cp-vendor-row${isLowest ? ' cp-vendor-row--best' : ''}`}>
-                                                            <div className="cp-vendor-row__meta">
-                                                                <span className="cp-vendor-row__name">
-                                                                    {p.vendor?.name || p.vendor_name || 'Store'}
-                                                                </span>
-                                                                <span className="cp-vendor-row__price">
-                                                                    {formatPrice(p.price)}
-                                                                </span>
-                                                                {p.url && (
-                                                                    <a href={p.url} target="_blank" rel="noopener noreferrer" className="cp-vendor-row__link cp-vendor-row__link--buy" title="Buy now">
-                                                                        <FiShoppingCart size={10} />
-                                                                    </a>
-                                                                )}
-                                                            </div>
-                                                            <div className="cp-vendor-row__bar-track">
-                                                                <div className="cp-vendor-row__bar-fill" style={{ width: `${pct}%` }} />
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <button className="cp-card__add-btn" onClick={() => openSearch(idx)}>
-                                            <div className="cp-card__add-icon"><FiPlus size={24} /></div>
-                                            <span>Add Component</span>
-                                            <span className="cp-card__add-hint">Search from 500+ parts</span>
-                                        </button>
-                                    )}
-                                </div>
-                            )
-                        })}
-                    </div>
-                )}
-
-                {/* ===== Connected Specs (card view): aligned directly under the cards ===== */}
-                {view === 'cards' && <SpecsComparisonTable components={filledSlots} />}
-
-                {/* ===== Table View ===== */}
-                {view === 'table' && filledSlots.length > 0 && (
+                {/* ===== Unified Comparison Table ===== */}
+                {filledSlots.length > 0 && (
                     <div className="cp-table-view">
                         <div className="cp-table-view__wrap">
                             <table className="cp-table-view__tbl">
