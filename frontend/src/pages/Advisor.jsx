@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API, formatPrice } from '../services/api'
-import { FiCpu, FiSend, FiArrowRight, FiSliders, FiMessageSquare, FiPackage, FiZap, FiMonitor, FiCode, FiRadio, FiSearch, FiCheck } from 'react-icons/fi'
+import { FiCpu, FiSend, FiArrowRight, FiSliders, FiMessageSquare, FiPackage, FiZap, FiMonitor, FiCode, FiRadio, FiSearch, FiCheck, FiX } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAgentChat } from '../hooks/useAgentChat'
 import { formatText } from '../utils/formatText'
@@ -56,21 +56,17 @@ function normalizeBuild(raw, kind) {
     }
 }
 
-// Right-hand panel: shows whichever build is currently selected, for every tab.
-function BuildPanel({ build, onUse }) {
-    if (!build) {
-        return (
-            <aside className="ad-build-panel ad-build-panel--empty">
-                <FiPackage size={30} />
-                <p>Pick a preset, generate a build, or ask the Agent. It shows up here.</p>
-            </aside>
-        )
-    }
+// Floating panel: shows whichever build is currently selected, for every tab.
+// It overlays the page (does not take layout width) so the main content keeps
+// its full size whether or not a build is showing.
+function BuildPanel({ build, onUse, onClose }) {
+    if (!build) return null
     return (
         <aside className="ad-build-panel">
             <div className="ad-build-panel__head">
                 <span className="ad-build-panel__tag"><FiPackage size={13} /> Build</span>
                 <span className="ad-build-panel__total">{formatPrice(build.total)}</span>
+                <button className="ad-build-panel__close" onClick={onClose} aria-label="Close build panel"><FiX size={15} /></button>
             </div>
             <h2 className="ad-build-panel__title">{build.title}</h2>
             {build.desc && <p className="ad-build-panel__desc">{build.desc}</p>}
@@ -222,9 +218,9 @@ export default function Advisor() {
                     ))}
                 </div>
 
-                {/* Split: selectors/inputs on the left, the build on the right (all tabs) */}
+                {/* Main content keeps full width; the build shows in a floating panel. */}
                 <div className="ad-split">
-                    <div className="ad-split__left">
+                    <div className="ad-split__left">{/* full-width content for all tabs */}
 
                         {/* ==================== MANUAL TAB ==================== */}
                         {tab === 'manual' && (
@@ -475,9 +471,9 @@ export default function Advisor() {
                         )}
 
                     </div>
-
-                    <BuildPanel build={shownBuild} onUse={useBuild} />
                 </div>
+
+                <BuildPanel build={shownBuild} onUse={useBuild} onClose={() => setShownBuild(null)} />
             </div>
         </main>
     )

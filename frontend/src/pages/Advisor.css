@@ -6,13 +6,16 @@
 .ad-header__sub { font-size: .9375rem; color: var(--text-secondary); white-space: nowrap; }
 @media (max-width: 620px) { .ad-header__sub { white-space: normal; } }
 
-/* ========== Split layout: selectors left, build right (all tabs) ========== */
-.ad-split { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+/* ========== Full-width content; build shows in a floating panel ========== */
+.ad-split { display: block; }
 .ad-split__left { min-width: 0; }
-.ad-build-panel { position: sticky; top: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; }
-.ad-build-panel--empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; color: var(--text-muted); min-height: 220px; }
-.ad-build-panel--empty p { font-size: .85rem; max-width: 220px; }
-.ad-build-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+/* Floating build drawer: overlays the page so the main content keeps full width. */
+.ad-build-panel { position: fixed; right: 20px; bottom: 20px; z-index: 60; width: 340px; max-width: calc(100vw - 40px); max-height: 78vh; overflow-y: auto; background: var(--surface); border: 1px solid var(--border-hover); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 18px; }
+.ad-build-panel__close { margin-left: 4px; display: inline-flex; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; border-radius: var(--radius-sm); }
+.ad-build-panel__close:hover { color: var(--text); background: var(--surface-hover); }
+.ad-build-panel__head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.ad-build-panel__head .ad-build-panel__total { margin-left: auto; }
+@media (max-width: 560px) { .ad-build-panel { left: 20px; width: auto; } }
 .ad-build-panel__tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); }
 .ad-build-panel__total { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.1rem; color: var(--accent); }
 .ad-build-panel__title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
@@ -25,10 +28,6 @@
 .ad-build-panel__total-row strong { font-size: 1.3rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .ad-tmpl__count { font-family: var(--font-mono); font-size: .68rem; color: var(--text-muted); }
 .ad-tmpl__actions { display: flex; gap: 8px; margin-top: 12px; }
-@media (max-width: 860px) {
-    .ad-split { grid-template-columns: 1fr; }
-    .ad-build-panel { position: static; }
-}
 
 /* ========== Tabs ========== */
 .ad-tabs { display: flex; gap: 4px; margin: 0 auto 32px; padding: 4px; background: var(--surface); border-radius: 10px; max-width: 440px; border: 1px solid var(--border); width: 100%; }
