@@ -4,6 +4,36 @@ _Last updated: 2026-06-03_
 
 A snapshot of where the project stands so anyone (human or agent) can pick up cleanly.
 
+## Latest session (2026-06-03): UX round 2 (Browse, Compare, Builder, Guide, Footer, Advisor)
+
+On branch `feat/ux-watchlist-community`. Frontend build clean; vitest **16 pass**.
+Design + plan: `docs/superpowers/specs/2026-06-03-ux-round-2-design.md` and
+`docs/superpowers/plans/2026-06-03-ux-round-2.md`.
+
+- **Browse:** removed the Savings column and the "pick a category" hint from the
+  Advanced `SpecTable`; the grid/list toggle now stays visible (disabled in
+  Advanced) so the toolbar no longer shifts. Filters moved into one collapsible
+  left **filter sidebar** (brand, price, in-stock, plus per-spec numeric ranges /
+  categorical multi-selects when Advanced + a category is chosen). The per-spec
+  filter logic lives in `services/specColumns.js` (`applySpecFilters`, tested).
+- **Compare:** complete rework to a **single unified table** (each component a
+  column, specs as rows, with image/category/price/vendor as the top rows).
+  Removed the card view, the `SpecsComparisonTable` block, and the cards/table
+  view toggle. (Some `cp-card*` CSS is now unused but left in place.)
+- **Builder:** the Share dropdown is now a single **Publish** button (publishing
+  already copies the public link); the private-link option was removed.
+- **Guide:** now a **section switcher** - the sidebar swaps a single section into
+  view (fits the screen) instead of one long scroll; removed the reading-progress
+  bar and scrollspy; added prev/next nav.
+- **Footer:** credits centered, links/buttons pushed bottom-right (3-zone grid).
+- **Advisor:** consistent **left selectors + right build panel** across all three
+  tabs; the right `BuildPanel` shows the selected build everywhere. Removed the
+  Presets simple/advanced sub-view and detail modal; each preset has **Show build**
+  (right panel) and **Use build** (Builder). Tagline forced to one line.
+- **Not done:** the Community follow-up spec (Reddit-style threaded discussions +
+  account deletion that keeps/anonymizes posts) is still pending. Interactive
+  manual QA in a browser is still worth a human pass.
+
 ## Latest session (2026-06-03): Softer theme, Browse Advanced table, Compare alignment
 
 On branch `feat/ux-watchlist-community`. Frontend build clean; vitest **13 pass**.

@@ -135,9 +135,18 @@ joins; `routers/social.py` enriches in Python).
   Advanced columns) import from it, so the two never drift. Add a category's specs here, not in a
   component.
 - **Browse has Simple / Advanced modes.** Simple is the card view (grid/list via `PartCard`);
-  Advanced renders the connected `components/SpecTable.jsx` (category-aware columns, header sort,
-  per-column smart filters). The chosen mode is persisted in `localStorage` under
-  `pcease_browse_mode`.
+  Advanced renders the connected `components/SpecTable.jsx` (category-aware columns, header sort).
+  The chosen mode is persisted in `localStorage` under `pcease_browse_mode`. Filtering lives in a
+  collapsible left **filter sidebar** owned by `Browse.jsx` (brand/price/in-stock + per-spec
+  numeric/categorical filters via `specColumns.applySpecFilters`); `SpecTable` only sorts and
+  renders the already-filtered `items`.
+- **Compare is one unified table** (`pages/Compare.jsx`): each component is a column, specs are
+  rows. There is no separate card view. Add a row/spec by editing the single table render.
+- **Guide is a section switcher** (`pages/Guide.jsx`): the sidebar sets `active` and only that one
+  section renders (no long scroll, no scrollspy).
+- **Advisor uses a split layout** (`pages/Advisor.jsx`): selectors/inputs on the left, a shared
+  `BuildPanel` on the right for all three tabs. "Show build" sets the right panel; "Use build"
+  routes to the Builder via `navigate('/builder', { state: { recommendation } })`.
 - **Theme = CSS variables in `styles/global.css`.** The accent is currently electric blue
   (`--accent`/`--volt` = `#3b9dff`); the base is a softened charcoal (`--bg` `#15171c`). When
   changing the theme, also update static assets that can't read the tokens: **`public/favicon.svg`**
