@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { API, timeAgo } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { Link } from 'react-router-dom'
-import { FiPlus, FiSearch, FiChevronUp, FiChevronDown, FiX, FiMessageCircle, FiUser, FiClock, FiBookOpen, FiArrowRight } from 'react-icons/fi'
+import { FiPlus, FiSearch, FiChevronUp, FiChevronDown, FiX, FiMessageCircle, FiUser, FiClock, FiBookOpen, FiArrowRight, FiCornerDownRight } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import '../pages/Forum.css'
 
@@ -22,6 +22,8 @@ export default function Discussions() {
     const [showNewThread, setShowNewThread] = useState(false)
     const [newThread, setNewThread] = useState({ title: '', content: '', category: 'Discussion' })
     const [newReply, setNewReply] = useState('')
+    const [replyingTo, setReplyingTo] = useState(null)   // reply id being replied to (null = top-level)
+    const [collapsed, setCollapsed] = useState(() => new Set())
 
     useEffect(() => { loadThreads() }, [category])
 
@@ -32,7 +34,10 @@ export default function Discussions() {
         finally { setLoading(false) }
     }
 
-    const openThread = async (id) => { try { setActiveThread(await API.getThread(id)) } catch { toast.error('Failed to load thread') } }
+    const openThread = async (id) => {
+        try { setActiveThread(await API.getThread(id)); setReplyingTo(null); setNewReply('') }
+        catch { toast.error('Failed to load thread') }
+    }
 
     const handleCreateThread = async (e) => {
         e.preventDefault()
@@ -41,12 +46,33 @@ export default function Discussions() {
         catch (err) { toast.error('Failed: ' + err.message) }
     }
 
-    const handleReply = async (e) => {
+    const handleReply = async (e, parentId = null) => {
         e.preventDefault()
         if (!user) return toast.error('Please login')
-        try { await API.createReply(activeThread.id, newReply); setNewReply(''); openThread(activeThread.id); toast.success('Reply posted!') }
-        catch (err) { toast.error('Failed: ' + err.message) }
+        if (!newReply.trim()) return
+        try {
+            await API.createReply(activeThread.id, newReply, parentId)
+            setNewReply(''); setReplyingTo(null)
+            openThread(activeThread.id)
+            toast.success('Reply posted!')
+        } catch (err) { toast.error('Failed: ' + err.message) }
     }
+
+    const toggleCollapse = (id) => setCollapsed(prev => {
+        const next = new Set(prev)
+        next.has(id) ? next.delete(id) : next.add(id)
+        return next
+    })
+
+    // Group replies by parent so we can render a Reddit-style nested tree.
+    const repliesByParent = useMemo(() => {
+        const map = {}
+        for (const r of activeThread?.replies || []) {
+            const p = r.parent_reply_id || 0
+            ;(map[p] ||= []).push(r)
+        }
+        return map
+    }, [activeThread])
 
     const handleVoteThread = async (id, type) => {
         if (!user) return toast.error('Please login')
@@ -61,7 +87,52 @@ export default function Discussions() {
     }
 
     const filtered = threads.filter(t => !search || t.title?.toLowerCase().includes(search.toLowerCase()))
-    const getAuthor = (t) => t.author?.username || t.author_username || 'Unknown'
+    const getAuthor = (t) => t.author_username || t.author?.username || 'Unknown'
+
+    // Recursive Reddit-style reply tree (indented, collapsible, reply-to-comment).
+    const renderReplies = (parentId = 0, depth = 0) => (repliesByParent[parentId] || []).map(r => {
+        const kids = repliesByParent[r.id] || []
+        const isCollapsed = collapsed.has(r.id)
+        const author = r.author_username || r.author?.username || 'Unknown'
+        return (
+            <div key={r.id} className={`fm-reply${depth ? ' fm-reply--nested' : ''}`}>
+                <div className="fm-votes fm-votes--sm">
+                    <button className="fm-vote" onClick={() => handleVoteReply(r.id, 'upvote')}><FiChevronUp size={14} /></button>
+                    <span className="fm-vote__count">{(r.upvotes || 0) - (r.downvotes || 0)}</span>
+                    <button className="fm-vote" onClick={() => handleVoteReply(r.id, 'downvote')}><FiChevronDown size={14} /></button>
+                </div>
+                <div className="fm-reply__content">
+                    <div className="fm-reply__meta">
+                        <Link to={`/u/${author}`} className="fm-author"><strong>{author}</strong></Link>
+                        <span>{timeAgo(r.created_at)}</span>
+                    </div>
+                    <p>{r.content}</p>
+                    <div className="fm-reply__actions">
+                        {user && (
+                            <button className="fm-reply__act" onClick={() => { setReplyingTo(replyingTo === r.id ? null : r.id); setNewReply('') }}>
+                                <FiCornerDownRight size={12} /> Reply
+                            </button>
+                        )}
+                        {kids.length > 0 && (
+                            <button className="fm-reply__act" onClick={() => toggleCollapse(r.id)}>
+                                {isCollapsed ? `Show ${kids.length} repl${kids.length > 1 ? 'ies' : 'y'}` : 'Hide replies'}
+                            </button>
+                        )}
+                    </div>
+                    {replyingTo === r.id && (
+                        <form className="fm-reply-form fm-reply-form--inline" onSubmit={(e) => handleReply(e, r.id)}>
+                            <textarea rows="2" value={newReply} onChange={e => setNewReply(e.target.value)} required placeholder={`Reply to ${author}...`} autoFocus />
+                            <div className="fm-reply-form__actions">
+                                <button type="button" className="btn btn-sm" onClick={() => { setReplyingTo(null); setNewReply('') }}>Cancel</button>
+                                <button type="submit" className="btn btn-sm btn-primary">Reply</button>
+                            </div>
+                        </form>
+                    )}
+                    {!isCollapsed && kids.length > 0 && renderReplies(r.id, depth + 1)}
+                </div>
+            </div>
+        )
+    })
 
     return (
         <>
@@ -145,25 +216,18 @@ export default function Discussions() {
                             </div>
                             <div className="fm-replies">
                                 <h4><FiMessageCircle size={14} /> {activeThread.replies?.length || 0} Replies</h4>
-                                {activeThread.replies?.map(r => (
-                                    <div key={r.id} className="fm-reply">
-                                        <div className="fm-votes fm-votes--sm">
-                                            <button className="fm-vote" onClick={() => handleVoteReply(r.id, 'upvote')}><FiChevronUp size={14} /></button>
-                                            <span className="fm-vote__count">{(r.upvotes || 0) - (r.downvotes || 0)}</span>
-                                            <button className="fm-vote" onClick={() => handleVoteReply(r.id, 'downvote')}><FiChevronDown size={14} /></button>
-                                        </div>
-                                        <div className="fm-reply__content">
-                                            <div className="fm-reply__meta"><Link to={`/u/${r.author?.username || r.author_username}`} className="fm-author"><strong>{r.author?.username || r.author_username}</strong></Link><span>{timeAgo(r.created_at)}</span></div>
-                                            <p>{r.content}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                {renderReplies(0, 0)}
+                                {(!activeThread.replies || activeThread.replies.length === 0) && (
+                                    <p className="text-muted" style={{ fontSize: '.85rem' }}>No replies yet. Start the conversation.</p>
+                                )}
                             </div>
                             {user ? (
-                                <form className="fm-reply-form" onSubmit={handleReply}>
-                                    <textarea rows="3" value={newReply} onChange={e => setNewReply(e.target.value)} required placeholder="Write a reply..." />
-                                    <button type="submit" className="btn btn-primary">Post Reply</button>
-                                </form>
+                                replyingTo === null && (
+                                    <form className="fm-reply-form" onSubmit={(e) => handleReply(e, null)}>
+                                        <textarea rows="3" value={newReply} onChange={e => setNewReply(e.target.value)} required placeholder="Write a reply..." />
+                                        <button type="submit" className="btn btn-primary">Post Reply</button>
+                                    </form>
+                                )
                             ) : <div className="fm-login-prompt"><Link to="/login" className="btn btn-primary">Login to Reply</Link></div>}
                         </div>
                     </div>

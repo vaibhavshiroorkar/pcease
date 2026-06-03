@@ -245,11 +245,11 @@ export const API = {
         return request('/forum/threads', { method: 'POST', body: JSON.stringify(thread) })
     },
 
-    createReply: (threadId, content) => {
+    createReply: (threadId, content, parentReplyId = null) => {
         invalidateCache(`/forum/threads/${threadId}`)
         return request(`/forum/threads/${threadId}/replies`, {
             method: 'POST',
-            body: JSON.stringify({ content }),
+            body: JSON.stringify({ content, parent_reply_id: parentReplyId }),
         })
     },
 

@@ -118,3 +118,45 @@ def test_profile_update_sets_bio_and_favorites_public():
     d = client.get("/api/users/rajrenders").json()
     assert d["user"]["bio"] == "new bio"
     assert d["favorites_visible"] is True
+
+
+def test_threaded_replies_carry_parent_id():
+    h = auth("alishbuilds")
+    thread = client.post("/api/forum/threads", headers=h,
+                         json={"title": "Threaded?", "content": "Does nesting work?", "category": "Discussion"}).json()
+    tid = thread["id"]
+    top = client.post(f"/api/forum/threads/{tid}/replies", headers=h, json={"content": "top-level"}).json()
+    child = client.post(f"/api/forum/threads/{tid}/replies", headers=h,
+                        json={"content": "nested", "parent_reply_id": top["id"]})
+    assert child.status_code == 201, child.text
+
+    detail = client.get(f"/api/forum/threads/{tid}").json()
+    replies = {r["content"]: r for r in detail["replies"]}
+    assert replies["top-level"]["parent_reply_id"] in (None, 0)
+    assert replies["nested"]["parent_reply_id"] == top["id"]
+
+    # A parent from another thread is rejected.
+    other = client.post("/api/forum/threads", headers=h,
+                        json={"title": "Other", "content": "x", "category": "Discussion"}).json()
+    bad = client.post(f"/api/forum/threads/{other['id']}/replies", headers=h,
+                      json={"content": "graft", "parent_reply_id": top["id"]})
+    assert bad.status_code == 400
+
+
+def test_account_deletion_keeps_posts_and_blocks_login():
+    # Fresh account so we don't disturb the seeded users.
+    client.post("/api/auth/register", json={"email": "gone@x.io", "username": "tobedeleted", "password": "demo1234"})
+    h = auth("tobedeleted")
+    thread = client.post("/api/forum/threads", headers=h,
+                         json={"title": "Keep me", "content": "stays after deletion", "category": "Discussion"}).json()
+    tid = thread["id"]
+
+    assert client.delete("/api/auth/account", headers=h).status_code == 200
+
+    # The post is kept (Reddit-style), not removed with the account.
+    detail = client.get(f"/api/forum/threads/{tid}")
+    assert detail.status_code == 200
+    assert detail.json()["content"] == "stays after deletion"
+
+    # The account can no longer log in.
+    assert client.post("/api/auth/login", data={"username": "tobedeleted", "password": "demo1234"}).status_code == 401

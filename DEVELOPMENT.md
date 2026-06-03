@@ -147,6 +147,19 @@ joins; `routers/social.py` enriches in Python).
 - **Advisor uses a split layout** (`pages/Advisor.jsx`): selectors/inputs on the left, a shared
   `BuildPanel` on the right for all three tabs. "Show build" sets the right panel; "Use build"
   routes to the Builder via `navigate('/builder', { state: { recommendation } })`.
+- **Component specs come back as `specifications`** from the API, but the UI reads `item.specs`.
+  `services/api.js` normalizes `specifications -> specs` for component-returning endpoints
+  (`getComponents`, `getComponent`, `compareComponents`, `getWatchlist`). Read `item.specs`
+  in the frontend; do not reintroduce `specifications` reads in new code.
+- **Discussions are Reddit-style threaded** (`components/Discussions.jsx`): replies nest via
+  `parent_reply_id`, rendered as a collapsible tree with reply-to-comment. The backend
+  (`routers/forum.py`) validates the parent belongs to the thread.
+- **Account deletion anonymizes, it does not purge** (`routers/auth.py::_anonymize_user`): the
+  user is tombstoned (`is_deleted=true`, scrubbed email/username/password) but their threads,
+  replies, and builds are kept; the forum shows them as `[deleted]`. New schema columns
+  (`forum_replies.parent_reply_id`, `users.is_deleted`) ship in
+  `backend/forum_followup_migration.sql` - run it on Supabase. Note: the fake DB has no
+  relational embeds, so forum author names only resolve on real Supabase.
 - **Theme = CSS variables in `styles/global.css`.** The accent is currently electric blue
   (`--accent`/`--volt` = `#3b9dff`); the base is a softened charcoal (`--bg` `#15171c`). When
   changing the theme, also update static assets that can't read the tokens: **`public/favicon.svg`**

@@ -73,9 +73,11 @@ def login(
 
     user = result.data if result and result.data else None
     # Always run a bcrypt verify (real or dummy) so response timing does not
-    # reveal whether the account exists.
-    hashed = user["hashed_password"] if user else _DUMMY_HASH
-    if not verify_password(form_data.password, hashed) or not user:
+    # reveal whether the account exists. Tombstoned (deleted) accounts use the
+    # dummy hash so they can never authenticate and never hit a malformed hash.
+    active = user and not user.get("is_deleted")
+    hashed = user["hashed_password"] if active else _DUMMY_HASH
+    if not verify_password(form_data.password, hashed) or not active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -135,32 +137,38 @@ async def change_password(data: PasswordChange, current_user: dict = Depends(get
 
 @router.delete("/account")
 async def delete_account(current_user: dict = Depends(get_current_user), db: Client = Depends(get_db)):
-    """Delete current user account"""
+    """Delete current user account.
+
+    Reddit-style: the account's content (threads, replies, builds) is KEPT so
+    conversations stay intact, but the author is anonymized to [deleted] and the
+    personal data is scrubbed.
+    """
     uid = current_user["id"]
-    _purge_user(db, uid)
+    _anonymize_user(db, uid)
     return {"detail": "Account deleted"}
 
 
-def _purge_user(db: Client, uid: int) -> None:
-    """Remove a user and everything referencing them.
+def _anonymize_user(db: Client, uid: int) -> None:
+    """Tombstone a user: scrub identity and remove personal/relational data, but
+    leave their posts and builds in place (shown as [deleted]).
 
-    Supabase FKs use ON DELETE CASCADE, but the in-memory fake DB does not
-    cascade, so we delete explicitly to keep both backends consistent.
+    The `is_deleted` flag drives the [deleted] display; the username is also made
+    unique-but-scrubbed so it never collides and never leaks the old name.
     """
-    # Likes/favourites this user made, and follows in both directions
+    # Personal/relational actions are removed (these are this user's own actions).
     db.table("build_likes").delete().eq("user_id", uid).execute()
     db.table("build_favorites").delete().eq("user_id", uid).execute()
     db.table("user_follows").delete().eq("follower_id", uid).execute()
     db.table("user_follows").delete().eq("following_id", uid).execute()
-    # Likes/favourites others left on this user's builds
-    own = db.table("builds").select("id").eq("user_id", uid).execute()
-    for b in own.data or []:
-        db.table("build_likes").delete().eq("build_id", b["id"]).execute()
-        db.table("build_favorites").delete().eq("build_id", b["id"]).execute()
-    db.table("forum_replies").delete().eq("author_id", uid).execute()
-    db.table("forum_threads").delete().eq("author_id", uid).execute()
-    db.table("builds").delete().eq("user_id", uid).execute()
-    db.table("users").delete().eq("id", uid).execute()
+    # Scrub identity. Threads, replies and builds are intentionally left intact.
+    db.table("users").update({
+        "username": f"deleted_user_{uid}",
+        "email": f"deleted+{uid}@deleted.invalid",
+        "hashed_password": "!",            # unusable hash; login can never match
+        "is_deleted": True,
+        "avatar_url": None,
+        "bio": None,
+    }).eq("id", uid).execute()
 
 
 # ==================== Admin Endpoints ====================
@@ -197,7 +205,7 @@ async def admin_stats(admin: dict = Depends(require_admin), db: Client = Depends
 async def admin_delete_user(user_id: int, admin: dict = Depends(require_admin), db: Client = Depends(get_db)):
     if user_id == admin["id"]:
         raise HTTPException(status_code=400, detail="Cannot delete yourself")
-    _purge_user(db, user_id)
+    _anonymize_user(db, user_id)
     return {"detail": "User deleted"}
 
 

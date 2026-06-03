@@ -4,6 +4,39 @@ _Last updated: 2026-06-03_
 
 A snapshot of where the project stands so anyone (human or agent) can pick up cleanly.
 
+## Latest session (2026-06-03): UX round 3 + Community follow-up
+
+Frontend build clean; vitest **16 pass**; backend **40 pass**.
+
+- **Specs now render.** The API returns specs under `specifications` but the cards
+  and spec table read `item.specs`, so specs were invisible. Normalized
+  `specifications -> specs` in `services/api.js`; the table/sidebar only show spec
+  columns that actually have data. Removed the annoying sticky watchlist bar on Browse.
+- **Advisor build preview** widened and de-cramped (floating drawer, 420px).
+- **Compare** reworked again for clarity: frozen spec-label column, nice spec
+  labels, best-value check marks, identical rows dimmed, dropped the empty image
+  row, real empty-state CTA, Add Component in the header.
+- **Builder Share:** a no-login **Share link** button restored alongside Publish.
+- **Community follow-up DONE (the deferred spec):**
+  - **Reddit-style threaded replies.** `forum_replies` gets `parent_reply_id`;
+    `create_reply` accepts/validates it; `get_thread` returns it; `Discussions.jsx`
+    renders a nested, collapsible tree with reply-to-comment.
+  - **Account deletion keeps posts.** `auth._anonymize_user` (was `_purge_user`)
+    now tombstones the user (scrubs email/password/username, sets `is_deleted`)
+    and KEEPS their threads/replies/builds; the forum shows the author as
+    `[deleted]`. Login is blocked for tombstoned accounts. Admin user-delete also
+    anonymizes.
+  - **Migration:** run `backend/forum_followup_migration.sql` on Supabase
+    (adds `forum_replies.parent_reply_id` and `users.is_deleted`).
+  - Tests added: threaded-reply plumbing + deletion-keeps-posts/blocks-login.
+
+### Caveat
+The fake DB does not implement Supabase relational embeds, so the forum
+`author_username` (and thus the `[deleted]` label) only resolves against real
+Supabase; locally authors read as "Anonymous". Build-feed/profile of a deleted
+user currently show the scrubbed `deleted_user_<id>` username rather than
+`[deleted]` (forum uses the `is_deleted` flag; builds/profiles were left as-is).
+
 ## Latest session (2026-06-03): UX round 2 (Browse, Compare, Builder, Guide, Footer, Advisor)
 
 On branch `feat/ux-watchlist-community`. Frontend build clean; vitest **16 pass**.

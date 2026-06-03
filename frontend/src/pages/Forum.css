@@ -104,10 +104,18 @@
 .fm-reply__content { flex: 1; min-width: 0; }
 .fm-reply__meta { display: flex; align-items: center; gap: 8px; font-size: .75rem; color: var(--text-muted); margin-bottom: 6px; }
 .fm-reply__content p { font-size: .875rem; color: var(--text-secondary); line-height: 1.6; }
+/* Nested (Reddit-style) replies: indented with a thread line */
+.fm-reply--nested { margin-left: 18px; margin-top: 10px; margin-bottom: 0; border-left: 2px solid var(--accent-border); }
+.fm-reply__actions { display: flex; gap: 14px; margin-top: 8px; }
+.fm-reply__act { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; padding: 0; cursor: pointer; font: inherit; font-size: .72rem; font-weight: 600; color: var(--text-muted); }
+.fm-reply__act:hover { color: var(--accent); }
 
 /* Reply Form */
 .fm-reply-form { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
 .fm-reply-form textarea { min-height: 80px; resize: vertical; }
+.fm-reply-form--inline { margin-top: 10px; padding-top: 0; border-top: none; }
+.fm-reply-form--inline textarea { min-height: 52px; }
+.fm-reply-form__actions { display: flex; gap: 8px; justify-content: flex-end; }
 .fm-login-prompt { text-align: center; padding: 24px; border-top: 1px solid var(--border); margin-top: 24px; }
 
 /* Responsive */

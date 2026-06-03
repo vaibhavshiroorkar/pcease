@@ -7,6 +7,15 @@ from ..utils.auth import get_current_user, get_current_user_optional
 router = APIRouter(prefix="/api/forum", tags=["Forum"])
 
 
+def _author_name(row: dict) -> str:
+    """Display name for a thread/reply author. Deleted accounts are kept (their
+    posts stay) but shown as [deleted], Reddit-style."""
+    author = row.get("author") or {}
+    if author.get("is_deleted"):
+        return "[deleted]"
+    return author.get("username") or "Anonymous"
+
+
 @router.get("/threads")
 def get_threads(
     category: Optional[str] = None,
@@ -17,7 +26,7 @@ def get_threads(
 ):
     """Get forum threads with author info and reply counts"""
     query = db.table("forum_threads").select(
-        "*, author:users!forum_threads_user_id_fkey(username, email), replies:forum_replies(id)"
+        "*, author:users!forum_threads_user_id_fkey(username, email, is_deleted), replies:forum_replies(id)"
     )
 
     if category:
@@ -40,7 +49,7 @@ def get_threads(
             "created_at": t["created_at"],
             "upvotes": t.get("upvotes", 0),
             "downvotes": t.get("downvotes", 0),
-            "author_username": t.get("author", {}).get("username", "Anonymous"),
+            "author_username": _author_name(t),
             "reply_count": len(t.get("replies", [])),
         })
 
@@ -77,7 +86,7 @@ def get_thread(thread_id: int, db: Client = Depends(get_db)):
     """Get thread with all replies"""
     thread = (
         db.table("forum_threads")
-        .select("*, author:users!forum_threads_user_id_fkey(username)")
+        .select("*, author:users!forum_threads_user_id_fkey(username, is_deleted)")
         .eq("id", thread_id)
         .single()
         .execute()
@@ -89,7 +98,7 @@ def get_thread(thread_id: int, db: Client = Depends(get_db)):
     # Get replies with authors
     replies = (
         db.table("forum_replies")
-        .select("*, author:users!forum_replies_user_id_fkey(username)")
+        .select("*, author:users!forum_replies_user_id_fkey(username, is_deleted)")
         .eq("thread_id", thread_id)
         .order("created_at")
         .execute()
@@ -102,11 +111,12 @@ def get_thread(thread_id: int, db: Client = Depends(get_db)):
             "id": r["id"],
             "thread_id": r["thread_id"],
             "user_id": r["user_id"],
+            "parent_reply_id": r.get("parent_reply_id"),
             "content": r["content"],
             "created_at": r["created_at"],
             "upvotes": r.get("upvotes", 0),
             "downvotes": r.get("downvotes", 0),
-            "author_username": r.get("author", {}).get("username", "Anonymous"),
+            "author_username": _author_name(r),
         })
 
     return {
@@ -118,7 +128,7 @@ def get_thread(thread_id: int, db: Client = Depends(get_db)):
         "created_at": t["created_at"],
         "upvotes": t.get("upvotes", 0),
         "downvotes": t.get("downvotes", 0),
-        "author_username": t.get("author", {}).get("username", "Anonymous"),
+        "author_username": _author_name(t),
         "reply_count": len(reply_list),
         "replies": reply_list,
     }
@@ -137,9 +147,18 @@ async def create_reply(
     if not thread.data:
         raise HTTPException(status_code=404, detail="Thread not found")
 
+    # Optional parent for Reddit-style threaded replies. Validate it belongs to
+    # this thread so replies cannot be grafted across threads.
+    parent_id = reply.get("parent_reply_id")
+    if parent_id is not None:
+        parent = db.table("forum_replies").select("id, thread_id").eq("id", parent_id).maybe_single().execute()
+        if not (parent and parent.data) or parent.data["thread_id"] != thread_id:
+            raise HTTPException(status_code=400, detail="Invalid parent reply")
+
     result = db.table("forum_replies").insert({
         "thread_id": thread_id,
         "user_id": current_user["id"],
+        "parent_reply_id": parent_id,
         "content": reply["content"],
         "upvotes": 0,
         "downvotes": 0,
