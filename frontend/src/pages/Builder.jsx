@@ -195,8 +195,6 @@ export default function Builder() {
     const [sharedView, setSharedView] = useState(false)
     const [showGuide, setShowGuide] = useState(false)
     const [showClearConfirm, setShowClearConfirm] = useState(false)
-    const [shareMenuOpen, setShareMenuOpen] = useState(false)
-    const shareRef = useRef(null)
     const [savedBuilds, setSavedBuilds] = useState([])
     const [loadingBuilds, setLoadingBuilds] = useState(false)
 
@@ -455,21 +453,9 @@ export default function Builder() {
         finally { setSaving(false) }
     }, [user, buildName, allComponentIds])
 
-    // Share dropdown action: a private, unlisted view link (no account needed).
-    const handleCopyPrivateLink = useCallback(async () => {
-        if (Object.keys(allComponentIds).length === 0) return toast.error('Add components first')
-        setSharing(true)
-        try {
-            const r = await API.shareBuild({ name: buildName, components: allComponentIds })
-            await navigator.clipboard.writeText(`${window.location.origin}/builder/${r.share_id}`)
-            toast.success('Private link copied')
-        } catch (e) { toast.error('Failed: ' + e.message) }
-        finally { setSharing(false); setShareMenuOpen(false) }
-    }, [buildName, allComponentIds])
-
-    // Share dropdown action: publish to the community feed and copy the public link.
+    // Share action: publish to the community feed and copy the public link.
     const handlePublish = useCallback(async () => {
-        if (!user) { setShareMenuOpen(false); return toast.error('Please login to publish') }
+        if (!user) return toast.error('Please login to publish')
         if (Object.keys(allComponentIds).length === 0) return toast.error('Add components first')
         setSharing(true)
         try {
@@ -479,18 +465,8 @@ export default function Builder() {
             toast.success('Published to community, public link copied')
             API.getBuilds().then(setSavedBuilds).catch(() => {})
         } catch (e) { toast.error('Failed: ' + e.message) }
-        finally { setSharing(false); setShareMenuOpen(false) }
+        finally { setSharing(false) }
     }, [user, buildName, allComponentIds])
-
-    // Close the Share dropdown on outside click
-    useEffect(() => {
-        if (!shareMenuOpen) return
-        const handler = (e) => {
-            if (shareRef.current && !shareRef.current.contains(e.target)) setShareMenuOpen(false)
-        }
-        document.addEventListener('mousedown', handler)
-        return () => document.removeEventListener('mousedown', handler)
-    }, [shareMenuOpen])
 
     // Get unique brands from components
     const availableBrands = useMemo(() => {
@@ -577,36 +553,9 @@ export default function Builder() {
                         >
                             <FiTrash2 size={14} /> Clear
                         </button>
-                        <div className="bd-share" ref={shareRef}>
-                            <button
-                                className="btn"
-                                onClick={() => setShareMenuOpen(o => !o)}
-                                disabled={sharing}
-                                aria-haspopup="true"
-                                aria-expanded={shareMenuOpen}
-                            >
-                                <FiShare2 size={14} /> {sharing ? '...' : 'Share'}
-                                <FiChevronDown size={13} className={`bd-share__caret${shareMenuOpen ? ' open' : ''}`} />
-                            </button>
-                            {shareMenuOpen && (
-                                <div className="bd-share__menu" role="menu">
-                                    <button className="bd-share__item" onClick={handleCopyPrivateLink} disabled={sharing} role="menuitem">
-                                        <FiLink size={15} />
-                                        <span className="bd-share__item-text">
-                                            <strong>Copy private link</strong>
-                                            <small>Unlisted. Anyone with the link can view it.</small>
-                                        </span>
-                                    </button>
-                                    <button className="bd-share__item" onClick={handlePublish} disabled={sharing} role="menuitem">
-                                        <FiGlobe size={15} />
-                                        <span className="bd-share__item-text">
-                                            <strong>Publish &amp; copy public link</strong>
-                                            <small>Adds it to the community feed.</small>
-                                        </span>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        <button className="btn" onClick={handlePublish} disabled={sharing} title="Publish to the community and copy the public link">
+                            <FiGlobe size={14} /> {sharing ? '...' : 'Publish'}
+                        </button>
                         <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
                             <FiSave size={14} /> {saving ? '...' : 'Save'}
                         </button>
