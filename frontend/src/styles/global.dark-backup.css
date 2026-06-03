@@ -1,3 +1,5 @@
+/* SNAPSHOT of the original near-black "Performance Instrument" theme (2026-06-03).
+   NOT imported anywhere. To restore: copy this back over global.css. */
 /* =====================================================
    PCease v5 - "Performance Instrument"
    Engineering-workstation aesthetic: near-black, blueprint
@@ -6,17 +8,17 @@
    ===================================================== */
 
 :root {
-    /* --- Base surfaces (softened charcoal, cool) --- */
-    --bg: #15171c;
-    --bg-secondary: #1a1d23;
-    --surface: #1f232b;
-    --surface-hover: #262b34;
-    --surface-active: #2e343f;
+    /* --- Base surfaces (near-black, cool) --- */
+    --bg: #0a0b0d;
+    --bg-secondary: #101216;
+    --surface: #14171c;
+    --surface-hover: #1b1f26;
+    --surface-active: #232832;
 
     /* --- Text --- */
-    --text: #e9ebef;
-    --text-secondary: #c2c8d2;
-    --text-muted: #939aa6;
+    --text: #f6f7f9;
+    --text-secondary: #c6ccd6;
+    --text-muted: #8b929d;
 
     /* --- Signature accent: electric blue (the agent) --- */
     --volt: #3b9dff;
@@ -38,9 +40,9 @@
     --error: #ff6b6b;
 
     /* --- Lines / structure --- */
-    --border: rgba(255,255,255,.09);
-    --border-hover: rgba(255,255,255,.16);
-    --grid-line: rgba(255,255,255,.028);
+    --border: rgba(255,255,255,.07);
+    --border-hover: rgba(255,255,255,.14);
+    --grid-line: rgba(255,255,255,.022);
 
     /* --- Shadows / glow --- */
     --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
