@@ -1,10 +1,10 @@
 ﻿import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { API, formatPrice, getLowestPrice, getBestVendor, getSavings } from '../services/api'
+import { API, formatPrice, formatSpecKey, formatSpecValue, getLowestPrice, getBestVendor, getSavings } from '../services/api'
 import toast from 'react-hot-toast'
 import {
     FiPlus, FiX, FiSearch, FiAward, FiPackage, FiColumns,
-    FiArrowRight, FiTrendingDown, FiLoader, FiTrash2
+    FiArrowRight, FiTrendingDown, FiLoader, FiTrash2, FiCheck, FiExternalLink
 } from 'react-icons/fi'
 import './Compare.css'
 
@@ -265,29 +265,7 @@ export default function Compare() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {/* Image row */}
-                                    <tr>
-                                        <td className="cp-table-view__key">Image</td>
-                                        {filledSlots.map((slot, i) => (
-                                            <td key={i} className="cp-table-view__val">
-                                                <div className="cp-table-view__img">
-                                                    {slot.image_url ? <img src={slot.image_url} alt={slot.name} /> : <FiPackage size={24} />}
-                                                </div>
-                                            </td>
-                                        ))}
-                                        {filledSlots.length < MAX_SLOTS && <td />}
-                                    </tr>
-                                    {/* Category */}
-                                    <tr>
-                                        <td className="cp-table-view__key">Category</td>
-                                        {filledSlots.map((slot, i) => (
-                                            <td key={i} className="cp-table-view__val">
-                                                {slot.category?.name || slot.category_name || '-'}
-                                            </td>
-                                        ))}
-                                        {filledSlots.length < MAX_SLOTS && <td />}
-                                    </tr>
-                                    {/* Price */}
+                                    {/* Price (headline differentiator) */}
                                     <tr className="cp-table-view__price-row">
                                         <td className="cp-table-view__key">Best Price</td>
                                         {filledSlots.map((slot, i) => {
@@ -296,6 +274,20 @@ export default function Compare() {
                                             return (
                                                 <td key={i} className={`cp-table-view__val cp-table-view__val--price${isBest ? ' cp-table-view__val--best-price' : ''}`}>
                                                     {price ? formatPrice(price) : '-'}
+                                                    {isBest && <span className="cp-table-view__cheapest">Cheapest</span>}
+                                                </td>
+                                            )
+                                        })}
+                                        {filledSlots.length < MAX_SLOTS && <td />}
+                                    </tr>
+                                    {/* Savings */}
+                                    <tr>
+                                        <td className="cp-table-view__key">Max Saving</td>
+                                        {filledSlots.map((slot, i) => {
+                                            const sav = getSavings(slot)
+                                            return (
+                                                <td key={i} className={`cp-table-view__val${sav > 0 ? ' cp-table-view__val--save' : ''}`}>
+                                                    {sav > 0 ? formatPrice(sav) : '-'}
                                                 </td>
                                             )
                                         })}
@@ -304,21 +296,31 @@ export default function Compare() {
                                     {/* Vendor */}
                                     <tr>
                                         <td className="cp-table-view__key">Best From</td>
-                                        {filledSlots.map((slot, i) => (
-                                            <td key={i} className="cp-table-view__val">
-                                                {getBestVendor(slot)?.vendor?.name || getBestVendor(slot)?.vendor_name || '-'}
-                                            </td>
-                                        ))}
+                                        {filledSlots.map((slot, i) => {
+                                            const best = getBestVendor(slot)
+                                            const name = best?.vendor?.name || best?.vendor_name || '-'
+                                            return (
+                                                <td key={i} className="cp-table-view__val">
+                                                    {best?.url
+                                                        ? <a href={best.url} target="_blank" rel="noreferrer" className="cp-table-view__buy">{name} <FiExternalLink size={11} /></a>
+                                                        : name}
+                                                </td>
+                                            )
+                                        })}
                                         {filledSlots.length < MAX_SLOTS && <td />}
                                     </tr>
                                     {/* Retailers count */}
                                     <tr>
                                         <td className="cp-table-view__key">Retailers</td>
                                         {filledSlots.map((slot, i) => (
-                                            <td key={i} className="cp-table-view__val">
-                                                {(slot.prices || []).length}
-                                            </td>
+                                            <td key={i} className="cp-table-view__val">{(slot.prices || []).length}</td>
                                         ))}
+                                        {filledSlots.length < MAX_SLOTS && <td />}
+                                    </tr>
+                                    {/* Spec section divider */}
+                                    <tr className="cp-table-view__section">
+                                        <td className="cp-table-view__key">Specifications</td>
+                                        {filledSlots.map((_, i) => <td key={i} />)}
                                         {filledSlots.length < MAX_SLOTS && <td />}
                                     </tr>
                                     {/* Dynamic spec rows */}
@@ -328,6 +330,8 @@ export default function Compare() {
                                         return allKeys.map(key => {
                                             const vals = allSpecs.map(s => s[key] !== undefined ? s[key] : null)
                                             const nums = vals.map(parseNum)
+                                            const present = vals.filter(v => v !== null)
+                                            const allSame = present.length === filledSlots.length && new Set(present.map(String)).size === 1
                                             const allNum = nums.every(n => n !== null)
                                             let best = -1
                                             if (allNum && new Set(nums).size > 1) {
@@ -336,11 +340,12 @@ export default function Compare() {
                                                     : nums.indexOf(Math.max(...nums))
                                             }
                                             return (
-                                                <tr key={key}>
-                                                    <td className="cp-table-view__key">{key.replace(/_/g, ' ')}</td>
+                                                <tr key={key} className={allSame ? 'cp-table-view__row--same' : ''}>
+                                                    <td className="cp-table-view__key">{formatSpecKey(key)}</td>
                                                     {vals.map((v, i) => (
                                                         <td key={i} className={`cp-table-view__val${i === best ? ' cp-table-view__val--highlight' : ''}${v === null ? ' cp-table-view__val--na' : ''}`}>
-                                                            {v !== null ? String(v) : '-'}
+                                                            {v !== null ? formatSpecValue(v) : '-'}
+                                                            {i === best && <FiCheck size={11} className="cp-table-view__best-ico" />}
                                                         </td>
                                                     ))}
                                                     {filledSlots.length < MAX_SLOTS && <td />}
@@ -470,7 +475,13 @@ export default function Compare() {
                     <div className="cp-empty">
                         <div className="cp-empty__icon"><FiColumns size={36} /></div>
                         <h2>Nothing to compare yet</h2>
-                        <p>Add components using the slots above.</p>
+                        <p>Add two or more components of the same type to compare specs and prices side by side.</p>
+                        <div className="cp-empty__actions">
+                            <button className="btn btn-primary" onClick={() => openSearch(0)}>
+                                <FiPlus size={14} /> Add Component
+                            </button>
+                            <Link to="/browse" className="btn">Browse the catalog</Link>
+                        </div>
                     </div>
                 )}
 
