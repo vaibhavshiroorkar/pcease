@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { API, formatPrice, getLowestPrice, getBestVendor, CATEGORIES, formatSpecKey, formatSpecValue } from '../services/api'
-import { FiSearch, FiX, FiExternalLink, FiCheck, FiBookmark, FiGrid, FiList, FiShoppingCart, FiInfo, FiChevronRight, FiSliders } from 'react-icons/fi'
+import { FiSearch, FiX, FiExternalLink, FiCheck, FiBookmark, FiGrid, FiList, FiShoppingCart, FiInfo, FiChevronRight, FiSliders, FiColumns } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import PriceGraph from '../components/PriceGraph'
 import PartCard from '../components/PartCard'
+import SpecTable from '../components/SpecTable'
 import { useWatchlist } from '../hooks/useWatchlist'
 import './Browse.css'
 
@@ -53,6 +54,7 @@ export default function Browse() {
     const [sort, setSort] = useState('price-low')
     const [detail, setDetail] = useState(null)
     const [viewMode, setViewMode] = useState('list')
+    const [mode, setMode] = useState(() => localStorage.getItem('pcease_browse_mode') || 'simple')
     const [pageSize, setPageSize] = useState(30)
     const [page, setPage] = useState(1)
     
@@ -70,6 +72,8 @@ export default function Browse() {
             .catch(e => { setError(e.message || 'Failed to load'); setComponents([]) })
             .finally(() => setLoading(false))
     }, [category, search, sort])
+
+    useEffect(() => { localStorage.setItem('pcease_browse_mode', mode) }, [mode])
 
     // Get unique brands from loaded components
     const availableBrands = useMemo(() => {
@@ -222,6 +226,12 @@ export default function Browse() {
                                 : `${components.length} results`}
                         </span>
                         <div className="br-meta__right">
+                            <div className="br-mode-toggle">
+                                <button className={mode === 'simple' ? 'active' : ''} onClick={() => setMode('simple')}>Simple</button>
+                                <button className={mode === 'advanced' ? 'active' : ''} onClick={() => setMode('advanced')}>
+                                    <FiColumns size={13} /> Advanced
+                                </button>
+                            </div>
                             <select className="br-pagesize" value={pageSize} onChange={e => setPageSize(Number(e.target.value))} aria-label="Results per page" title="Results per page">
                                 <option value={15}>15 / page</option>
                                 <option value={30}>30 / page</option>
@@ -233,10 +243,12 @@ export default function Browse() {
                                 <option value="price-high">Price: High to Low</option>
                                 <option value="name">Name: A-Z</option>
                             </select>
-                            <div className="br-view-toggle">
-                                <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')} title="Grid view"><FiGrid size={15} /></button>
-                                <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')} title="List view"><FiList size={15} /></button>
-                            </div>
+                            {mode === 'simple' && (
+                                <div className="br-view-toggle">
+                                    <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')} title="Grid view"><FiGrid size={15} /></button>
+                                    <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')} title="List view"><FiList size={15} /></button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -250,6 +262,14 @@ export default function Browse() {
                     </section>
                 ) : filteredComponents.length === 0 ? (
                     <EmptyState error={error} />
+                ) : mode === 'advanced' ? (
+                    <SpecTable
+                        items={pagedComponents}
+                        category={category}
+                        onOpen={item => setDetail(item)}
+                        hasWatch={id => watchIds.has(id)}
+                        toggleWatch={handleToggleWatch}
+                    />
                 ) : (
                     <section className={viewMode === 'grid' ? 'pc-grid' : 'pc-list'}>
                         {pagedComponents.map(item => {

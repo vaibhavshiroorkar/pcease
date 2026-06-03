@@ -333,3 +333,10 @@
     .br-list-item__specs { gap: 4px; }
     .br-list-item__specs .br-spec-chip { font-size: .65rem; padding: 3px 6px; }
 }
+
+/* Simple / Advanced mode toggle */
+.br-mode-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.br-mode-toggle button { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: var(--surface); color: var(--text-secondary); border: none; cursor: pointer; font: inherit; font-size: .82rem; font-weight: 600; }
+.br-mode-toggle button + button { border-left: 1px solid var(--border); }
+.br-mode-toggle button:hover { color: var(--text); background: var(--surface-hover); }
+.br-mode-toggle button.active { background: var(--accent-subtle); color: var(--accent); }
