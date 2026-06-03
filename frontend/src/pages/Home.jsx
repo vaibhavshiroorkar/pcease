@@ -243,25 +243,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* ===== Final CTA ===== */}
-            <section className="home-section home-section--alt">
-                <div className="container home-cta">
-                    <h2>Your next build starts here.</h2>
-                    <p>No account. No fluff. Just the parts you need at the price you want.</p>
-                    <div className="home-cta__actions">
-                        <Link to="/advisor" className="btn btn-primary btn-lg">
-                            What should I build? <FiArrowRight size={15} />
-                        </Link>
-                        <Link to="/builder" className="btn btn-lg">
-                            Build your PC
-                        </Link>
-                        <Link to="/browse" className="btn btn-lg">
-                            Browse parts
-                        </Link>
-                    </div>
-                </div>
-            </section>
-
             {/* ===== Retailers modal ===== */}
             {showRetailers && (
                 <div className="modal-overlay" onClick={() => setShowRetailers(false)}>

@@ -192,7 +192,6 @@ export default function Builder() {
     const [buildName, setBuildName] = useState('My Build')
     const [wattage, setWattage] = useState(null)
     const [bottleneck, setBottleneck] = useState(null)
-    const [sharedView, setSharedView] = useState(false)
     const [showGuide, setShowGuide] = useState(false)
     const [showClearConfirm, setShowClearConfirm] = useState(false)
     const [savedBuilds, setSavedBuilds] = useState([])
@@ -318,8 +317,10 @@ export default function Builder() {
         try {
             setLoading(true)
             const data = await API.getSharedBuild(id)
-            setBuildName(data.name || 'Shared Build')
-            setSharedView(true)
+            // A private share link drops the build straight into your own editable
+            // builder (it's a transfer, not a read-only view). The public/published
+            // link is the one that shows as someone else's build.
+            setBuildName(data.name || 'My Build')
             if (data.components_detail) {
                 const newBuild = {}, newIds = {}, newExtraRam = [], newAccessories = {}
                 for (const [key, comp] of Object.entries(data.components_detail)) {
@@ -545,12 +546,8 @@ export default function Builder() {
             <div className="container">
                 <header className="bd-header">
                     <div>
-                        <h1>{sharedView ? 'Shared Build' : 'PC Builder'}</h1>
-                        <p className="bd-header__sub">
-                            {sharedView
-                                ? 'Viewing a shared build - modify and save your own.'
-                                : 'Select components, compare retailer prices, and share.'}
-                        </p>
+                        <h1>PC Builder</h1>
+                        <p className="bd-header__sub">Select components, compare retailer prices, and share.</p>
                     </div>
                     <div className="bd-actions">
                         <button className="btn btn-secondary" onClick={() => setShowGuide(true)}>
