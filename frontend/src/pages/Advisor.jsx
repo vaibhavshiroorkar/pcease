@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API, formatPrice } from '../services/api'
-import { FiCpu, FiSend, FiArrowRight, FiSliders, FiMessageSquare, FiPackage, FiZap, FiMonitor, FiCode, FiRadio, FiSearch, FiCheck, FiX } from 'react-icons/fi'
+import { FiCpu, FiSend, FiArrowRight, FiSliders, FiMessageSquare, FiPackage, FiZap, FiMonitor, FiCode, FiRadio, FiSearch, FiCheck } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAgentChat } from '../hooks/useAgentChat'
 import { formatText } from '../utils/formatText'
@@ -33,10 +33,75 @@ const presetTag = (key, tmpl) =>
             : key.includes('high') ? 'High-End'
                 : tmpl.source === 'smart' ? 'Optimized' : ''
 
+// Normalize the different build shapes (manual recommendation, agent build, preset
+// template) into one display shape, keeping `raw` + `kind` so "Use build" can route
+// to the Builder with the format that page already understands.
+function normalizeBuild(raw, kind) {
+    if (!raw) return null
+    if (kind === 'agent') {
+        return {
+            kind, raw,
+            title: raw.title,
+            total: raw.total,
+            desc: null,
+            items: (raw.items || []).map(it => ({ category: it.category || it.slot, name: it.name, vendor: it.vendor, price: it.price })),
+        }
+    }
+    return {
+        kind, raw,
+        title: raw.title || raw.name,
+        total: raw.total || raw.budget,
+        desc: raw.description,
+        items: (raw.components || []).map(c => ({ category: c.category, name: c.name || c.suggestion, vendor: c.vendor, price: c.price || c.est_price })),
+    }
+}
+
+// Right-hand panel: shows whichever build is currently selected, for every tab.
+function BuildPanel({ build, onUse }) {
+    if (!build) {
+        return (
+            <aside className="ad-build-panel ad-build-panel--empty">
+                <FiPackage size={30} />
+                <p>Pick a preset, generate a build, or ask the Agent. It shows up here.</p>
+            </aside>
+        )
+    }
+    return (
+        <aside className="ad-build-panel">
+            <div className="ad-build-panel__head">
+                <span className="ad-build-panel__tag"><FiPackage size={13} /> Build</span>
+                <span className="ad-build-panel__total">{formatPrice(build.total)}</span>
+            </div>
+            <h2 className="ad-build-panel__title">{build.title}</h2>
+            {build.desc && <p className="ad-build-panel__desc">{build.desc}</p>}
+            <ul className="ad-build-panel__list">
+                {build.items.map((it, i) => (
+                    <li key={i}>
+                        <span className="ad-bf-cat">{it.category}</span>
+                        <div className="ad-bf-main">
+                            <span className="ad-bf-name">{it.name}</span>
+                            {it.vendor && <span className="ad-bf-vendor">{it.vendor}</span>}
+                        </div>
+                        <span className="ad-bf-price">{formatPrice(it.price)}</span>
+                    </li>
+                ))}
+            </ul>
+            <div className="ad-build-panel__footer">
+                <div className="ad-build-panel__total-row">
+                    <span>Total</span>
+                    <strong>{formatPrice(build.total)}</strong>
+                </div>
+                <button className="btn btn-primary" onClick={() => onUse(build)}>
+                    Use build <FiArrowRight size={14} />
+                </button>
+            </div>
+        </aside>
+    )
+}
+
 export default function Advisor() {
     const navigate = useNavigate()
     const chatEndRef = useRef(null)
-    const buildRef = useRef(null)
     const [tab, setTab] = useState('ai')
 
     // Manual tab state
@@ -56,8 +121,9 @@ export default function Advisor() {
     // Presets tab state
     const [presets, setPresets] = useState(null)
     const [presetFilter, setPresetFilter] = useState('all')
-    const [activePreset, setActivePreset] = useState(null) // [key, tmpl] shown in the detail modal
-    const [presetView, setPresetView] = useState('simple') // 'simple' (boxes + modal) | 'advanced' (full cards)
+
+    // The build currently shown in the right panel (shared across all tabs).
+    const [shownBuild, setShownBuild] = useState(null)
 
     useEffect(() => { API.getTemplates().then(setPresets).catch(() => {}) }, [])
     useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isStreaming])
@@ -81,10 +147,40 @@ export default function Advisor() {
             const prefs = buildPreferencesString()
             const result = await API.getRecommendation(budget, useCase, prefs)
             setRecommendation(result)
+            setShownBuild(normalizeBuild(result, 'manual'))
         } catch (e) {
             toast.error('Failed: ' + e.message)
         } finally {
             setLoading(false)
+        }
+    }
+
+    // The agent surfaces its most recent build; mirror it into the right panel.
+    const latestBuild = (() => {
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].build) return messages[i].build
+        }
+        return null
+    })()
+    useEffect(() => {
+        if (latestBuild && !isStreaming) setShownBuild(normalizeBuild(latestBuild, 'agent'))
+    }, [latestBuild, isStreaming])
+
+    const useBuild = (build) => {
+        if (!build) return
+        if (build.kind === 'agent') {
+            navigate('/builder', { state: { recommendation: {
+                title: build.raw.title,
+                components: (build.raw.items || []).map(it => ({
+                    category: it.slot || it.category,
+                    component_id: it.component_id,
+                    name: it.name,
+                    price: it.price,
+                    vendor: it.vendor,
+                })),
+            } } })
+        } else {
+            navigate('/builder', { state: { recommendation: build.raw } })
         }
     }
 
@@ -95,33 +191,6 @@ export default function Advisor() {
         setQuestion('')
         await send(q)
     }
-
-    const totalPrice = recommendation?.components?.reduce((s, c) => s + (c.price || c.est_price || 0), 0) || 0
-
-    // The agent chat is for showing the agent works; when it produces a build we
-    // surface the most recent one prominently in a panel below the conversation.
-    const latestBuild = (() => {
-        for (let i = messages.length - 1; i >= 0; i--) {
-            if (messages[i].build) return messages[i].build
-        }
-        return null
-    })()
-
-    const openBuildInBuilder = (build) => navigate('/builder', { state: { recommendation: {
-        title: build.title,
-        components: (build.items || []).map(it => ({
-            category: it.slot,
-            component_id: it.component_id,
-            name: it.name,
-            price: it.price,
-            vendor: it.vendor,
-        })),
-    } } })
-
-    // Auto-scroll to a freshly produced build so it gets attention
-    useEffect(() => {
-        if (latestBuild && !isStreaming) buildRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    }, [latestBuild, isStreaming])
 
     const filteredPresets = presets
         ? Object.entries(presets).filter(([key]) => presetFilter === 'all' || key.includes(presetFilter))
@@ -153,121 +222,113 @@ export default function Advisor() {
                     ))}
                 </div>
 
-                {/* ==================== MANUAL TAB ==================== */}
-                {tab === 'manual' && (
-                    <div className="ad-manual">
-                        <div className="ad-manual__intro">
-                            <FiSliders size={20} />
-                            <div>
-                                <h3>Manual Configuration</h3>
-                                <p>Set your requirements and our ML engine will find the optimal components from our database.</p>
-                            </div>
-                        </div>
+                {/* Split: selectors/inputs on the left, the build on the right (all tabs) */}
+                <div className="ad-split">
+                    <div className="ad-split__left">
 
-                        <div className={`ad-layout${recommendation ? '' : ' ad-layout--single'}`}>
-                            <section className="ad-form">
-                                {/* Budget */}
-                                <div className="form-group">
-                                    <label>Budget <span className="ad-badge">{budgetLabel}</span></label>
-                                    <div className="ad-budget">
-                                        <input
-                                            type="range" min="25000" max="300000" step="5000"
-                                            value={budget}
-                                            onChange={e => setBudget(Number(e.target.value))}
-                                        />
-                                        <span className="ad-budget__val">₹{budget.toLocaleString('en-IN')}</span>
-                                    </div>
-                                    <div className="ad-budget__marks">
-                                        <span>₹25K</span><span>₹1L</span><span>₹2L</span><span>₹3L</span>
+                        {/* ==================== MANUAL TAB ==================== */}
+                        {tab === 'manual' && (
+                            <div className="ad-manual">
+                                <div className="ad-manual__intro">
+                                    <FiSliders size={20} />
+                                    <div>
+                                        <h3>Manual Configuration</h3>
+                                        <p>Set your requirements and our ML engine will find the optimal components from our database.</p>
                                     </div>
                                 </div>
 
-                                {/* Use Case */}
-                                <div className="form-group">
-                                    <label>Use Case</label>
-                                    <div className="ad-uc-grid">
-                                        {useCases.map(uc => (
-                                            <button
-                                                key={uc.id}
-                                                className={`ad-uc ${useCase === uc.id ? 'active' : ''}`}
-                                                onClick={() => setUseCase(uc.id)}
-                                            >
-                                                {uc.icon}
-                                                <strong>{uc.name}</strong>
-                                                <span>{uc.desc}</span>
-                                            </button>
-                                        ))}
+                                <section className="ad-form">
+                                    {/* Budget */}
+                                    <div className="form-group">
+                                        <label>Budget <span className="ad-badge">{budgetLabel}</span></label>
+                                        <div className="ad-budget">
+                                            <input
+                                                type="range" min="25000" max="300000" step="5000"
+                                                value={budget}
+                                                onChange={e => setBudget(Number(e.target.value))}
+                                            />
+                                            <span className="ad-budget__val">₹{budget.toLocaleString('en-IN')}</span>
+                                        </div>
+                                        <div className="ad-budget__marks">
+                                            <span>₹25K</span><span>₹1L</span><span>₹2L</span><span>₹3L</span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Priority */}
-                                <div className="form-group">
-                                    <label>Priority</label>
-                                    <div className="ad-priority-grid">
-                                        {priorities.map(p => (
-                                            <button
-                                                key={p.id}
-                                                className={`ad-priority ${priority === p.id ? 'active' : ''}`}
-                                                onClick={() => setPriority(p.id)}
-                                            >
-                                                <strong>{p.name}</strong>
-                                                <span>{p.desc}</span>
-                                            </button>
-                                        ))}
+                                    {/* Use Case */}
+                                    <div className="form-group">
+                                        <label>Use Case</label>
+                                        <div className="ad-uc-grid">
+                                            {useCases.map(uc => (
+                                                <button
+                                                    key={uc.id}
+                                                    className={`ad-uc ${useCase === uc.id ? 'active' : ''}`}
+                                                    onClick={() => setUseCase(uc.id)}
+                                                >
+                                                    {uc.icon}
+                                                    <strong>{uc.name}</strong>
+                                                    <span>{uc.desc}</span>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Brand Preference */}
-                                <div className="form-group">
-                                    <label>Brand Preference</label>
-                                    <div className="ad-brand-row">
-                                        {['any', 'AMD', 'Intel', 'NVIDIA'].map(b => (
-                                            <button
-                                                key={b}
-                                                className={`ad-brand-btn ${brandPref === b ? 'active' : ''}`}
-                                                onClick={() => setBrandPref(b)}
-                                            >
-                                                {b === 'any' ? 'No Preference' : b}
-                                            </button>
-                                        ))}
+                                    {/* Priority */}
+                                    <div className="form-group">
+                                        <label>Priority</label>
+                                        <div className="ad-priority-grid">
+                                            {priorities.map(p => (
+                                                <button
+                                                    key={p.id}
+                                                    className={`ad-priority ${priority === p.id ? 'active' : ''}`}
+                                                    onClick={() => setPriority(p.id)}
+                                                >
+                                                    <strong>{p.name}</strong>
+                                                    <span>{p.desc}</span>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Toggles */}
-                                <div className="form-group">
-                                    <div className="ad-toggles">
-                                        <label className="ad-toggle">
-                                            <input type="checkbox" checked={wifiNeeded} onChange={e => setWifiNeeded(e.target.checked)} />
-                                            <span className="ad-toggle__slider" />
-                                            <span>WiFi Required</span>
-                                        </label>
-                                        <label className="ad-toggle">
-                                            <input type="checkbox" checked={rgbPref} onChange={e => setRgbPref(e.target.checked)} />
-                                            <span className="ad-toggle__slider" />
-                                            <span>RGB Lighting</span>
-                                        </label>
+                                    {/* Brand Preference */}
+                                    <div className="form-group">
+                                        <label>Brand Preference</label>
+                                        <div className="ad-brand-row">
+                                            {['any', 'AMD', 'Intel', 'NVIDIA'].map(b => (
+                                                <button
+                                                    key={b}
+                                                    className={`ad-brand-btn ${brandPref === b ? 'active' : ''}`}
+                                                    onClick={() => setBrandPref(b)}
+                                                >
+                                                    {b === 'any' ? 'No Preference' : b}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <button className="btn btn-primary btn-lg ad-find-btn" onClick={getRecommendation} disabled={loading}>
-                                    {loading ? (
-                                        <><span className="ad-spinner" /> Analyzing Components...</>
-                                    ) : (
-                                        <><FiCpu size={16} /> Find Best Build</>
-                                    )}
-                                </button>
-                            </section>
-
-                            {recommendation && (
-                                <section className="ad-result">
-                                    <div className="ad-result__head">
-                                        <h2>{recommendation.title || recommendation.name}</h2>
-                                        <span className={`ad-result__src ad-result__src--${recommendation.source}`}>
-                                            {recommendation.source === 'smart' ? '✨ ML Optimized' : recommendation.source === 'template' ? 'Template' : '🤖 AI'}
-                                        </span>
+                                    {/* Toggles */}
+                                    <div className="form-group">
+                                        <div className="ad-toggles">
+                                            <label className="ad-toggle">
+                                                <input type="checkbox" checked={wifiNeeded} onChange={e => setWifiNeeded(e.target.checked)} />
+                                                <span className="ad-toggle__slider" />
+                                                <span>WiFi Required</span>
+                                            </label>
+                                            <label className="ad-toggle">
+                                                <input type="checkbox" checked={rgbPref} onChange={e => setRgbPref(e.target.checked)} />
+                                                <span className="ad-toggle__slider" />
+                                                <span>RGB Lighting</span>
+                                            </label>
+                                        </div>
                                     </div>
-                                    <p className="ad-result__desc">{recommendation.description}</p>
-                                    {recommendation.within_budget !== undefined && (
+
+                                    <button className="btn btn-primary btn-lg ad-find-btn" onClick={getRecommendation} disabled={loading}>
+                                        {loading ? (
+                                            <><span className="ad-spinner" /> Analyzing Components...</>
+                                        ) : (
+                                            <><FiCpu size={16} /> Find Best Build</>
+                                        )}
+                                    </button>
+                                    {recommendation?.within_budget !== undefined && (
                                         <div className={`ad-budget-status ${recommendation.within_budget ? 'ad-budget-status--ok' : 'ad-budget-status--over'}`}>
                                             {recommendation.within_budget
                                                 ? `✓ Within budget - ₹${recommendation.savings?.toLocaleString('en-IN')} remaining`
@@ -275,289 +336,148 @@ export default function Advisor() {
                                             }
                                         </div>
                                     )}
-                                    <ul className="ad-rec-list">
-                                        {(recommendation.components || []).map((comp, i) => (
-                                            <li key={i}>
-                                                <span className="ad-rec-cat">{comp.category}</span>
-                                                <div className="ad-rec-main">
-                                                    <span className="ad-rec-name">{comp.name || comp.suggestion}</span>
-                                                    {comp.vendor && <span className="ad-rec-vendor">{comp.vendor}</span>}
-                                                </div>
-                                                <span className="ad-rec-price">{formatPrice(comp.price || comp.est_price)}</span>
-                                                {comp.reason && <p className="ad-rec-reason">{comp.reason}</p>}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <div className="ad-rec-total">
-                                        <span>Total</span>
-                                        <span className="ad-rec-total__val">{formatPrice(recommendation.total || totalPrice)}</span>
-                                    </div>
-                                    {recommendation.tips && (
-                                        <div className="ad-tips">
-                                            <h4>💡 Tips</h4>
-                                            <ul>{recommendation.tips.map((t, i) => <li key={i}>{t}</li>)}</ul>
-                                        </div>
-                                    )}
-                                    {recommendation.performance_notes && (
-                                        <p className="ad-perf"><strong>Performance:</strong> {recommendation.performance_notes}</p>
-                                    )}
-                                    <button
-                                        className="btn btn-primary"
-                                        onClick={() => navigate('/builder', { state: { recommendation } })}
-                                    >
-                                        Open in Builder <FiArrowRight size={14} />
-                                    </button>
                                 </section>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* ==================== AI TAB (Agentic) ==================== */}
-                {tab === 'ai' && (
-                    <div className="ad-ai">
-                        <div className="ad-chat">
-                            <div className="ad-chat__msgs">
-                                {messages.length === 0 ? (
-                                    <div className="ad-chat__empty">
-                                        <div className="ad-chat__icon"><FiMessageSquare size={36} /></div>
-                                        <h3>Agent</h3>
-                                        <p>Ask for a build or any PC advice. I search the real catalog, check compatibility, and assemble a grounded build.</p>
-                                        <div className="ad-chat__sugg">
-                                            {[
-                                                'Build me a ₹60,000 gaming PC',
-                                                'Best GPU under ₹30,000?',
-                                                'Is the Ryzen 5 7600 a good pick?',
-                                                'Build a ₹1.2L streaming rig',
-                                                'What PSU do I need for an RTX 4060 build?',
-                                            ].map((s, i) => (
-                                                <button key={i} className="ad-sugg-chip" onClick={() => setQuestion(s)}>{s}</button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    messages.map((msg, i) => (
-                                        <div key={i} className={`ad-msg ad-msg--${msg.role}`}>
-                                            <div className="ad-msg__avatar">{msg.role === 'user' ? '👤' : '🤖'}</div>
-                                            <div className="ad-msg__bubble">
-                                                {msg.tools?.length > 0 && (
-                                                    <div className="ad-steps">
-                                                        {msg.tools.map((t, ti) => (
-                                                            <span key={ti} className={`ad-step ${t.done ? 'done' : 'running'}`}>
-                                                                {t.done ? <FiCheck size={11} /> : <FiSearch size={11} />}
-                                                                {t.label}{t.done && t.summary ? ` · ${t.summary}` : '…'}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                                {msg.content && <div className="ad-msg__text">{formatText(msg.content)}</div>}
-                                                {msg.build && (
-                                                    <button
-                                                        type="button"
-                                                        className="ad-buildchip"
-                                                        onClick={() => buildRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
-                                                    >
-                                                        <FiPackage size={14} />
-                                                        <span className="ad-buildchip__title">{msg.build.title}</span>
-                                                        <span className="ad-buildchip__total">{formatPrice(msg.build.total)}</span>
-                                                        <span className="ad-buildchip__hint">See below ↓</span>
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                                {isStreaming && messages[messages.length - 1]?.content === '' && !messages[messages.length - 1]?.tools?.length && (
-                                    <div className="ad-msg ad-msg--assistant">
-                                        <div className="ad-msg__avatar">🤖</div>
-                                        <div className="ad-msg__bubble ad-msg--typing"><span /><span /><span /></div>
-                                    </div>
-                                )}
-                                <div ref={chatEndRef} />
                             </div>
-                            <form className="ad-chat__input" onSubmit={askQuestion}>
-                                <input type="text" value={question} onChange={e => setQuestion(e.target.value)}
-                                    placeholder="Ask for a build or any PC advice…" disabled={isStreaming} />
-                                <button type="submit" className="btn btn-primary" aria-label="Send message" disabled={isStreaming || !question.trim()}>
-                                    <FiSend size={14} />
-                                </button>
-                            </form>
-                        </div>
-
-                        {/* Recommended build, surfaced below the chat */}
-                        {latestBuild && (
-                            <section className="ad-build-feature" ref={buildRef}>
-                                <div className="ad-build-feature__head">
-                                    <span className="ad-build-feature__tag"><FiPackage size={13} /> Recommended build</span>
-                                    <span className="ad-build-feature__total">{formatPrice(latestBuild.total)}</span>
-                                </div>
-                                <h2 className="ad-build-feature__title">{latestBuild.title}</h2>
-                                <ul className="ad-build-feature__list">
-                                    {latestBuild.items.map((it, ii) => (
-                                        <li key={ii}>
-                                            <span className="ad-bf-cat">{it.category}</span>
-                                            <div className="ad-bf-main">
-                                                <span className="ad-bf-name">{it.name}</span>
-                                                {it.vendor && <span className="ad-bf-vendor">{it.vendor}</span>}
-                                            </div>
-                                            <span className="ad-bf-price">{formatPrice(it.price)}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                                <div className="ad-build-feature__footer">
-                                    <div className="ad-build-feature__total-row">
-                                        <span>Total</span>
-                                        <strong>{formatPrice(latestBuild.total)}</strong>
-                                    </div>
-                                    <button className="btn btn-primary" onClick={() => openBuildInBuilder(latestBuild)}>
-                                        Open in Builder <FiArrowRight size={14} />
-                                    </button>
-                                </div>
-                            </section>
                         )}
-                    </div>
-                )}
 
-                {/* ==================== PRESETS TAB ==================== */}
-                {tab === 'presets' && (
-                    <div className="ad-presets">
-                        <div className="ad-presets__intro">
-                            <FiPackage size={20} />
-                            <div>
-                                <h3>Pre-Built Configurations</h3>
-                                <p>Curated builds for common use cases. Pick one and customize it in the Builder.</p>
-                            </div>
-                        </div>
-
-                        <div className="ad-presets__filters">
-                            {[
-                                { id: 'all', label: 'All' },
-                                { id: 'gaming', label: 'Gaming' },
-                                { id: 'content', label: 'Content' },
-                                { id: 'productivity', label: 'Productivity' },
-                                { id: 'streaming', label: 'Streaming' },
-                            ].map(f => (
-                                <button
-                                    key={f.id}
-                                    className={`ad-filter-btn ${presetFilter === f.id ? 'active' : ''}`}
-                                    onClick={() => setPresetFilter(f.id)}
-                                >
-                                    {f.label}
-                                </button>
-                            ))}
-                            <div className="ad-presets__view" role="group" aria-label="Preset view">
-                                <button
-                                    type="button"
-                                    className={`ad-view-btn ${presetView === 'simple' ? 'active' : ''}`}
-                                    onClick={() => setPresetView('simple')}
-                                >
-                                    Simplified
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`ad-view-btn ${presetView === 'advanced' ? 'active' : ''}`}
-                                    onClick={() => setPresetView('advanced')}
-                                >
-                                    Advanced
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="ad-tmpl-grid">
-                            {filteredPresets ? (
-                                filteredPresets.length > 0 ? filteredPresets.map(([key, tmpl]) => (
-                                    presetView === 'advanced' ? (
-                                        <div key={key} className="ad-tmpl">
-                                            <div className="ad-tmpl__head">
-                                                <div className="ad-tmpl__head-main">
-                                                    <h3 className="ad-tmpl__name">{tmpl.name || tmpl.title}</h3>
-                                                    {presetTag(key, tmpl) && <span className="ad-tmpl__tag">{presetTag(key, tmpl)}</span>}
+                        {/* ==================== AI TAB (Agentic) ==================== */}
+                        {tab === 'ai' && (
+                            <div className="ad-ai">
+                                <div className="ad-chat">
+                                    <div className="ad-chat__msgs">
+                                        {messages.length === 0 ? (
+                                            <div className="ad-chat__empty">
+                                                <div className="ad-chat__icon"><FiMessageSquare size={36} /></div>
+                                                <h3>Agent</h3>
+                                                <p>Ask for a build or any PC advice. I search the real catalog, check compatibility, and assemble a grounded build.</p>
+                                                <div className="ad-chat__sugg">
+                                                    {[
+                                                        'Build me a ₹60,000 gaming PC',
+                                                        'Best GPU under ₹30,000?',
+                                                        'Is the Ryzen 5 7600 a good pick?',
+                                                        'Build a ₹1.2L streaming rig',
+                                                        'What PSU do I need for an RTX 4060 build?',
+                                                    ].map((s, i) => (
+                                                        <button key={i} className="ad-sugg-chip" onClick={() => setQuestion(s)}>{s}</button>
+                                                    ))}
                                                 </div>
-                                                <span className="ad-tmpl__budget">{formatPrice(tmpl.total || tmpl.budget)}</span>
                                             </div>
-                                            <p className="ad-tmpl__desc">{tmpl.description}</p>
-                                            <ul className="ad-tmpl__parts">
-                                                {tmpl.components?.map((c, i) => (
-                                                    <li key={i}>
-                                                        <span>{c.category}</span>
-                                                        <span>{c.name || c.suggestion}</span>
-                                                        <span>{formatPrice(c.price || c.est_price)}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                            <button
-                                                className="btn btn-primary btn-sm"
-                                                onClick={() => navigate('/builder', { state: { recommendation: tmpl } })}
-                                            >
-                                                Use This Build <FiArrowRight size={12} />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            key={key}
-                                            type="button"
-                                            className="ad-tmpl-box"
-                                            onClick={() => setActivePreset([key, tmpl])}
-                                        >
-                                            <span className="ad-tmpl__head">
-                                                <span className="ad-tmpl__head-main">
-                                                    <span className="ad-tmpl__name">{tmpl.name || tmpl.title}</span>
-                                                    {presetTag(key, tmpl) && <span className="ad-tmpl__tag">{presetTag(key, tmpl)}</span>}
-                                                </span>
-                                                <span className="ad-tmpl__budget">{formatPrice(tmpl.total || tmpl.budget)}</span>
-                                            </span>
-                                            <span className="ad-tmpl-box__count">{tmpl.components?.length || 0} parts <FiArrowRight size={11} /></span>
-                                        </button>
-                                    )
-                                )) : <p className="text-muted">No presets match this filter.</p>
-                            ) : (
-                                <div className="ad-presets__loading">
-                                    <span className="ad-spinner" /> Loading presets...
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Preset detail modal */}
-                        {activePreset && (
-                            <div className="modal-overlay" onClick={() => setActivePreset(null)}>
-                                <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
-                                    <div className="modal-header">
-                                        <h2>{activePreset[1].name || activePreset[1].title}</h2>
-                                        <button className="modal-close" onClick={() => setActivePreset(null)} aria-label="Close">
-                                            <FiX />
-                                        </button>
-                                    </div>
-                                    <div className="modal-body">
-                                        <div className="ad-preset-modal__meta">
-                                            {presetTag(activePreset[0], activePreset[1]) && (
-                                                <span className="ad-tmpl__tag">{presetTag(activePreset[0], activePreset[1])}</span>
-                                            )}
-                                            <span className="ad-tmpl__budget">{formatPrice(activePreset[1].total || activePreset[1].budget)}</span>
-                                        </div>
-                                        {activePreset[1].description && (
-                                            <p className="ad-tmpl__desc">{activePreset[1].description}</p>
+                                        ) : (
+                                            messages.map((msg, i) => (
+                                                <div key={i} className={`ad-msg ad-msg--${msg.role}`}>
+                                                    <div className="ad-msg__avatar">{msg.role === 'user' ? '👤' : '🤖'}</div>
+                                                    <div className="ad-msg__bubble">
+                                                        {msg.tools?.length > 0 && (
+                                                            <div className="ad-steps">
+                                                                {msg.tools.map((t, ti) => (
+                                                                    <span key={ti} className={`ad-step ${t.done ? 'done' : 'running'}`}>
+                                                                        {t.done ? <FiCheck size={11} /> : <FiSearch size={11} />}
+                                                                        {t.label}{t.done && t.summary ? ` · ${t.summary}` : '…'}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        {msg.content && <div className="ad-msg__text">{formatText(msg.content)}</div>}
+                                                        {msg.build && (
+                                                            <button
+                                                                type="button"
+                                                                className="ad-buildchip"
+                                                                onClick={() => setShownBuild(normalizeBuild(msg.build, 'agent'))}
+                                                            >
+                                                                <FiPackage size={14} />
+                                                                <span className="ad-buildchip__title">{msg.build.title}</span>
+                                                                <span className="ad-buildchip__total">{formatPrice(msg.build.total)}</span>
+                                                                <span className="ad-buildchip__hint">Show →</span>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
                                         )}
-                                        <ul className="ad-tmpl__parts">
-                                            {activePreset[1].components?.map((c, i) => (
-                                                <li key={i}>
-                                                    <span>{c.category}</span>
-                                                    <span>{c.name || c.suggestion}</span>
-                                                    <span>{formatPrice(c.price || c.est_price)}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <button
-                                            className="btn btn-primary"
-                                            onClick={() => navigate('/builder', { state: { recommendation: activePreset[1] } })}
-                                        >
-                                            Use This Build <FiArrowRight size={13} />
-                                        </button>
+                                        {isStreaming && messages[messages.length - 1]?.content === '' && !messages[messages.length - 1]?.tools?.length && (
+                                            <div className="ad-msg ad-msg--assistant">
+                                                <div className="ad-msg__avatar">🤖</div>
+                                                <div className="ad-msg__bubble ad-msg--typing"><span /><span /><span /></div>
+                                            </div>
+                                        )}
+                                        <div ref={chatEndRef} />
                                     </div>
+                                    <form className="ad-chat__input" onSubmit={askQuestion}>
+                                        <input type="text" value={question} onChange={e => setQuestion(e.target.value)}
+                                            placeholder="Ask for a build or any PC advice…" disabled={isStreaming} />
+                                        <button type="submit" className="btn btn-primary" aria-label="Send message" disabled={isStreaming || !question.trim()}>
+                                            <FiSend size={14} />
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         )}
+
+                        {/* ==================== PRESETS TAB ==================== */}
+                        {tab === 'presets' && (
+                            <div className="ad-presets">
+                                <div className="ad-presets__intro">
+                                    <FiPackage size={20} />
+                                    <div>
+                                        <h3>Pre-Built Configurations</h3>
+                                        <p>Curated builds for common use cases. Show one to inspect it, or use it in the Builder.</p>
+                                    </div>
+                                </div>
+
+                                <div className="ad-presets__filters">
+                                    {[
+                                        { id: 'all', label: 'All' },
+                                        { id: 'gaming', label: 'Gaming' },
+                                        { id: 'content', label: 'Content' },
+                                        { id: 'productivity', label: 'Productivity' },
+                                        { id: 'streaming', label: 'Streaming' },
+                                    ].map(f => (
+                                        <button
+                                            key={f.id}
+                                            className={`ad-filter-btn ${presetFilter === f.id ? 'active' : ''}`}
+                                            onClick={() => setPresetFilter(f.id)}
+                                        >
+                                            {f.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="ad-tmpl-grid">
+                                    {filteredPresets ? (
+                                        filteredPresets.length > 0 ? filteredPresets.map(([key, tmpl]) => (
+                                            <div key={key} className="ad-tmpl">
+                                                <div className="ad-tmpl__head">
+                                                    <div className="ad-tmpl__head-main">
+                                                        <h3 className="ad-tmpl__name">{tmpl.name || tmpl.title}</h3>
+                                                        {presetTag(key, tmpl) && <span className="ad-tmpl__tag">{presetTag(key, tmpl)}</span>}
+                                                    </div>
+                                                    <span className="ad-tmpl__budget">{formatPrice(tmpl.total || tmpl.budget)}</span>
+                                                </div>
+                                                <p className="ad-tmpl__desc">{tmpl.description}</p>
+                                                <span className="ad-tmpl__count">{tmpl.components?.length || 0} parts</span>
+                                                <div className="ad-tmpl__actions">
+                                                    <button className="btn btn-sm" onClick={() => setShownBuild(normalizeBuild(tmpl, 'preset'))}>
+                                                        Show build
+                                                    </button>
+                                                    <button className="btn btn-sm btn-primary" onClick={() => navigate('/builder', { state: { recommendation: tmpl } })}>
+                                                        Use build <FiArrowRight size={12} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )) : <p className="text-muted">No presets match this filter.</p>
+                                    ) : (
+                                        <div className="ad-presets__loading">
+                                            <span className="ad-spinner" /> Loading presets...
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                     </div>
-                )}
+
+                    <BuildPanel build={shownBuild} onUse={useBuild} />
+                </div>
             </div>
         </main>
     )
