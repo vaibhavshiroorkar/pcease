@@ -833,6 +833,11 @@
     color: var(--text-muted);
     font-weight: 400;
 }
+/* Connect the spec table directly under the comparison cards, with equal
+   component columns so every spec value lines up under its component. */
+.cp-specs-table { margin-top: 14px; }
+.cp-specs-tbl { table-layout: fixed; }
+.cp-specs-tbl__val, .cp-specs-tbl__key { vertical-align: middle; }
 
 /* ========== Verdict ========== */
 .cp-verdict {

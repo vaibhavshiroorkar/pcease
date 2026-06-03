@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import {
     FiPlus, FiX, FiSearch, FiAward, FiPackage, FiColumns,
     FiArrowRight, FiTrendingDown, FiLoader, FiShoppingCart,
-    FiChevronDown, FiChevronUp, FiGrid, FiList, FiTrash2
+    FiGrid, FiList, FiTrash2
 } from 'react-icons/fi'
 import './Compare.css'
 
@@ -141,7 +141,6 @@ export default function Compare() {
     const [categories, setCategories] = useState([])
     const [selectedCategory, setSelectedCategory] = useState('')
     const [view, setView] = useState('cards') // 'cards' or 'table'
-    const [expandedSpecs, setExpandedSpecs] = useState({})
     const [sortOrder, setSortOrder] = useState('price-low')
     const searchRef = useRef(null)
     const inputRef = useRef(null)
@@ -252,18 +251,7 @@ export default function Compare() {
         setSlots([null, null, null, null])
     }
 
-    const toggleSpecs = (idx) => {
-        setExpandedSpecs(prev => ({ ...prev, [idx]: !prev[idx] }))
-    }
-
     const filledSlots = slots.filter(Boolean)
-
-    const getSpecs = (item) => {
-        if (typeof item.specifications === 'string') {
-            try { return JSON.parse(item.specifications) } catch { return {} }
-        }
-        return item.specifications || {}
-    }
 
     const getPricesSorted = (item) =>
         (item.prices || []).slice().sort((a, b) => a.price - b.price)
@@ -344,9 +332,6 @@ export default function Compare() {
                             const low = slot ? getLowestPrice(slot) : 0
                             const maxP = slot ? Math.max(...prices.map(p => p.price), 1) : 1
                             const isBest = slot && filledSlots.indexOf(slot) === bestSlotIdx && filledSlots.length > 1
-                            const specsObj = slot ? getSpecs(slot) : {}
-                            const specsKeys = Object.keys(specsObj)
-                            const isExpanded = expandedSpecs[idx]
 
                             return (
                                 <div
@@ -416,24 +401,6 @@ export default function Compare() {
                                                     )
                                                 })}
                                             </div>
-                                            {specsKeys.length > 0 && (
-                                                <div className="cp-card__specs">
-                                                    <button className="cp-card__specs-toggle" onClick={() => toggleSpecs(idx)}>
-                                                        <span>Specifications ({specsKeys.length})</span>
-                                                        {isExpanded ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
-                                                    </button>
-                                                    {isExpanded && (
-                                                        <div className="cp-card__specs-grid">
-                                                            {Object.entries(specsObj).map(([k, v]) => (
-                                                                <div key={k} className="cp-spec-row">
-                                                                    <span className="cp-spec-row__key">{k.replace(/_/g, ' ')}</span>
-                                                                    <span className="cp-spec-row__val">{String(v)}</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
                                         </>
                                     ) : (
                                         <button className="cp-card__add-btn" onClick={() => openSearch(idx)}>
@@ -447,6 +414,9 @@ export default function Compare() {
                         })}
                     </div>
                 )}
+
+                {/* ===== Connected Specs (card view): aligned directly under the cards ===== */}
+                {view === 'cards' && <SpecsComparisonTable components={filledSlots} />}
 
                 {/* ===== Table View ===== */}
                 {view === 'table' && filledSlots.length > 0 && (
@@ -658,9 +628,6 @@ export default function Compare() {
                         </div>
                     </div>
                 )}
-
-                {/* ===== Specs Table (Card view only) ===== */}
-                {view === 'cards' && <SpecsComparisonTable components={filledSlots} />}
 
                 {/* ===== Verdict ===== */}
                 {filledSlots.length >= 2 && (
