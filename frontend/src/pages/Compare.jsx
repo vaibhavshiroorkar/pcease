@@ -68,6 +68,8 @@ export default function Compare() {
     const [categories, setCategories] = useState([])
     const [selectedCategory, setSelectedCategory] = useState('')
     const [sortOrder, setSortOrder] = useState('price-low')
+    const [summary, setSummary] = useState('')
+    const [summaryLoading, setSummaryLoading] = useState(false)
     const searchRef = useRef(null)
     const inputRef = useRef(null)
 
@@ -186,6 +188,45 @@ export default function Compare() {
             return curLow < bestLow ? idx : bestIdx
         }, 0)
         : 0
+
+    // A non-AI, genuinely comparative summary (the fallback / instant view).
+    const fallbackSummary = () => {
+        if (filledSlots.length < 2) return ''
+        const cat = filledSlots[0].category?.name || filledSlots[0].category_name || 'components'
+        const priced = filledSlots.map(s => ({ name: s.name, low: getLowestPrice(s) })).filter(p => p.low)
+        const sorted = [...priced].sort((a, b) => a.low - b.low)
+        const cheapest = sorted[0]
+        const dearest = sorted[sorted.length - 1]
+        const parts = [`Comparing ${filledSlots.length} ${cat.toLowerCase()}.`]
+        if (cheapest) parts.push(`${cheapest.name} is the cheapest at ${formatPrice(cheapest.low)}.`)
+        if (dearest && dearest.name !== cheapest?.name) {
+            parts.push(`${dearest.name} is the priciest at ${formatPrice(dearest.low)} (a ${formatPrice(dearest.low - cheapest.low)} spread).`)
+        }
+        parts.push('Pick on the specs that matter for your use, not price alone.')
+        return parts.join(' ')
+    }
+
+    // AI comparison summary, fetched when the set of compared parts changes.
+    // Falls back to the comparative message above if AI is unavailable.
+    const compareKey = filledSlots.map(s => s.id).join(',')
+    useEffect(() => {
+        if (filledSlots.length < 2) { setSummary(''); return }
+        let cancelled = false
+        const prompt = `Compare these PC ${filledSlots[0].category?.name || 'components'} for an Indian buyer in 2-3 sentences. ` +
+            `Be specific about trade-offs (price vs performance) and end with who each suits. Parts:\n` +
+            filledSlots.map(s => {
+                const specs = getSpecsObj(s)
+                const key = Object.entries(specs).slice(0, 4).map(([k, v]) => `${k}: ${v}`).join(', ')
+                return `- ${s.name} (₹${getLowestPrice(s) || '?'})${key ? ` [${key}]` : ''}`
+            }).join('\n')
+        setSummaryLoading(true)
+        API.askAI(prompt)
+            .then(r => { if (!cancelled) setSummary(r?.source === 'ai' && r.answer ? r.answer : '') })
+            .catch(() => { if (!cancelled) setSummary('') })
+            .finally(() => { if (!cancelled) setSummaryLoading(false) })
+        return () => { cancelled = true }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [compareKey])
 
     if (loading) {
         return (
@@ -448,22 +489,12 @@ export default function Compare() {
                     </div>
                 )}
 
-                {/* ===== Verdict ===== */}
+                {/* ===== Verdict (AI summary, comparative fallback) ===== */}
                 {filledSlots.length >= 2 && (
                     <section className="cp-verdict">
                         <div className="cp-verdict__icon-wrap"><FiAward size={22} /></div>
-                        <h3>Quick Verdict</h3>
-                        <p>
-                            <strong>{filledSlots[bestSlotIdx]?.name}</strong> offers the best value at{' '}
-                            <strong className="cp-verdict__price">
-                                {formatPrice(getLowestPrice(filledSlots[bestSlotIdx]))}
-                            </strong>
-                            {getSavings(filledSlots[bestSlotIdx]) > 0 && (
-                                <> - save up to <strong className="cp-verdict__savings">
-                                    {formatPrice(getSavings(filledSlots[bestSlotIdx]))}
-                                </strong> by choosing the right retailer</>
-                            )}.
-                        </p>
+                        <h3>{summary ? 'AI Verdict' : 'Quick Verdict'} {summaryLoading && <FiLoader size={14} className="cp-spin" />}</h3>
+                        <p className="cp-verdict__summary">{summary || fallbackSummary()}</p>
                         <Link to="/builder" className="btn btn-primary">
                             Add to Builder <FiArrowRight size={16} />
                         </Link>

@@ -880,7 +880,8 @@
     border-radius: 12px;
     color: var(--accent);
 }
-.cp-verdict h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 12px; }
+.cp-verdict h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 8px; }
+.cp-verdict__summary { white-space: pre-wrap; text-align: left; }
 .cp-verdict p {
     font-size: 0.9375rem;
     color: var(--text-secondary);
