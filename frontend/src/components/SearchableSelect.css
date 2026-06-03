@@ -1,0 +1,22 @@
+.ss { position: relative; min-width: 0; }
+.ss__control { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); cursor: pointer; font: inherit; font-size: .85rem; text-align: left; }
+.ss__control:hover { border-color: var(--border-hover); }
+.ss--open .ss__control { border-color: var(--accent-border); }
+.ss--has-value .ss__control { border-color: var(--accent-border); }
+.ss__label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss--has-value .ss__label { color: var(--text); }
+.ss__control:not(.ss--has-value) .ss__label { color: var(--text-muted); }
+.ss__caret { flex-shrink: 0; color: var(--text-muted); transition: transform var(--transition); }
+.ss--open .ss__caret { transform: rotate(180deg); }
+.ss__clear { display: inline-flex; color: var(--text-muted); border-radius: var(--radius-sm); padding: 1px; }
+.ss__clear:hover { color: var(--error); background: var(--surface-hover); }
+
+.ss__menu { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 40; background: var(--surface-active); border: 1px solid var(--border-hover); border-radius: var(--radius-md); box-shadow: var(--shadow-md); overflow: hidden; }
+.ss__search { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+.ss__search input { flex: 1; min-width: 0; background: none; border: none; color: var(--text); font: inherit; font-size: .82rem; outline: none; }
+.ss__options { max-height: 240px; overflow-y: auto; padding: 4px; }
+.ss__opt { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 8px; background: none; border: none; border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; font: inherit; font-size: .84rem; text-align: left; }
+.ss__opt:hover { background: var(--surface-hover); color: var(--text); }
+.ss__opt.is-active { color: var(--accent); background: var(--accent-subtle); }
+.ss__check { display: inline-flex; width: 14px; flex-shrink: 0; color: var(--accent); }
+.ss__empty { padding: 10px 8px; color: var(--text-muted); font-size: .8rem; }

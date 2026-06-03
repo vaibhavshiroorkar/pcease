@@ -7,6 +7,8 @@ import toast from 'react-hot-toast'
 import PriceGraph from '../components/PriceGraph'
 import PartCard from '../components/PartCard'
 import SpecTable from '../components/SpecTable'
+import SearchableSelect from '../components/SearchableSelect'
+import PriceRange from '../components/PriceRange'
 import { useWatchlist } from '../hooks/useWatchlist'
 import './Browse.css'
 
@@ -93,6 +95,12 @@ export default function Browse() {
         for (const k of specCols) t[k] = inferColumnType(components.map(c => c.specs?.[k]))
         return t
     }, [components, specCols.join(',')])
+
+    // Upper bound for the price slider, rounded up from the data.
+    const priceMax = useMemo(() => {
+        const max = components.reduce((m, c) => Math.max(m, getLowestPrice(c) || 0), 0)
+        return Math.max(10000, Math.ceil(max / 1000) * 1000)
+    }, [components])
 
     // Apply client-side filters
     const filteredComponents = useMemo(() => {
@@ -226,78 +234,63 @@ export default function Browse() {
                     </div>
                 </section>
 
-                {/* ===== BODY: optional filter sidebar + results ===== */}
-                <div className={`br-body${showFilters ? ' br-body--with-sidebar' : ''}`}>
+                {/* ===== FILTER BAR (full-width, in flow, never overlaps results) ===== */}
                 {showFilters && (
-                    <aside className="br-filter-sidebar">
-                        <div className="br-filter-sidebar__head">
-                            <h3><FiSliders size={14} /> Filters</h3>
-                            <button className="btn btn-sm br-clear-filters" onClick={clearAllFilters}>Clear All</button>
-                        </div>
-                        <div className="br-filter-group">
+                    <div className="br-filter-bar">
+                        <div className="br-filter-field">
                             <label>Brand</label>
-                            <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)}>
-                                <option value="">All Brands ({availableBrands.length})</option>
-                                {availableBrands.map(b => <option key={b} value={b}>{b}</option>)}
-                            </select>
+                            <SearchableSelect
+                                value={brandFilter}
+                                onChange={setBrandFilter}
+                                options={availableBrands}
+                                allLabel={`All brands (${availableBrands.length})`}
+                                placeholder="All brands"
+                            />
                         </div>
-                        <div className="br-filter-group">
-                            <label>Price Range (₹)</label>
-                            <div className="br-price-inputs">
-                                <input type="number" placeholder="Min" value={priceRange.min} onChange={e => setPriceRange(p => ({ ...p, min: e.target.value }))} />
-                                <span>-</span>
-                                <input type="number" placeholder="Max" value={priceRange.max} onChange={e => setPriceRange(p => ({ ...p, max: e.target.value }))} />
-                            </div>
+                        <div className="br-filter-field br-filter-field--price">
+                            <label>Price (₹)</label>
+                            <PriceRange value={priceRange} onChange={setPriceRange} min={0} max={priceMax} />
                         </div>
-                        <div className="br-filter-group br-filter-group--checkbox">
-                            <label className="br-checkbox">
-                                <input type="checkbox" checked={inStockOnly} onChange={e => setInStockOnly(e.target.checked)} />
-                                <span>In Stock Only</span>
-                            </label>
-                        </div>
-                        {specCols.length > 0 && (
-                            <div className="br-filter-specs">
-                                <span className="br-filter-specs__title">{CATEGORIES[category]?.name} specs</span>
-                                {specCols.map(k => {
-                                    const type = specColTypes[k]
-                                    if (type === 'numeric') {
-                                        const f = specFilters[k] || { min: '', max: '' }
-                                        return (
-                                            <div key={k} className="br-filter-group">
-                                                <label>{formatSpecKey(k)}</label>
-                                                <div className="br-price-inputs">
-                                                    <input type="number" placeholder="Min" value={f.min} onChange={e => setSpecFilter(k, { ...f, min: e.target.value })} />
-                                                    <span>-</span>
-                                                    <input type="number" placeholder="Max" value={f.max} onChange={e => setSpecFilter(k, { ...f, max: e.target.value })} />
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                    const opts = distinctValues(components.map(c => c.specs?.[k]))
-                                    const selected = specFilters[k] || []
-                                    const toggle = (v) => setSpecFilter(k, selected.includes(v) ? selected.filter(x => x !== v) : [...selected, v])
-                                    return (
-                                        <div key={k} className="br-filter-group">
-                                            <label>{formatSpecKey(k)}</label>
-                                            <div className="br-filter-opts">
-                                                {opts.length === 0 && <span className="br-filter-opts__empty">No values</span>}
-                                                {opts.map(v => (
-                                                    <label key={v} className="br-checkbox br-checkbox--sm">
-                                                        <input type="checkbox" checked={selected.includes(v)} onChange={() => toggle(v)} />
-                                                        <span>{formatSpecValue(v)}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
+                        <label className="br-checkbox br-filter-field--check">
+                            <input type="checkbox" checked={inStockOnly} onChange={e => setInStockOnly(e.target.checked)} />
+                            <span>In stock only</span>
+                        </label>
+                        {specCols.map(k => {
+                            if (specColTypes[k] === 'numeric') {
+                                const f = specFilters[k] || { min: '', max: '' }
+                                return (
+                                    <div key={k} className="br-filter-field br-filter-field--num">
+                                        <label>{formatSpecKey(k)}</label>
+                                        <div className="br-num-range">
+                                            <input type="number" placeholder="Min" value={f.min} onChange={e => setSpecFilter(k, { ...f, min: e.target.value })} />
+                                            <span>-</span>
+                                            <input type="number" placeholder="Max" value={f.max} onChange={e => setSpecFilter(k, { ...f, max: e.target.value })} />
                                         </div>
-                                    )
-                                })}
-                            </div>
-                        )}
+                                    </div>
+                                )
+                            }
+                            return (
+                                <div key={k} className="br-filter-field">
+                                    <label>{formatSpecKey(k)}</label>
+                                    <SearchableSelect
+                                        multiple
+                                        value={specFilters[k] || []}
+                                        onChange={(next) => setSpecFilter(k, next)}
+                                        options={distinctValues(components.map(c => c.specs?.[k])).map(v => ({ value: v, label: formatSpecValue(v) }))}
+                                        placeholder="Any"
+                                    />
+                                </div>
+                            )
+                        })}
+                        <div className="br-filter-bar__actions">
+                            <button className="btn btn-sm br-clear-filters" onClick={clearAllFilters}>Clear all</button>
+                        </div>
                         {mode !== 'advanced' && (
                             <p className="br-filter-hint">Switch to Advanced and pick a category for spec filters.</p>
                         )}
-                    </aside>
+                    </div>
                 )}
+
                 <div className="br-results">
                 {/* ===== RESULTS (box / rectangular share one card component) ===== */}
                 {loading ? (
@@ -368,7 +361,6 @@ export default function Browse() {
                     </div>
                 )}
                 </div>{/* /br-results */}
-                </div>{/* /br-body */}
 
                 {/* ===== DETAIL MODAL ===== */}
                 {detail && (

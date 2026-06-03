@@ -7,8 +7,8 @@
 .br-header h1 { margin-bottom: 4px; }
 .br-header__sub { font-size: .9375rem; color: var(--text-secondary); }
 
-/* Filters */
-.br-filters { margin-bottom: 32px; }
+/* Filters - locked to a sticky header bar under the fixed navbar (60px) */
+.br-filters { margin-bottom: 24px; position: sticky; top: 60px; z-index: 30; background: var(--bg); padding: 14px 0 12px; border-bottom: 1px solid var(--border); }
 .br-search-row { display: flex; gap: 10px; margin-bottom: 16px; }
 .br-search { position: relative; flex: 1; max-width: 400px; margin-bottom: 0; }
 .br-search__icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1rem; }
@@ -334,24 +334,20 @@
     .br-list-item__specs .br-spec-chip { font-size: .65rem; padding: 3px 6px; }
 }
 
-/* Body: results keep full width; the filter sidebar floats over them so opening
-   filters never resizes or shifts the table. */
-.br-body { display: block; position: relative; }
+/* Full-width filter bar: sits in the sticky header, pushes results down (never
+   overlaps or shrinks them). */
+.br-filter-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 18px; margin-top: 14px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.br-filter-field { display: flex; flex-direction: column; gap: 5px; min-width: 170px; }
+.br-filter-field > label { font-family: var(--font-mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); }
+.br-filter-field--price { min-width: 230px; }
+.br-filter-field--check { flex-direction: row; align-items: center; gap: 7px; min-width: 0; align-self: center; }
+.br-num-range { display: flex; align-items: center; gap: 6px; }
+.br-num-range input { width: 72px; padding: 6px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font: inherit; font-size: .82rem; }
+.br-filter-bar__actions { margin-left: auto; align-self: center; }
+.br-filter-hint { flex-basis: 100%; font-size: .76rem; color: var(--text-muted); margin: 0; }
 .br-results { min-width: 0; }
-.br-filter-sidebar { position: absolute; top: 0; left: 0; z-index: 30; width: 252px; background: var(--surface); border: 1px solid var(--border-hover); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 14px; display: flex; flex-direction: column; gap: 14px; max-height: calc(100vh - 120px); overflow-y: auto; }
-.br-filter-sidebar__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.br-filter-sidebar__head h3 { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; }
-.br-filter-specs { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
-.br-filter-specs__title { font-family: var(--font-mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .12em; color: var(--text-muted); }
-.br-filter-opts { display: flex; flex-direction: column; gap: 5px; max-height: 160px; overflow-y: auto; }
-.br-filter-opts__empty { color: var(--text-muted); font-size: .78rem; }
-.br-checkbox--sm { font-size: .82rem; gap: 6px; }
-.br-filter-hint { font-size: .76rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 10px; }
 .br-view-toggle.is-disabled { opacity: .4; }
 .br-view-toggle.is-disabled button { cursor: not-allowed; }
-@media (max-width: 760px) {
-    .br-filter-sidebar { width: min(300px, 92%); }
-}
 
 /* Simple / Advanced mode toggle */
 .br-mode-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
