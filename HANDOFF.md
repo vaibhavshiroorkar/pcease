@@ -4,6 +4,26 @@ _Last updated: 2026-06-03_
 
 A snapshot of where the project stands so anyone (human or agent) can pick up cleanly.
 
+## Latest session (2026-06-04): UX round 4
+
+Frontend build clean; vitest 16 pass; backend 40 pass.
+
+- **Readable text selection** - global `::selection` is now dark ink on the accent
+  (was unreadable white-on-blue).
+- **Browse filters locked to a sticky header bar** - moved out of the floating
+  overlay into a full-width `.br-filter-bar` inside the sticky toolbar (top: 60px,
+  under the navbar). It pushes results down, never overlaps or shrinks them.
+- **Reusable inputs:** `components/SearchableSelect.jsx` (type-to-search dropdown,
+  single or multi) and `components/PriceRange.jsx` (dual-thumb slider + typeable
+  ends). Used for Browse brand + categorical spec filters and the price range, and
+  the Builder component-picker brand filter. Use these for future dropdowns.
+- **Compare verdict** is now an AI summary (`/advisor/ask`) with a genuinely
+  comparative fallback message (no more singular "X is best value").
+- **Builder share link** opens the build in your own editable builder (the old
+  read-only "Viewing a shared build" mode is gone); only the published/community
+  link shows as someone's build.
+- **Home** final CTA section removed.
+
 ## Latest session (2026-06-03): UX round 3 + Community follow-up
 
 Frontend build clean; vitest **16 pass**; backend **40 pass**.

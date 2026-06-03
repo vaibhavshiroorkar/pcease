@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { FiLink, FiSave, FiX, FiPlus, FiZap, FiActivity, FiSearch, FiExternalLink, FiChevronLeft, FiShoppingCart, FiHelpCircle, FiArrowRight, FiFilter, FiSliders, FiTrash2, FiGlobe, FiBookmark, FiCheck, FiShare2, FiChevronDown } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import PriceGraph from '../components/PriceGraph'
+import SearchableSelect from '../components/SearchableSelect'
 import { useWatchlist } from '../hooks/useWatchlist'
 import './Builder.css'
 
@@ -888,12 +889,13 @@ export default function Builder() {
                                                 <div className="bd-filters-row">
                                                     <div className="bd-filter-group">
                                                         <label>Brand</label>
-                                                        <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)}>
-                                                            <option value="">All Brands</option>
-                                                            {availableBrands.map(b => (
-                                                                <option key={b} value={b}>{b}</option>
-                                                            ))}
-                                                        </select>
+                                                        <SearchableSelect
+                                                            value={brandFilter}
+                                                            onChange={setBrandFilter}
+                                                            options={availableBrands}
+                                                            allLabel="All brands"
+                                                            placeholder="All brands"
+                                                        />
                                                     </div>
                                                     <div className="bd-filter-group">
                                                         <label>Sort By</label>

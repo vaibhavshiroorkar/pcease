@@ -154,6 +154,14 @@ joins; `routers/social.py` enriches in Python).
 - **Discussions are Reddit-style threaded** (`components/Discussions.jsx`): replies nest via
   `parent_reply_id`, rendered as a collapsible tree with reply-to-comment. The backend
   (`routers/forum.py`) validates the parent belongs to the thread.
+- **Shared dropdown / range inputs.** `components/SearchableSelect.jsx` is the type-to-search
+  dropdown (single or multi-select) and `components/PriceRange.jsx` is the dual-thumb price slider
+  with typeable ends. Prefer these over raw `<select>` for long option lists. Browse filters live in
+  a sticky header bar (`.br-filter-bar` inside `.br-filters`, `top: 60px` under the fixed navbar) so
+  they never overlap the results.
+- **Builder share vs publish.** The private **Share link** (`/builder/{shareId}`) loads the build
+  into your own editable builder (a transfer). The **Publish** link (`/build/{slug}`) is the
+  read-only public view. Don't reintroduce a read-only "shared build" mode in the builder.
 - **Account deletion anonymizes, it does not purge** (`routers/auth.py::_anonymize_user`): the
   user is tombstoned (`is_deleted=true`, scrubbed email/username/password) but their threads,
   replies, and builds are kept; the forum shows them as `[deleted]`. New schema columns
