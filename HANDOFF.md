@@ -4,6 +4,23 @@ _Last updated: 2026-06-03_
 
 A snapshot of where the project stands so anyone (human or agent) can pick up cleanly.
 
+## Latest session (2026-06-04): Browse rework, vendors, deploy guide
+
+Frontend build clean; vitest 16; backend 45.
+
+- **Browse is advanced-only** now: the Simple/grid/list modes are gone, it's always
+  the connected spec table. Column-header **sorting spans every page** (lifted into
+  Browse, applied to the full filtered list before paging). Page size is a typeable
+  number (presets 10/25/50/100, default 10); **0 = All** with infinite scroll (50 at
+  a time). Filter bar: common filters row 1, spec filters row 2.
+- **Table "View" button opens the detail modal** instead of redirecting to a vendor.
+- **Compare:** parts tied at the lowest price all show green.
+- **PriceRange** dual-slider doubling fixed (transparent native tracks, thumb only).
+- **Vendors** replaced with the 8 requested Indian retailers; 3-6 attached per part
+  (`fake_db.py` + `seed_supabase.py` - re-run `seed_supabase.py` to apply in prod).
+- **`docs/DEPLOYMENT.md`**: full Vercel + Render + Supabase + AI linking guide, and a
+  section on building your own price-fetching worker/API (skeleton + schema notes).
+
 ## Latest session (2026-06-04): Support tickets
 
 Replaced the dummy Contact form with a real **ticket system** (submit + track +
