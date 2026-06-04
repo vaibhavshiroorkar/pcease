@@ -83,55 +83,84 @@ function buildAspects(build) {
 
 const rateWord = (s) => (s >= 80 ? 'Great' : s >= 60 ? 'Good' : s >= 35 ? 'OK' : 'Weak')
 
+// Slots shown as ghost rows before any build exists, so the panel has shape from
+// the start instead of popping in empty.
+const PLACEHOLDER_SLOTS = ['CPU', 'GPU', 'Motherboard', 'RAM', 'Storage', 'PSU']
+const ASPECT_LABELS = ['Gaming', 'Productivity', 'CPU / GPU balance', 'Completeness']
+
 // Right-hand panel: the selected build plus an at-a-glance quality breakdown.
-// Sits in the page's right-side space; the centre content is untouched.
+// Always present - when there's no build yet it shows placeholder slots so the
+// page keeps its two-column shape. The centre content is untouched.
 function BuildPanel({ build, onUse, onClose }) {
-    if (!build) return null
-    const aspects = buildAspects(build)
+    const isEmpty = !build
+    const aspects = isEmpty ? ASPECT_LABELS.map(label => ({ label, score: 0 })) : buildAspects(build)
     return (
-        <aside className="ad-build-panel">
+        <aside className={`ad-build-panel${isEmpty ? ' ad-build-panel--empty' : ''}`}>
             <div className="ad-build-panel__head">
                 <span className="ad-build-panel__tag"><FiPackage size={13} /> Build</span>
-                <span className="ad-build-panel__total">{formatPrice(build.total)}</span>
-                <button className="ad-build-panel__close" onClick={onClose} aria-label="Dismiss"><FiX size={15} /></button>
+                <span className="ad-build-panel__total">{isEmpty ? '—' : formatPrice(build.total)}</span>
+                {!isEmpty && (
+                    <button className="ad-build-panel__close" onClick={onClose} aria-label="Dismiss"><FiX size={15} /></button>
+                )}
             </div>
-            <h2 className="ad-build-panel__title">{build.title}</h2>
-            {build.desc && <p className="ad-build-panel__desc">{build.desc}</p>}
-            <ul className="ad-build-panel__list">
-                {build.items.map((it, i) => (
-                    <li key={i}>
-                        <span className="ad-bf-cat">{it.category}</span>
-                        <div className="ad-bf-main">
-                            <span className="ad-bf-name">{it.name}</span>
-                            {it.vendor && <span className="ad-bf-vendor">{it.vendor}</span>}
-                        </div>
-                        <span className="ad-bf-price">{formatPrice(it.price)}</span>
-                    </li>
-                ))}
+
+            <h2 className="ad-build-panel__title">{isEmpty ? 'No build yet' : build.title}</h2>
+            {(isEmpty || build.desc) && (
+                <p className="ad-build-panel__desc">
+                    {isEmpty
+                        ? 'Configure a build, ask the agent, or pick a preset — it appears here part by part.'
+                        : build.desc}
+                </p>
+            )}
+
+            <ul className={`ad-build-panel__list${isEmpty ? ' ad-build-panel__list--ghost' : ''}`}>
+                {isEmpty
+                    ? PLACEHOLDER_SLOTS.map(slot => (
+                        <li key={slot}>
+                            <span className="ad-bf-cat">{slot}</span>
+                            <div className="ad-bf-main"><span className="ad-bf-name">Not selected</span></div>
+                            <span className="ad-bf-price">—</span>
+                        </li>
+                    ))
+                    : build.items.map((it, i) => (
+                        <li key={i}>
+                            <span className="ad-bf-cat">{it.category}</span>
+                            <div className="ad-bf-main">
+                                <span className="ad-bf-name">{it.name}</span>
+                                {it.vendor && <span className="ad-bf-vendor">{it.vendor}</span>}
+                            </div>
+                            <span className="ad-bf-price">{formatPrice(it.price)}</span>
+                        </li>
+                    ))}
             </ul>
+
             <div className="ad-build-panel__footer">
                 <div className="ad-build-panel__total-row">
                     <span>Total</span>
-                    <strong>{formatPrice(build.total)}</strong>
+                    <strong>{isEmpty ? '—' : formatPrice(build.total)}</strong>
                 </div>
-                <button className="btn btn-primary" onClick={() => onUse(build)}>
+                <button className="btn btn-primary" onClick={() => onUse(build)} disabled={isEmpty}>
                     Use build <FiArrowRight size={14} />
                 </button>
             </div>
 
             {/* How good is it, by aspect (spend-distribution heuristic) */}
-            <div className="ad-aspects">
+            <div className={`ad-aspects${isEmpty ? ' ad-aspects--ghost' : ''}`}>
                 <h3>Build analysis</h3>
                 {aspects.map(a => (
                     <div key={a.label} className="ad-aspect">
                         <div className="ad-aspect__top">
                             <span className="ad-aspect__label">{a.label}</span>
-                            <span className="ad-aspect__word">{rateWord(a.score)}</span>
+                            <span className="ad-aspect__word">{isEmpty ? '—' : rateWord(a.score)}</span>
                         </div>
                         <div className="ad-aspect__bar"><div className="ad-aspect__fill" style={{ width: `${a.score}%` }} /></div>
                     </div>
                 ))}
-                <p className="ad-aspects__note">Rough guidance from how the budget is split. Use the Builder's bottleneck check for CPU/GPU pairing.</p>
+                <p className="ad-aspects__note">
+                    {isEmpty
+                        ? 'Analysis appears once you have a build.'
+                        : "Rough guidance from how the budget is split. Use the Builder's bottleneck check for CPU/GPU pairing."}
+                </p>
             </div>
         </aside>
     )

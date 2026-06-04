@@ -336,7 +336,7 @@
 
 /* Full-width filter bar: sits in the sticky header, pushes results down (never
    overlaps or shrinks them). Common filters on row 1, spec filters from row 2. */
-.br-filter-bar { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.br-filter-bar { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; margin-bottom: 16px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
 .br-filter-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; align-items: start; }
 .br-filter-row--specs { border-top: 1px solid var(--border); padding-top: 14px; }
 .br-filter-row__title { grid-column: 1 / -1; font-family: var(--font-mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .12em; color: var(--text-muted); }

@@ -4,6 +4,20 @@ _Last updated: 2026-06-03_
 
 A snapshot of where the project stands so anyone (human or agent) can pick up cleanly.
 
+## Latest session (2026-06-04): Browse + Advisor spacing polish
+
+Frontend build clean.
+
+- **Browse:** added a gap between the filter bar and the category pills
+  (`.br-filter-bar` got `margin-bottom: 16px`) so the open filter panel no longer
+  butts up against the chips.
+- **Advisor right build panel** now renders **from the start**, even with no build:
+  it shows ghost placeholder slots (CPU/GPU/Motherboard/RAM/Storage/PSU), a muted
+  "No build yet" title, a disabled "Use build", and zeroed analysis bars. Once a
+  build loads it fills in as before. De-cramped throughout: panel widened to 372px /
+  24px padding, looser row + section spacing, footer divider, last-row border
+  removed. `BuildPanel` no longer early-returns on empty (`Advisor.jsx`).
+
 ## Latest session (2026-06-04): Browse rework, vendors, deploy guide
 
 Frontend build clean; vitest 16; backend 45.
