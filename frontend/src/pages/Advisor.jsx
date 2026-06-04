@@ -267,7 +267,7 @@ export default function Advisor() {
 
     return (
         <main className="page">
-            <div className="container">
+            <div className="container ad-container">
                 <header className="ad-header">
                     <h1>Build Advisor</h1>
                     <p className="ad-header__sub">Find your perfect PC build - manually configure, chat with AI, or pick a preset.</p>

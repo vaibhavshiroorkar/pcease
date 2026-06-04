@@ -14,9 +14,14 @@ Frontend build clean.
 - **Advisor right build panel** now renders **from the start**, even with no build:
   it shows ghost placeholder slots (CPU/GPU/Motherboard/RAM/Storage/PSU), a muted
   "No build yet" title, a disabled "Use build", and zeroed analysis bars. Once a
-  build loads it fills in as before. De-cramped throughout: panel widened to 372px /
-  24px padding, looser row + section spacing, footer divider, last-row border
-  removed. `BuildPanel` no longer early-returns on empty (`Advisor.jsx`).
+  build loads it fills in as before. De-cramped throughout: panel 400px / 24px
+  padding, looser row + section spacing, footer divider, last-row border removed.
+  `BuildPanel` no longer early-returns on empty (`Advisor.jsx`).
+- **Advisor uses a wider work area.** The page container is widened to 1340px
+  (`.ad-container` on the Advisor `.container`) and the centre column now **flexes
+  to fill** the space the 400px panel doesn't take (no fixed cap), so on big screens
+  the layout no longer hugs the middle with dead space on the right. Stacks to a
+  single column under 980px.
 
 ## Latest session (2026-06-04): Browse rework, vendors, deploy guide
 
