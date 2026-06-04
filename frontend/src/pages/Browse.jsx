@@ -205,6 +205,70 @@ export default function Browse() {
                         </button>
                     </div>
 
+                    {/* ===== FILTER BAR: common filters on row 1, spec filters from row 2 ===== */}
+                    {showFilters && (
+                        <div className="br-filter-bar">
+                            <div className="br-filter-row br-filter-row--common">
+                                <div className="br-filter-field">
+                                    <label>Brand</label>
+                                    <SearchableSelect
+                                        value={brandFilter}
+                                        onChange={setBrandFilter}
+                                        options={availableBrands}
+                                        allLabel={`All brands (${availableBrands.length})`}
+                                        placeholder="All brands"
+                                    />
+                                </div>
+                                <div className="br-filter-field br-filter-field--price">
+                                    <label>Price (₹)</label>
+                                    <PriceRange value={priceRange} onChange={setPriceRange} min={0} max={priceMax} />
+                                </div>
+                                <label className="br-checkbox br-filter-field--check">
+                                    <input type="checkbox" checked={inStockOnly} onChange={e => setInStockOnly(e.target.checked)} />
+                                    <span>In stock only</span>
+                                </label>
+                                <div className="br-filter-bar__actions">
+                                    <button className="btn btn-sm br-clear-filters" onClick={clearAllFilters}>Clear all</button>
+                                </div>
+                            </div>
+
+                            {specCols.length > 0 ? (
+                                <div className="br-filter-row br-filter-row--specs">
+                                    <span className="br-filter-row__title">{CATEGORIES[category]?.name} specs</span>
+                                    {specCols.map(k => {
+                                        if (specColTypes[k] === 'numeric') {
+                                            const f = specFilters[k] || { min: '', max: '' }
+                                            return (
+                                                <div key={k} className="br-filter-field br-filter-field--num">
+                                                    <label>{formatSpecKey(k)}</label>
+                                                    <div className="br-num-range">
+                                                        <input type="number" placeholder="Min" value={f.min} onChange={e => setSpecFilter(k, { ...f, min: e.target.value })} />
+                                                        <span>-</span>
+                                                        <input type="number" placeholder="Max" value={f.max} onChange={e => setSpecFilter(k, { ...f, max: e.target.value })} />
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                        return (
+                                            <div key={k} className="br-filter-field">
+                                                <label>{formatSpecKey(k)}</label>
+                                                <SearchableSelect
+                                                    multiple
+                                                    value={specFilters[k] || []}
+                                                    onChange={(next) => setSpecFilter(k, next)}
+                                                    options={distinctValues(components.map(c => c.specs?.[k])).map(v => ({ value: v, label: formatSpecValue(v) }))}
+                                                    placeholder="Any"
+                                                />
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            ) : (
+                                <p className="br-filter-hint">Pick a category to filter by its specs.</p>
+                            )}
+                        </div>
+                    )}
+
                     <div className="br-chips">
                         <button className={`chip ${!category ? 'active' : ''}`} onClick={() => handleCategoryChange('')}>All</button>
                         {Object.entries(CATEGORIES).map(([key, cat]) => (
@@ -234,70 +298,6 @@ export default function Browse() {
                         </div>
                     </div>
                 </section>
-
-                {/* ===== FILTER BAR: common filters on row 1, spec filters from row 2 ===== */}
-                {showFilters && (
-                    <div className="br-filter-bar">
-                        <div className="br-filter-row br-filter-row--common">
-                            <div className="br-filter-field">
-                                <label>Brand</label>
-                                <SearchableSelect
-                                    value={brandFilter}
-                                    onChange={setBrandFilter}
-                                    options={availableBrands}
-                                    allLabel={`All brands (${availableBrands.length})`}
-                                    placeholder="All brands"
-                                />
-                            </div>
-                            <div className="br-filter-field br-filter-field--price">
-                                <label>Price (₹)</label>
-                                <PriceRange value={priceRange} onChange={setPriceRange} min={0} max={priceMax} />
-                            </div>
-                            <label className="br-checkbox br-filter-field--check">
-                                <input type="checkbox" checked={inStockOnly} onChange={e => setInStockOnly(e.target.checked)} />
-                                <span>In stock only</span>
-                            </label>
-                            <div className="br-filter-bar__actions">
-                                <button className="btn btn-sm br-clear-filters" onClick={clearAllFilters}>Clear all</button>
-                            </div>
-                        </div>
-
-                        {specCols.length > 0 ? (
-                            <div className="br-filter-row br-filter-row--specs">
-                                <span className="br-filter-row__title">{CATEGORIES[category]?.name} specs</span>
-                                {specCols.map(k => {
-                                    if (specColTypes[k] === 'numeric') {
-                                        const f = specFilters[k] || { min: '', max: '' }
-                                        return (
-                                            <div key={k} className="br-filter-field br-filter-field--num">
-                                                <label>{formatSpecKey(k)}</label>
-                                                <div className="br-num-range">
-                                                    <input type="number" placeholder="Min" value={f.min} onChange={e => setSpecFilter(k, { ...f, min: e.target.value })} />
-                                                    <span>-</span>
-                                                    <input type="number" placeholder="Max" value={f.max} onChange={e => setSpecFilter(k, { ...f, max: e.target.value })} />
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                    return (
-                                        <div key={k} className="br-filter-field">
-                                            <label>{formatSpecKey(k)}</label>
-                                            <SearchableSelect
-                                                multiple
-                                                value={specFilters[k] || []}
-                                                onChange={(next) => setSpecFilter(k, next)}
-                                                options={distinctValues(components.map(c => c.specs?.[k])).map(v => ({ value: v, label: formatSpecValue(v) }))}
-                                                placeholder="Any"
-                                            />
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        ) : (
-                            <p className="br-filter-hint">Pick a category to filter by its specs.</p>
-                        )}
-                    </div>
-                )}
 
                 <div className="br-results">
                 {loading ? (
