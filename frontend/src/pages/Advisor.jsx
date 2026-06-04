@@ -56,17 +56,44 @@ function normalizeBuild(raw, kind) {
     }
 }
 
-// Floating panel: shows whichever build is currently selected, for every tab.
-// It overlays the page (does not take layout width) so the main content keeps
-// its full size whether or not a build is showing.
+// Heuristic "how good is this build, by aspect" from the spend distribution.
+// Lightweight on purpose - it reads the items we already have (category + price).
+function buildAspects(build) {
+    const items = build.items || []
+    const total = items.reduce((s, i) => s + (i.price || 0), 0) || 1
+    const byCat = {}
+    items.forEach(i => { const c = (i.category || '').toLowerCase(); byCat[c] = (byCat[c] || 0) + (i.price || 0) })
+    const cpu = byCat.cpu || 0, gpu = byCat.gpu || 0
+    const clamp = (n) => Math.max(0, Math.min(100, Math.round(n)))
+
+    const gaming = clamp((gpu / total) * 100 * 2.2)
+    const productivity = clamp((cpu / total) * 100 * 3)
+    let balance = 55
+    if (cpu && gpu) balance = clamp(100 - Math.abs((cpu / gpu) - 0.6) * 110)
+    const core = ['cpu', 'gpu', 'motherboard', 'ram', 'storage', 'psu']
+    const completeness = clamp((core.filter(c => byCat[c]).length / core.length) * 100)
+
+    return [
+        { label: 'Gaming', score: gaming },
+        { label: 'Productivity', score: productivity },
+        { label: 'CPU / GPU balance', score: balance },
+        { label: 'Completeness', score: completeness },
+    ]
+}
+
+const rateWord = (s) => (s >= 80 ? 'Great' : s >= 60 ? 'Good' : s >= 35 ? 'OK' : 'Weak')
+
+// Right-hand panel: the selected build plus an at-a-glance quality breakdown.
+// Sits in the page's right-side space; the centre content is untouched.
 function BuildPanel({ build, onUse, onClose }) {
     if (!build) return null
+    const aspects = buildAspects(build)
     return (
         <aside className="ad-build-panel">
             <div className="ad-build-panel__head">
                 <span className="ad-build-panel__tag"><FiPackage size={13} /> Build</span>
                 <span className="ad-build-panel__total">{formatPrice(build.total)}</span>
-                <button className="ad-build-panel__close" onClick={onClose} aria-label="Close build panel"><FiX size={15} /></button>
+                <button className="ad-build-panel__close" onClick={onClose} aria-label="Dismiss"><FiX size={15} /></button>
             </div>
             <h2 className="ad-build-panel__title">{build.title}</h2>
             {build.desc && <p className="ad-build-panel__desc">{build.desc}</p>}
@@ -90,6 +117,21 @@ function BuildPanel({ build, onUse, onClose }) {
                 <button className="btn btn-primary" onClick={() => onUse(build)}>
                     Use build <FiArrowRight size={14} />
                 </button>
+            </div>
+
+            {/* How good is it, by aspect (spend-distribution heuristic) */}
+            <div className="ad-aspects">
+                <h3>Build analysis</h3>
+                {aspects.map(a => (
+                    <div key={a.label} className="ad-aspect">
+                        <div className="ad-aspect__top">
+                            <span className="ad-aspect__label">{a.label}</span>
+                            <span className="ad-aspect__word">{rateWord(a.score)}</span>
+                        </div>
+                        <div className="ad-aspect__bar"><div className="ad-aspect__fill" style={{ width: `${a.score}%` }} /></div>
+                    </div>
+                ))}
+                <p className="ad-aspects__note">Rough guidance from how the budget is split. Use the Builder's bottleneck check for CPU/GPU pairing.</p>
             </div>
         </aside>
     )
@@ -219,8 +261,8 @@ export default function Advisor() {
                 </div>
 
                 {/* Main content keeps full width; the build shows in a floating panel. */}
-                <div className="ad-split">
-                    <div className="ad-split__left">{/* full-width content for all tabs */}
+                <div className={`ad-split${shownBuild ? ' ad-split--with-build' : ''}`}>
+                    <div className="ad-split__left">{/* consistent-width content for all tabs */}
 
                         {/* ==================== MANUAL TAB ==================== */}
                         {tab === 'manual' && (
@@ -471,9 +513,9 @@ export default function Advisor() {
                         )}
 
                     </div>
-                </div>
 
-                <BuildPanel build={shownBuild} onUse={useBuild} onClose={() => setShownBuild(null)} />
+                    <BuildPanel build={shownBuild} onUse={useBuild} onClose={() => setShownBuild(null)} />
+                </div>
             </div>
         </main>
     )

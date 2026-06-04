@@ -352,8 +352,8 @@
 .br-results { min-width: 0; }
 
 /* page-size input */
-.br-pagesize { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--text-muted); }
-.br-pagesize input { width: 58px; padding: 5px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font: inherit; font-size: .82rem; }
+.br-pagesize { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--text-muted); white-space: nowrap; }
+.br-pagesize input { width: 76px; padding: 6px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font: inherit; font-size: .85rem; text-align: center; }
 
 .br-loading { display: flex; justify-content: center; padding: 60px 0; }
 .br-infinite-sentinel { height: 1px; width: 100%; }
