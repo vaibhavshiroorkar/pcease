@@ -179,8 +179,8 @@ _CATEGORIES = [
     (4, "ram", "Memory"), (5, "storage", "Storage"), (6, "psu", "Power Supply"),
     (7, "case", "Case"), (8, "cooler", "CPU Cooler"),
 ]
-_VENDORS = ["MDComputers", "PrimeABGB", "Amazon.in", "Flipkart", "Vedant Computers",
-            "PC Studio", "The IT Depot", "Compify", "Clarion"]
+_VENDORS = ["PrimeABGB", "EliteHubs", "MDComputers", "Vishal Peripherals",
+            "Computech Store", "TLG Gaming", "Vedant Computers", "ITDepot"]
 
 _RNG = random.Random(1729)   # fixed seed -> stable catalog across restarts
 
@@ -191,8 +191,9 @@ def _money(base):
 
 
 def _prices(base):
-    """1-3 random vendors, each with a slightly different price."""
-    n = _RNG.randint(1, 3)
+    """3-6 random vendors, each with a slightly different price, so every part has
+    a real spread to compare across retailers."""
+    n = _RNG.randint(3, 6)
     return [(v, _money(base)) for v in _RNG.sample(_VENDORS, n)]
 
 

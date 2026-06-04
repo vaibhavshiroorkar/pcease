@@ -1,40 +1,15 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { API, formatPrice, getLowestPrice, getBestVendor, CATEGORIES, formatSpecKey, formatSpecValue } from '../services/api'
-import { columnsForCategory, inferColumnType, distinctValues, applySpecFilters } from '../services/specColumns'
-import { FiSearch, FiX, FiExternalLink, FiCheck, FiBookmark, FiGrid, FiList, FiShoppingCart, FiInfo, FiChevronRight, FiSliders, FiColumns } from 'react-icons/fi'
+import { API, formatPrice, getLowestPrice, CATEGORIES, formatSpecKey, formatSpecValue } from '../services/api'
+import { columnsForCategory, inferColumnType, distinctValues, applySpecFilters, compareValues } from '../services/specColumns'
+import { FiSearch, FiX, FiExternalLink, FiCheck, FiBookmark, FiShoppingCart, FiInfo, FiSliders } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import PriceGraph from '../components/PriceGraph'
-import PartCard from '../components/PartCard'
 import SpecTable from '../components/SpecTable'
 import SearchableSelect from '../components/SearchableSelect'
 import PriceRange from '../components/PriceRange'
 import { useWatchlist } from '../hooks/useWatchlist'
 import './Browse.css'
-
-// Extracted skeleton components for reuse
-const CardSkeleton = () => (
-    <div className="br-card br-card--skeleton">
-        <div className="skeleton" style={{ height: 14, width: '35%', marginBottom: 10 }} />
-        <div className="skeleton" style={{ height: 16, width: '85%', marginBottom: 6 }} />
-        <div className="skeleton" style={{ height: 12, width: '30%', marginBottom: 14 }} />
-        <div style={{ display: 'flex', gap: 5, marginBottom: 14 }}>
-            <div className="skeleton" style={{ height: 22, width: '30%', borderRadius: 5 }} />
-            <div className="skeleton" style={{ height: 22, width: '35%', borderRadius: 5 }} />
-        </div>
-        <div className="skeleton" style={{ height: 20, width: '40%', marginBottom: 12 }} />
-        <div className="skeleton" style={{ height: 34, width: '100%', borderRadius: 8 }} />
-    </div>
-)
-
-const ListSkeleton = () => (
-    <div className="br-list-item br-list-item--skeleton">
-        <div style={{ flex: 1 }}><div className="skeleton" style={{ height: 14, width: '40%', marginBottom: 8 }} /><div className="skeleton" style={{ height: 16, width: '75%' }} /></div>
-        <div style={{ flex: 1, display: 'flex', gap: 4, flexWrap: 'wrap' }}><div className="skeleton" style={{ height: 22, width: '28%', borderRadius: 5 }} /><div className="skeleton" style={{ height: 22, width: '32%', borderRadius: 5 }} /></div>
-        <div style={{ width: 100 }}><div className="skeleton" style={{ height: 20, width: '80%' }} /></div>
-        <div style={{ width: 80 }}><div className="skeleton" style={{ height: 30, width: '100%', borderRadius: 7 }} /></div>
-    </div>
-)
 
 const EmptyState = ({ error }) => (
     <div className="br-empty">
@@ -54,13 +29,14 @@ export default function Browse() {
     const [error, setError] = useState(null)
     const [search, setSearch] = useState(searchParams.get('search') || '')
     const [category, setCategory] = useState(searchParams.get('category') || '')
-    const [sort, setSort] = useState('price-low')
+    const [sort] = useState('price-low')   // API fetch order; column headers do the real sorting
     const [detail, setDetail] = useState(null)
-    const [viewMode, setViewMode] = useState('list')
-    const [mode, setMode] = useState(() => localStorage.getItem('pcease_browse_mode') || 'simple')
-    const [pageSize, setPageSize] = useState(30)
+    const [pageSize, setPageSize] = useState(10)
     const [page, setPage] = useState(1)
-    
+    const [tableSort, setTableSort] = useState({ key: '__price', dir: 'asc' })
+    const [infCount, setInfCount] = useState(50)   // for "All" mode: rows shown so far
+    const sentinelRef = useRef(null)
+
     // Advanced filters
     const [showFilters, setShowFilters] = useState(false)
     const [brandFilter, setBrandFilter] = useState('')
@@ -77,17 +53,15 @@ export default function Browse() {
             .finally(() => setLoading(false))
     }, [category, search, sort])
 
-    useEffect(() => { localStorage.setItem('pcease_browse_mode', mode) }, [mode])
-
     // Get unique brands from loaded components
     const availableBrands = useMemo(() => {
         const brands = new Set(components.map(c => c.brand).filter(Boolean))
         return Array.from(brands).sort()
     }, [components])
 
-    // Per-spec filters only apply in Advanced mode with a specific category chosen,
-    // and only for spec columns that actually have data in the loaded components.
-    const specCols = (mode === 'advanced' && category)
+    // Per-spec filters apply when a specific category is chosen, for spec columns
+    // that actually have data in the loaded components.
+    const specCols = category
         ? columnsForCategory(category).filter(k => components.some(c => c.specs?.[k] != null))
         : []
     const specColTypes = useMemo(() => {
@@ -133,16 +107,51 @@ export default function Browse() {
         return list
     }, [components, brandFilter, priceRange, inStockOnly, specFilters, specColTypes])
 
-    // Display pagination: only render the current page's slice
-    const totalPages = Math.max(1, Math.ceil(filteredComponents.length / pageSize))
-    const pagedComponents = useMemo(
-        () => filteredComponents.slice((page - 1) * pageSize, page * pageSize),
-        [filteredComponents, page, pageSize],
-    )
-    // Jump back to page 1 whenever the result set or page size changes
-    useEffect(() => { setPage(1) }, [category, search, sort, brandFilter, priceRange, inStockOnly, specFilters, pageSize])
+    // Sort the WHOLE filtered list (so sorting spans every page, not just the
+    // visible one) by the active column, then paginate.
+    const sortedComponents = useMemo(() => {
+        const { key, dir } = tableSort
+        const mul = dir === 'asc' ? 1 : -1
+        const list = [...filteredComponents]
+        list.sort((a, b) => {
+            let cmp
+            if (key === '__price') cmp = (getLowestPrice(a) ?? Infinity) - (getLowestPrice(b) ?? Infinity)
+            else if (key === '__name') cmp = String(a.name).localeCompare(String(b.name))
+            else if (key === '__brand') cmp = String(a.brand || '').localeCompare(String(b.brand || ''))
+            else cmp = compareValues(a.specs?.[key], b.specs?.[key], specColTypes[key])
+            return cmp * mul
+        })
+        return list
+    }, [filteredComponents, tableSort, specColTypes])
+
+    // pageSize 0 = "All": render progressively (infinite scroll, 50 more at a time).
+    const allMode = pageSize === 0
+    const totalPages = allMode ? 1 : Math.max(1, Math.ceil(sortedComponents.length / pageSize))
+    const pagedComponents = useMemo(() => {
+        if (allMode) return sortedComponents.slice(0, infCount)
+        return sortedComponents.slice((page - 1) * pageSize, page * pageSize)
+    }, [sortedComponents, page, pageSize, allMode, infCount])
+
+    // Reset paging when the result set, page size, or sort changes.
+    useEffect(() => { setPage(1); setInfCount(50) }, [category, search, brandFilter, priceRange, inStockOnly, specFilters, pageSize, tableSort])
     // Per-spec filters are category-specific; drop them when the category changes.
     useEffect(() => { setSpecFilters({}) }, [category])
+
+    // Infinite scroll for "All": grow the visible count as the sentinel nears view.
+    useEffect(() => {
+        if (!allMode) return
+        const el = sentinelRef.current
+        if (!el) return
+        const obs = new IntersectionObserver(
+            (entries) => { if (entries[0].isIntersecting) setInfCount(c => Math.min(c + 50, sortedComponents.length)) },
+            { rootMargin: '400px' },
+        )
+        obs.observe(el)
+        return () => obs.disconnect()
+    }, [allMode, sortedComponents.length])
+
+    const toggleSort = useCallback((key) =>
+        setTableSort(s => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' })), [])
 
     const clearAllFilters = useCallback(() => {
         setBrandFilter('')
@@ -209,156 +218,127 @@ export default function Browse() {
                                 : `${components.length} results`}
                         </span>
                         <div className="br-meta__right">
-                            <div className="br-mode-toggle">
-                                <button className={mode === 'simple' ? 'active' : ''} onClick={() => setMode('simple')}>Simple</button>
-                                <button className={mode === 'advanced' ? 'active' : ''} onClick={() => setMode('advanced')}>
-                                    <FiColumns size={13} /> Advanced
-                                </button>
-                            </div>
-                            <select className="br-pagesize" value={pageSize} onChange={e => setPageSize(Number(e.target.value))} aria-label="Results per page" title="Results per page">
-                                <option value={15}>15 / page</option>
-                                <option value={30}>30 / page</option>
-                                <option value={60}>60 / page</option>
-                                <option value={120}>120 / page</option>
-                            </select>
-                            <select value={sort} onChange={e => setSort(e.target.value)}>
-                                <option value="price-low">Price: Low to High</option>
-                                <option value="price-high">Price: High to Low</option>
-                                <option value="name">Name: A-Z</option>
-                            </select>
-                            <div className={`br-view-toggle${mode === 'advanced' ? ' is-disabled' : ''}`}>
-                                <button className={viewMode === 'grid' ? 'active' : ''} disabled={mode === 'advanced'} onClick={() => setViewMode('grid')} title={mode === 'advanced' ? 'Grid/list applies to Simple view' : 'Grid view'}><FiGrid size={15} /></button>
-                                <button className={viewMode === 'list' ? 'active' : ''} disabled={mode === 'advanced'} onClick={() => setViewMode('list')} title={mode === 'advanced' ? 'Grid/list applies to Simple view' : 'List view'}><FiList size={15} /></button>
-                            </div>
+                            <label className="br-pagesize">
+                                <input
+                                    type="number" min="0" step="5" list="br-page-sizes"
+                                    value={pageSize}
+                                    onChange={e => setPageSize(Math.max(0, Number(e.target.value) || 0))}
+                                    title="Rows per page (0 = show all, infinite scroll)"
+                                    aria-label="Rows per page"
+                                />
+                                <span>/ page{pageSize === 0 ? ' (all)' : ''}</span>
+                                <datalist id="br-page-sizes">
+                                    <option value="10" /><option value="25" /><option value="50" /><option value="100" /><option value="0" />
+                                </datalist>
+                            </label>
                         </div>
                     </div>
                 </section>
 
-                {/* ===== FILTER BAR (full-width, in flow, never overlaps results) ===== */}
+                {/* ===== FILTER BAR: common filters on row 1, spec filters from row 2 ===== */}
                 {showFilters && (
                     <div className="br-filter-bar">
-                        <div className="br-filter-field">
-                            <label>Brand</label>
-                            <SearchableSelect
-                                value={brandFilter}
-                                onChange={setBrandFilter}
-                                options={availableBrands}
-                                allLabel={`All brands (${availableBrands.length})`}
-                                placeholder="All brands"
-                            />
+                        <div className="br-filter-row br-filter-row--common">
+                            <div className="br-filter-field">
+                                <label>Brand</label>
+                                <SearchableSelect
+                                    value={brandFilter}
+                                    onChange={setBrandFilter}
+                                    options={availableBrands}
+                                    allLabel={`All brands (${availableBrands.length})`}
+                                    placeholder="All brands"
+                                />
+                            </div>
+                            <div className="br-filter-field br-filter-field--price">
+                                <label>Price (₹)</label>
+                                <PriceRange value={priceRange} onChange={setPriceRange} min={0} max={priceMax} />
+                            </div>
+                            <label className="br-checkbox br-filter-field--check">
+                                <input type="checkbox" checked={inStockOnly} onChange={e => setInStockOnly(e.target.checked)} />
+                                <span>In stock only</span>
+                            </label>
+                            <div className="br-filter-bar__actions">
+                                <button className="btn btn-sm br-clear-filters" onClick={clearAllFilters}>Clear all</button>
+                            </div>
                         </div>
-                        <div className="br-filter-field br-filter-field--price">
-                            <label>Price (₹)</label>
-                            <PriceRange value={priceRange} onChange={setPriceRange} min={0} max={priceMax} />
-                        </div>
-                        <label className="br-checkbox br-filter-field--check">
-                            <input type="checkbox" checked={inStockOnly} onChange={e => setInStockOnly(e.target.checked)} />
-                            <span>In stock only</span>
-                        </label>
-                        {specCols.map(k => {
-                            if (specColTypes[k] === 'numeric') {
-                                const f = specFilters[k] || { min: '', max: '' }
-                                return (
-                                    <div key={k} className="br-filter-field br-filter-field--num">
-                                        <label>{formatSpecKey(k)}</label>
-                                        <div className="br-num-range">
-                                            <input type="number" placeholder="Min" value={f.min} onChange={e => setSpecFilter(k, { ...f, min: e.target.value })} />
-                                            <span>-</span>
-                                            <input type="number" placeholder="Max" value={f.max} onChange={e => setSpecFilter(k, { ...f, max: e.target.value })} />
+
+                        {specCols.length > 0 ? (
+                            <div className="br-filter-row br-filter-row--specs">
+                                <span className="br-filter-row__title">{CATEGORIES[category]?.name} specs</span>
+                                {specCols.map(k => {
+                                    if (specColTypes[k] === 'numeric') {
+                                        const f = specFilters[k] || { min: '', max: '' }
+                                        return (
+                                            <div key={k} className="br-filter-field br-filter-field--num">
+                                                <label>{formatSpecKey(k)}</label>
+                                                <div className="br-num-range">
+                                                    <input type="number" placeholder="Min" value={f.min} onChange={e => setSpecFilter(k, { ...f, min: e.target.value })} />
+                                                    <span>-</span>
+                                                    <input type="number" placeholder="Max" value={f.max} onChange={e => setSpecFilter(k, { ...f, max: e.target.value })} />
+                                                </div>
+                                            </div>
+                                        )
+                                    }
+                                    return (
+                                        <div key={k} className="br-filter-field">
+                                            <label>{formatSpecKey(k)}</label>
+                                            <SearchableSelect
+                                                multiple
+                                                value={specFilters[k] || []}
+                                                onChange={(next) => setSpecFilter(k, next)}
+                                                options={distinctValues(components.map(c => c.specs?.[k])).map(v => ({ value: v, label: formatSpecValue(v) }))}
+                                                placeholder="Any"
+                                            />
                                         </div>
-                                    </div>
-                                )
-                            }
-                            return (
-                                <div key={k} className="br-filter-field">
-                                    <label>{formatSpecKey(k)}</label>
-                                    <SearchableSelect
-                                        multiple
-                                        value={specFilters[k] || []}
-                                        onChange={(next) => setSpecFilter(k, next)}
-                                        options={distinctValues(components.map(c => c.specs?.[k])).map(v => ({ value: v, label: formatSpecValue(v) }))}
-                                        placeholder="Any"
-                                    />
-                                </div>
-                            )
-                        })}
-                        <div className="br-filter-bar__actions">
-                            <button className="btn btn-sm br-clear-filters" onClick={clearAllFilters}>Clear all</button>
-                        </div>
-                        {mode !== 'advanced' && (
-                            <p className="br-filter-hint">Switch to Advanced and pick a category for spec filters.</p>
+                                    )
+                                })}
+                            </div>
+                        ) : (
+                            <p className="br-filter-hint">Pick a category to filter by its specs.</p>
                         )}
                     </div>
                 )}
 
                 <div className="br-results">
-                {/* ===== RESULTS (box / rectangular share one card component) ===== */}
                 {loading ? (
-                    <section className={viewMode === 'grid' ? 'pc-grid' : 'pc-list'}>
-                        {Array(viewMode === 'grid' ? 12 : 8).fill(0).map((_, i) =>
-                            viewMode === 'grid' ? <CardSkeleton key={i} /> : <ListSkeleton key={i} />
-                        )}
-                    </section>
+                    <div className="br-loading"><div className="spinner" /></div>
                 ) : filteredComponents.length === 0 ? (
                     <EmptyState error={error} />
-                ) : mode === 'advanced' ? (
+                ) : (
                     <SpecTable
                         items={pagedComponents}
                         category={category}
+                        sort={tableSort}
+                        onSort={toggleSort}
                         onOpen={item => setDetail(item)}
                         hasWatch={id => watchIds.has(id)}
                         toggleWatch={handleToggleWatch}
                     />
-                ) : (
-                    <section className={viewMode === 'grid' ? 'pc-grid' : 'pc-list'}>
-                        {pagedComponents.map(item => {
-                            const isSaved = watchIds.has(item.id)
-                            const bestVendor = getBestVendor(item)
-                            const corner = (
-                                <button
-                                    className={`pc-corner${isSaved ? ' is-active' : ''}`}
-                                    onClick={e => { e.stopPropagation(); handleToggleWatch(item) }}
-                                    title={isSaved ? 'In your watchlist' : 'Save to watchlist'}
-                                >
-                                    {isSaved ? <FiCheck size={13} /> : <FiBookmark size={13} />}
-                                </button>
-                            )
-                            const actions = viewMode === 'grid'
-                                ? <span className="pc-view-details">View Details <FiChevronRight size={13} /></span>
-                                : bestVendor?.url
-                                    ? <a href={bestVendor.url} target="_blank" rel="noreferrer" className="btn btn-sm btn-primary" onClick={e => e.stopPropagation()}>
-                                        <FiExternalLink size={12} /> Buy
-                                      </a>
-                                    : <button className="btn btn-sm" onClick={() => setDetail(item)}>View</button>
-                            return (
-                                <PartCard
-                                    key={item.id}
-                                    item={item}
-                                    variant={viewMode === 'grid' ? 'grid' : 'list'}
-                                    highlighted={isSaved}
-                                    onOpen={() => setDetail(item)}
-                                    corner={corner}
-                                    actions={actions}
-                                />
-                            )
-                        })}
-                    </section>
                 )}
 
-                {/* ===== PAGINATION ===== */}
+                {/* ===== PAGINATION / infinite-scroll sentinel ===== */}
                 {!loading && filteredComponents.length > 0 && (
-                    <div className="br-pagination">
-                        <span className="br-pagination__info">
-                            Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filteredComponents.length)} of {filteredComponents.length}
-                        </span>
-                        {totalPages > 1 && (
-                            <div className="br-pagination__controls">
-                                <button className="btn btn-sm" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Prev</button>
-                                <span className="br-pagination__page">Page {page} of {totalPages}</span>
-                                <button className="btn btn-sm" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Next</button>
-                            </div>
-                        )}
-                    </div>
+                    allMode ? (
+                        <div className="br-pagination">
+                            <span className="br-pagination__info">
+                                Showing {Math.min(infCount, sortedComponents.length)} of {sortedComponents.length}
+                            </span>
+                            {infCount < sortedComponents.length && <div ref={sentinelRef} className="br-infinite-sentinel" />}
+                        </div>
+                    ) : (
+                        <div className="br-pagination">
+                            <span className="br-pagination__info">
+                                Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, sortedComponents.length)} of {sortedComponents.length}
+                            </span>
+                            {totalPages > 1 && (
+                                <div className="br-pagination__controls">
+                                    <button className="btn btn-sm" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Prev</button>
+                                    <span className="br-pagination__page">Page {page} of {totalPages}</span>
+                                    <button className="btn btn-sm" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Next</button>
+                                </div>
+                            )}
+                        </div>
+                    )
                 )}
                 </div>{/* /br-results */}
 

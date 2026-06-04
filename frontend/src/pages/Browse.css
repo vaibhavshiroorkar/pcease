@@ -335,22 +335,28 @@
 }
 
 /* Full-width filter bar: sits in the sticky header, pushes results down (never
-   overlaps or shrinks them). Grid so every field aligns on a clean baseline with
-   consistent control heights. */
-.br-filter-bar { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; align-items: start; margin-top: 14px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+   overlaps or shrinks them). Common filters on row 1, spec filters from row 2. */
+.br-filter-bar { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.br-filter-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; align-items: start; }
+.br-filter-row--specs { border-top: 1px solid var(--border); padding-top: 14px; }
+.br-filter-row__title { grid-column: 1 / -1; font-family: var(--font-mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .12em; color: var(--text-muted); }
 .br-filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .br-filter-field > label { font-family: var(--font-mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); line-height: 1.2; }
 .br-filter-field--price { grid-column: span 2; }
 .br-filter-field--check { flex-direction: row; align-items: center; gap: 8px; height: 38px; margin-top: 19px; white-space: nowrap; }
 .br-num-range { display: flex; align-items: center; gap: 6px; }
 .br-num-range input { width: 100%; min-width: 0; height: 38px; padding: 6px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font: inherit; font-size: .82rem; }
-/* consistent control height across the bar */
 .br-filter-bar .ss__control { min-height: 38px; }
-.br-filter-bar__actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; padding-top: 2px; border-top: 1px solid var(--border); margin-top: 2px; }
-.br-filter-hint { grid-column: 1 / -1; font-size: .76rem; color: var(--text-muted); margin: 0; }
+.br-filter-bar__actions { margin-left: auto; align-self: end; margin-top: 19px; }
+.br-filter-hint { font-size: .76rem; color: var(--text-muted); margin: 0; }
 .br-results { min-width: 0; }
-.br-view-toggle.is-disabled { opacity: .4; }
-.br-view-toggle.is-disabled button { cursor: not-allowed; }
+
+/* page-size input */
+.br-pagesize { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--text-muted); }
+.br-pagesize input { width: 58px; padding: 5px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font: inherit; font-size: .82rem; }
+
+.br-loading { display: flex; justify-content: center; padding: 60px 0; }
+.br-infinite-sentinel { height: 1px; width: 100%; }
 
 /* Simple / Advanced mode toggle */
 .br-mode-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }

@@ -189,6 +189,15 @@ export default function Compare() {
         }, 0)
         : 0
 
+    // Lowest price across all compared parts; ties are all marked best (green).
+    const cheapestPrice = filledSlots.length
+        ? Math.min(...filledSlots.map(s => getLowestPrice(s) ?? Infinity))
+        : Infinity
+    const isCheapest = (slot) => {
+        const p = getLowestPrice(slot)
+        return filledSlots.length > 1 && p != null && p === cheapestPrice
+    }
+
     // A non-AI, genuinely comparative summary (the fallback / instant view).
     const fallbackSummary = () => {
         if (filledSlots.length < 2) return ''
@@ -282,7 +291,7 @@ export default function Compare() {
                                     <tr>
                                         <th className="cp-table-view__label-col" />
                                         {filledSlots.map((slot, i) => {
-                                            const isBest = i === bestSlotIdx && filledSlots.length > 1
+                                            const isBest = isCheapest(slot)
                                             return (
                                                 <th key={i} className={`cp-table-view__comp-col${isBest ? ' cp-table-view__comp-col--best' : ''}`}>
                                                     <div className="cp-table-view__comp-header">
@@ -311,7 +320,7 @@ export default function Compare() {
                                         <td className="cp-table-view__key">Best Price</td>
                                         {filledSlots.map((slot, i) => {
                                             const price = getLowestPrice(slot)
-                                            const isBest = i === bestSlotIdx && filledSlots.length > 1
+                                            const isBest = isCheapest(slot)
                                             return (
                                                 <td key={i} className={`cp-table-view__val cp-table-view__val--price${isBest ? ' cp-table-view__val--best-price' : ''}`}>
                                                     {price ? formatPrice(price) : '-'}

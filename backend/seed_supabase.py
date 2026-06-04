@@ -67,15 +67,14 @@ CATEGORIES = [
 # VENDORS  (real Indian retailers)
 # ──────────────────────────────────────────────
 VENDORS = [
-    {"name": "Amazon.in",         "slug": "amazon-in",  "website_url": "https://www.amazon.in"},
-    {"name": "Flipkart",          "slug": "flipkart",   "website_url": "https://www.flipkart.com"},
-    {"name": "MD Computers",      "slug": "mdcomputers","website_url": "https://www.mdcomputers.in"},
-    {"name": "PrimeABGB",         "slug": "primeabgb",  "website_url": "https://www.primeabgb.com"},
-    {"name": "PC Studio",         "slug": "pcstudio",   "website_url": "https://www.pcstudio.in"},
-    {"name": "Vedant Computers",  "slug": "vedant",     "website_url": "https://www.vedantcomputers.com"},
-    {"name": "The IT Depot",      "slug": "itdepot",    "website_url": "https://www.theitdepot.com"},
-    {"name": "Compify",           "slug": "compify",    "website_url": "https://www.compify.in"},
-    {"name": "EliteHubs",         "slug": "elitehubs",  "website_url": "https://www.elitehubs.com"},
+    {"name": "PrimeABGB",         "slug": "primeabgb",   "website_url": "https://www.primeabgb.com"},
+    {"name": "EliteHubs",         "slug": "elitehubs",   "website_url": "https://www.elitehubs.com"},
+    {"name": "MDComputers",       "slug": "mdcomputers", "website_url": "https://www.mdcomputers.in"},
+    {"name": "Vishal Peripherals","slug": "vishal",      "website_url": "https://www.vishalperipherals.com"},
+    {"name": "Computech Store",   "slug": "computech",   "website_url": "https://www.computechstore.in"},
+    {"name": "TLG Gaming",        "slug": "tlggaming",   "website_url": "https://www.tlggaming.in"},
+    {"name": "Vedant Computers",  "slug": "vedant",      "website_url": "https://www.vedantcomputers.com"},
+    {"name": "ITDepot",           "slug": "itdepot",     "website_url": "https://www.theitdepot.com"},
 ]
 
 # ──────────────────────────────────────────────
