@@ -12,14 +12,20 @@ Frontend build clean.
   (`.br-filter-bar` got `margin-bottom: 16px`) so the open filter panel no longer
   butts up against the chips.
 - **Advisor right build panel** now renders **from the start**, even with no build:
-  it shows ghost placeholder slots (CPU/GPU/Motherboard/RAM/Storage/PSU), a muted
-  "No build yet" title, a disabled "Use build", and zeroed analysis bars. Once a
-  build loads it fills in as before. De-cramped throughout: panel 400px / 24px
-  padding, looser row + section spacing, footer divider, last-row border removed.
-  `BuildPanel` no longer early-returns on empty (`Advisor.jsx`).
-- **Advisor uses a wider work area.** The page container is widened to 1340px
-  (`.ad-container` on the Advisor `.container`) and the centre column now **flexes
-  to fill** the space the 400px panel doesn't take (no fixed cap), so on big screens
+  it shows ghost placeholder slots for all 8 core parts (CPU/GPU/Motherboard/RAM/
+  Storage/PSU/Case/CPU Cooler), a muted "No build yet" title, and a disabled "Use
+  build". Once a build loads it fills in. `BuildPanel` no longer early-returns on
+  empty (`Advisor.jsx`).
+- **Build analysis is now per-component.** The old aggregate aspect bars (Gaming/
+  Productivity/balance/Completeness) are gone; each part in the list now carries a
+  **0-5 performance rating** rendered as a segmented meter styled after the Builder
+  bottleneck meter (`RatingMeter`), partial-filling the active segment for decimals
+  and tinted volt/amber/red by score. Rating is a heuristic: where the part's price
+  sits in a per-category price band (`RATING_BANDS` / `componentRating`, log scale).
+  Not a benchmark, and noted as such in the panel.
+- **Advisor uses a wider work area.** The page container is widened to **1480px**
+  (`.ad-container` on the Advisor `.container`) and the centre column **flexes to
+  fill** the space the 420px panel doesn't take (no fixed cap), so on big screens
   the layout no longer hugs the middle with dead space on the right. Stacks to a
   single column under 980px.
 

@@ -56,49 +56,55 @@ function normalizeBuild(raw, kind) {
     }
 }
 
-// Heuristic "how good is this build, by aspect" from the spend distribution.
-// Lightweight on purpose - it reads the items we already have (category + price).
-function buildAspects(build) {
-    const items = build.items || []
-    const total = items.reduce((s, i) => s + (i.price || 0), 0) || 1
-    const byCat = {}
-    items.forEach(i => { const c = (i.category || '').toLowerCase(); byCat[c] = (byCat[c] || 0) + (i.price || 0) })
-    const cpu = byCat.cpu || 0, gpu = byCat.gpu || 0
-    const clamp = (n) => Math.max(0, Math.min(100, Math.round(n)))
-
-    const gaming = clamp((gpu / total) * 100 * 2.2)
-    const productivity = clamp((cpu / total) * 100 * 3)
-    let balance = 55
-    if (cpu && gpu) balance = clamp(100 - Math.abs((cpu / gpu) - 0.6) * 110)
-    const core = ['cpu', 'gpu', 'motherboard', 'ram', 'storage', 'psu']
-    const completeness = clamp((core.filter(c => byCat[c]).length / core.length) * 100)
-
-    return [
-        { label: 'Gaming', score: gaming },
-        { label: 'Productivity', score: productivity },
-        { label: 'CPU / GPU balance', score: balance },
-        { label: 'Completeness', score: completeness },
-    ]
+// Rough per-category price bands (INR), entry -> flagship. With only price + category
+// to go on, where a part's price lands in its band is a defensible proxy for its tier.
+const RATING_BANDS = {
+    cpu: [8000, 75000], gpu: [12000, 220000], motherboard: [6000, 55000],
+    ram: [2500, 28000], storage: [2500, 30000], psu: [3000, 32000],
+    case: [3000, 30000], cooler: [1500, 28000], monitor: [8000, 90000], fans: [500, 7000],
 }
 
-const rateWord = (s) => (s >= 80 ? 'Great' : s >= 60 ? 'Good' : s >= 35 ? 'OK' : 'Weak')
+// 0-5 performance rating (one decimal) from where the price sits in its category band,
+// on a log scale since prices span an order of magnitude.
+function componentRating(category, price) {
+    if (!price || price <= 0) return 0
+    const [lo, hi] = RATING_BANDS[String(category || '').toLowerCase()] || [2000, 60000]
+    const t = (Math.log(price) - Math.log(lo)) / (Math.log(hi) - Math.log(lo))
+    return Math.max(0, Math.min(5, Math.round((0.4 + t * 4.6) * 10) / 10))
+}
 
-// Slots shown as ghost rows before any build exists, so the panel has shape from
-// the start instead of popping in empty.
-const PLACEHOLDER_SLOTS = ['CPU', 'GPU', 'Motherboard', 'RAM', 'Storage', 'PSU']
-const ASPECT_LABELS = ['Gaming', 'Productivity', 'CPU / GPU balance', 'Completeness']
+// Segmented 0-5 meter, styled after the Builder's bottleneck meter but able to show
+// decimals by partially filling the active segment.
+function RatingMeter({ value }) {
+    const tone = value <= 0 ? 'ad-rate--empty' : value >= 4 ? 'ad-rate--good' : value >= 2.5 ? 'ad-rate--mid' : 'ad-rate--low'
+    return (
+        <div className={`ad-bf-rate ${tone}`}>
+            <span className="ad-rate__track" role="meter" aria-valuenow={value} aria-valuemin={0} aria-valuemax={5} aria-label={`Performance ${value} of 5`}>
+                {[0, 1, 2, 3, 4].map(i => (
+                    <span key={i} className="ad-rate__seg">
+                        <span className="ad-rate__fill" style={{ width: `${Math.max(0, Math.min(1, value - i)) * 100}%` }} />
+                    </span>
+                ))}
+            </span>
+            <span className="ad-rate__num">{value > 0 ? value.toFixed(1) : '-'}<i>/5</i></span>
+        </div>
+    )
+}
 
-// Right-hand panel: the selected build plus an at-a-glance quality breakdown.
+// Core slots shown as ghost rows before any build exists, so the panel has shape
+// from the start instead of popping in empty.
+const PLACEHOLDER_SLOTS = ['CPU', 'GPU', 'Motherboard', 'RAM', 'Storage', 'PSU', 'Case', 'CPU Cooler']
+
+// Right-hand panel: the selected build with a per-component performance rating.
 // Always present - when there's no build yet it shows placeholder slots so the
 // page keeps its two-column shape. The centre content is untouched.
 function BuildPanel({ build, onUse, onClose }) {
     const isEmpty = !build
-    const aspects = isEmpty ? ASPECT_LABELS.map(label => ({ label, score: 0 })) : buildAspects(build)
     return (
         <aside className={`ad-build-panel${isEmpty ? ' ad-build-panel--empty' : ''}`}>
             <div className="ad-build-panel__head">
                 <span className="ad-build-panel__tag"><FiPackage size={13} /> Build</span>
-                <span className="ad-build-panel__total">{isEmpty ? '—' : formatPrice(build.total)}</span>
+                <span className="ad-build-panel__total">{isEmpty ? '-' : formatPrice(build.total)}</span>
                 {!isEmpty && (
                     <button className="ad-build-panel__close" onClick={onClose} aria-label="Dismiss"><FiX size={15} /></button>
                 )}
@@ -108,7 +114,7 @@ function BuildPanel({ build, onUse, onClose }) {
             {(isEmpty || build.desc) && (
                 <p className="ad-build-panel__desc">
                     {isEmpty
-                        ? 'Configure a build, ask the agent, or pick a preset — it appears here part by part.'
+                        ? 'Configure a build, ask the agent, or pick a preset. It appears here part by part, each rated for performance.'
                         : build.desc}
                 </p>
             )}
@@ -119,7 +125,8 @@ function BuildPanel({ build, onUse, onClose }) {
                         <li key={slot}>
                             <span className="ad-bf-cat">{slot}</span>
                             <div className="ad-bf-main"><span className="ad-bf-name">Not selected</span></div>
-                            <span className="ad-bf-price">—</span>
+                            <span className="ad-bf-price">-</span>
+                            <RatingMeter value={0} />
                         </li>
                     ))
                     : build.items.map((it, i) => (
@@ -130,6 +137,7 @@ function BuildPanel({ build, onUse, onClose }) {
                                 {it.vendor && <span className="ad-bf-vendor">{it.vendor}</span>}
                             </div>
                             <span className="ad-bf-price">{formatPrice(it.price)}</span>
+                            <RatingMeter value={componentRating(it.category, it.price)} />
                         </li>
                     ))}
             </ul>
@@ -137,31 +145,18 @@ function BuildPanel({ build, onUse, onClose }) {
             <div className="ad-build-panel__footer">
                 <div className="ad-build-panel__total-row">
                     <span>Total</span>
-                    <strong>{isEmpty ? '—' : formatPrice(build.total)}</strong>
+                    <strong>{isEmpty ? '-' : formatPrice(build.total)}</strong>
                 </div>
                 <button className="btn btn-primary" onClick={() => onUse(build)} disabled={isEmpty}>
                     Use build <FiArrowRight size={14} />
                 </button>
             </div>
 
-            {/* How good is it, by aspect (spend-distribution heuristic) */}
-            <div className={`ad-aspects${isEmpty ? ' ad-aspects--ghost' : ''}`}>
-                <h3>Build analysis</h3>
-                {aspects.map(a => (
-                    <div key={a.label} className="ad-aspect">
-                        <div className="ad-aspect__top">
-                            <span className="ad-aspect__label">{a.label}</span>
-                            <span className="ad-aspect__word">{isEmpty ? '—' : rateWord(a.score)}</span>
-                        </div>
-                        <div className="ad-aspect__bar"><div className="ad-aspect__fill" style={{ width: `${a.score}%` }} /></div>
-                    </div>
-                ))}
-                <p className="ad-aspects__note">
-                    {isEmpty
-                        ? 'Analysis appears once you have a build.'
-                        : "Rough guidance from how the budget is split. Use the Builder's bottleneck check for CPU/GPU pairing."}
-                </p>
-            </div>
+            <p className="ad-build-panel__note">
+                {isEmpty
+                    ? 'Each part gets a 0-5 performance rating once your build loads.'
+                    : "Performance rating (0-5) is estimated from each part's price tier in its category: rough guidance, not a benchmark."}
+            </p>
         </aside>
     )
 }

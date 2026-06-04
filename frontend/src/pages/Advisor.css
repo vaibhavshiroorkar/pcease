@@ -9,11 +9,11 @@
 /* ========== Layout: centre content (consistent width across tabs) + right build ========== */
 /* Advisor uses a wider work area than the default container so the centre content
    and the build panel both get room on big screens instead of hugging the middle. */
-.ad-container { max-width: 1340px; }
+.ad-container { max-width: 1480px; }
 .ad-split { display: flex; align-items: flex-start; gap: 28px; }
 /* Centre content flexes to fill whatever the panel doesn't take - no fixed cap. */
 .ad-split__left { flex: 1 1 auto; min-width: 0; }
-.ad-build-panel { width: 400px; flex-shrink: 0; position: sticky; top: 84px; max-height: calc(100vh - 100px); overflow-y: auto; background: var(--surface); border: 1px solid var(--border-hover); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 24px; }
+.ad-build-panel { width: 420px; flex-shrink: 0; position: sticky; top: 84px; max-height: calc(100vh - 100px); overflow-y: auto; background: var(--surface); border: 1px solid var(--border-hover); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 24px; }
 .ad-build-panel__close { margin-left: 4px; display: inline-flex; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; border-radius: var(--radius-sm); }
 .ad-build-panel__close:hover { color: var(--text); background: var(--surface-hover); }
 .ad-build-panel__head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -23,7 +23,6 @@
 .ad-build-panel--empty .ad-build-panel__title { color: var(--text-muted); }
 .ad-build-panel__list--ghost li { opacity: .55; }
 .ad-build-panel__list--ghost .ad-bf-name { color: var(--text-muted); font-style: italic; }
-.ad-aspects--ghost { opacity: .6; }
 
 @media (max-width: 980px) {
     .ad-split { flex-direction: column; align-items: stretch; }
@@ -31,24 +30,28 @@
     .ad-build-panel { width: auto; position: static; max-height: none; max-width: 820px; margin: 0 auto; }
 }
 
-/* Build analysis (aspect bars) */
-.ad-aspects { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border); }
-.ad-aspects h3 { font-size: .95rem; margin-bottom: 14px; }
-.ad-aspect { margin-bottom: 13px; }
-.ad-aspect__top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-.ad-aspect__label { font-size: .82rem; color: var(--text-secondary); }
-.ad-aspect__word { font-size: .72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
-.ad-aspect__bar { height: 6px; background: var(--surface-active); border-radius: 9999px; overflow: hidden; }
-.ad-aspect__fill { height: 100%; background: var(--accent); border-radius: 9999px; }
-.ad-aspects__note { font-size: .72rem; color: var(--text-muted); margin: 12px 0 0; line-height: 1.5; }
+.ad-build-panel__note { font-size: .72rem; color: var(--text-muted); margin: 0; padding-top: 14px; line-height: 1.5; }
 .ad-build-panel__tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); }
 .ad-build-panel__total { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.1rem; color: var(--accent); }
 .ad-build-panel__title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; margin-bottom: 10px; line-height: 1.25; }
 .ad-build-panel__desc { font-size: .85rem; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.55; }
-.ad-build-panel__list { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-direction: column; max-height: 50vh; overflow-y: auto; }
-.ad-build-panel__list li { display: grid; grid-template-columns: 88px 1fr auto; gap: 14px; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--border); }
+.ad-build-panel__list { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-direction: column; max-height: 56vh; overflow-y: auto; }
+.ad-build-panel__list li { display: grid; grid-template-columns: 88px 1fr auto; gap: 6px 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
 .ad-build-panel__list li:last-child { border-bottom: none; }
 .ad-build-panel__list .ad-bf-name { font-size: .9rem; line-height: 1.35; }
+
+/* Per-component performance meter (segmented, like the Builder bottleneck meter,
+   but partial-fills the active segment so it can show a decimal score). */
+.ad-bf-rate { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 3px; --rate-accent: var(--volt); }
+.ad-bf-rate.ad-rate--good  { --rate-accent: var(--volt); }
+.ad-bf-rate.ad-rate--mid   { --rate-accent: var(--warning); }
+.ad-bf-rate.ad-rate--low   { --rate-accent: var(--error); }
+.ad-bf-rate.ad-rate--empty { --rate-accent: var(--text-muted); }
+.ad-rate__track { display: flex; gap: 3px; flex: 1; min-width: 0; }
+.ad-rate__seg { flex: 1; height: 7px; border-radius: 2px; background: var(--surface-active); overflow: hidden; }
+.ad-rate__fill { display: block; height: 100%; background: var(--rate-accent); box-shadow: 0 0 8px -2px var(--rate-accent); border-radius: 2px; transition: width var(--transition); }
+.ad-rate__num { font-family: var(--font-mono); font-size: .75rem; font-weight: 600; color: var(--rate-accent); min-width: 46px; text-align: right; }
+.ad-rate__num i { color: var(--text-muted); font-style: normal; font-weight: 400; }
 .ad-build-panel__footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid var(--border); }
 .ad-build-panel__total-row { display: flex; align-items: baseline; gap: 8px; }
 .ad-build-panel__total-row span { font-size: .78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
